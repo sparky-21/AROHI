@@ -1,0 +1,165 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function userDocExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function hasRole(roleName) {
+      return isSignedIn() && userDocExists() && getUserDoc().role == roleName;
+    }
+
+    function isVerifiedProfessional(roleName) {
+      return hasRole(roleName) && getUserDoc().verificationStatus == 'VERIFIED';
+    }
+
+    function isAdmin() {
+      return hasRole('ADMIN') && getUserDoc().verificationStatus == 'VERIFIED';
+    }
+
+    // =========================================================================
+    // 1. USERS COLLECTION (Authentication Identity & Role Metadata)
+    // =========================================================================
+    match /users/{userId} {
+      // Users can read their own identity document; verified Admins can read all user docs
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Registration rule:
+      // 1. Ordinary registration CANNOT self-assign 'ADMIN' role.
+      // 2. PATIENT, DOCTOR, and NURSE accounts MUST start with verificationStatus == 'PENDING'
+      //    (requiring Hospital Authority / Admin approval).
+      // 3. Only ADMIN accounts (pre-authorized in /adminAuthorizations/{uid}) are immediately 'VERIFIED'.
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && (
+          ((request.resource.data.role == 'PATIENT'
+            || request.resource.data.role == 'DOCTOR'
+            || request.resource.data.role == 'NURSE')
+            && request.resource.data.verificationStatus == 'PENDING')
+          ||
+          (request.resource.data.role == 'ADMIN'
+            && request.resource.data.verificationStatus == 'VERIFIED'
+            && exists(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid)))
+        );
+
+      // Users can update non-privileged profile fields on their own document,
+      // but CANNOT escalate `role` or `verificationStatus` (except syncing `emailVerified` or `profileCompleted`).
+      allow update: if (isOwner(userId)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.verificationStatus == resource.data.verificationStatus
+          && request.resource.data.uid == resource.data.uid)
+        || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 2. PATIENTS COLLECTION
+    // =========================================================================
+    match /patients/{userId} {
+      allow read: if isOwner(userId)
+        || isAdmin()
+        || (isVerifiedProfessional('DOCTOR') && exists(/databases/$(database)/documents/connections/$(request.auth.uid + '_' + userId)))
+        || (isVerifiedProfessional('NURSE') && exists(/databases/$(database)/documents/nurseAssignments/$(request.auth.uid + '_' + userId)));
+
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.verificationStatus == 'PENDING'
+        && hasRole('PATIENT');
+
+      allow update: if (isOwner(userId)
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.verificationStatus == resource.data.verificationStatus)
+        || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 3. DOCTORS COLLECTION
+    // =========================================================================
+    match /doctors/{userId} {
+      // Verified doctors are discoverable by signed-in users; pending doctors can read their own profile; admins can read all
+      allow read: if isOwner(userId)
+        || isAdmin()
+        || (isSignedIn() && resource.data.verificationStatus == 'VERIFIED');
+
+      // Doctor registration must always initialize verificationStatus to 'PENDING'
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.verificationStatus == 'PENDING'
+        && hasRole('DOCTOR');
+
+      // Doctors can update their own profile fields but CANNOT change verificationStatus or licenseNumber after verification
+      allow update: if (isOwner(userId)
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.verificationStatus == resource.data.verificationStatus)
+        || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 4. NURSES COLLECTION
+    // =========================================================================
+    match /nurses/{userId} {
+      allow read: if isOwner(userId) || isAdmin() || isVerifiedProfessional('DOCTOR');
+
+      // Nurse registration must always initialize verificationStatus to 'PENDING'
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.verificationStatus == 'PENDING'
+        && hasRole('NURSE');
+
+      // Nurses cannot self-verify or alter assigned wards/patients directly
+      allow update: if (isOwner(userId)
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.verificationStatus == resource.data.verificationStatus
+          && request.resource.data.assignedWardId == resource.data.assignedWardId)
+        || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 5. ADMINISTRATORS & AUTHORIZATION TOKENS
+    // =========================================================================
+    match /adminAuthorizations/{authUid} {
+      allow read: if isOwner(authUid) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /administrators/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && exists(/databases/$(database)/documents/adminAuthorizations/$(userId));
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 6. AUDIT LOGS (Immutable client creation for security events)
+    // =========================================================================
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() && request.resource.data.actorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}

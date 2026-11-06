@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="140dp"
+    android:height="100dp"
+    android:viewportWidth="140"
+    android:viewportHeight="100">
+    <!-- Ward Background -->
+    <path
+        android:fillColor="#E8EFE2"
+        android:pathData="M0,0h140v100h-140z" />
+    <!-- Soft Circle -->
+    <path
+        android:fillColor="#AFC2A1"
+        android:pathData="M70,50m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
+    <!-- Nurse Head -->
+    <path
+        android:fillColor="#263D2B"
+        android:pathData="M70,36m-9.5,0a9.5,9.5 0,1 1,19 0a9.5,9.5 0,1 1,-19 0" />
+    <!-- Nurse Cap -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M61,24h18l-2,5h-14z" />
+    <path
+        android:fillColor="#557B52"
+        android:pathData="M69,25h2v3h-2zM68,26h4v1h-4z" />
+    <!-- Nursing Scrubs -->
+    <path
+        android:fillColor="#557B52"
+        android:pathData="M48,78c0,-12 9.8,-22 22,-22s22,10 22,22v6H48v-6z" />
+    <!-- Clinical Clipboard -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M61,60h18v20h-18z" />
+    <path
+        android:fillColor="#263D2B"
+        android:pathData="M66,58h8v3h-8z" />
+</vector>

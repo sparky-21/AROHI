@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AROHI Master Brand Palette -->
+    <color name="deep_forest_green">#263D2B</color>
+    <color name="primary_moss_green">#557B52</color>
+    <color name="secondary_sage">#819B75</color>
+    <color name="soft_sage">#AFC2A1</color>
+    <color name="pale_mint">#E8EFE2</color>
+    <color name="warm_ivory">#F7F8F3</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Typography Colors -->
+    <color name="text_primary">#26332A</color>
+    <color name="text_secondary">#778276</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_muted">#9AA599</color>
+
+    <!-- Semantic Status Colors -->
+    <color name="status_warning">#D99B45</color>
+    <color name="status_warning_bg">#FDF6EC</color>
+    <color name="status_emergency">#C94B4B</color>
+    <color name="status_emergency_bg">#FDECEC</color>
+    <color name="status_verified">#3B7A57</color>
+    <color name="status_verified_bg">#E6F2EB</color>
+
+    <!-- UI Surface & Border Tokens -->
+    <color name="surface_background">#F7F8F3</color>
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_subtle">#E8EFE2</color>
+    <color name="border_stroke">#D5E0CE</color>
+    <color name="border_focused">#557B52</color>
+    <color name="divider_color">#E2E8DD</color>
+    <color name="scrim_overlay">#66263D2B</color>
+</resources>

@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/warm_ivory"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top Curved Deep Forest Green Header (Matching Reference Layout with AROHI Branding) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_header_curved"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_horizontal_padding"
+            android:paddingTop="@dimen/spacing_xl"
+            android:paddingBottom="@dimen/spacing_xl">
+
+            <ImageView
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_arohi_stethoscope_logo" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:gravity="center"
+                android:letterSpacing="0.14"
+                android:text="@string/app_name"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:gravity="center"
+                android:text="@string/role_who_you_are"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:gravity="center"
+                android:text="@string/role_selection_subtitle"
+                android:textAlignment="center"
+                android:textColor="@color/pale_mint"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <!-- 2-Column Role Grid Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/screen_horizontal_padding">
+
+            <!-- Row 1: Patient & Doctor -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_md"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- 1. Patient Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRolePatient"
+                    style="@style/Widget.AROHI.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="@dimen/radius_md"
+                    app:cardElevation="3dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="112dp"
+                            android:contentDescription="@string/role_patient_title"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/illust_role_patient" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/deep_forest_green"
+                            android:gravity="center"
+                            android:minHeight="76dp"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/role_patient_title"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:gravity="center"
+                                android:lineSpacingExtra="1dp"
+                                android:text="@string/role_patient_desc"
+                                android:textColor="@color/pale_mint"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 2. Doctor Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRoleDoctor"
+                    style="@style/Widget.AROHI.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_xs"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="@dimen/radius_md"
+                    app:cardElevation="3dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="112dp"
+                            android:contentDescription="@string/role_doctor_title"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/illust_role_doctor" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/primary_moss_green"
+                            android:gravity="center"
+                            android:minHeight="76dp"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/role_doctor_title"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:gravity="center"
+                                android:lineSpacingExtra="1dp"
+                                android:text="@string/role_doctor_desc"
+                                android:textColor="@color/pale_mint"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Row 2: Nurse & Hospital Authority / Admin -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- 3. Nurse Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRoleNurse"
+                    style="@style/Widget.AROHI.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="@dimen/radius_md"
+                    app:cardElevation="3dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="112dp"
+                            android:contentDescription="@string/role_nurse_title"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/illust_role_nurse" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/primary_moss_green"
+                            android:gravity="center"
+                            android:minHeight="76dp"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/role_nurse_title"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:gravity="center"
+                                android:lineSpacingExtra="1dp"
+                                android:text="@string/role_nurse_desc"
+                                android:textColor="@color/pale_mint"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 4. Hospital Authority / Admin Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRoleAdmin"
+                    style="@style/Widget.AROHI.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_xs"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="@dimen/radius_md"
+                    app:cardElevation="3dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="112dp"
+                            android:contentDescription="@string/role_admin_title"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/illust_role_admin" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/deep_forest_green"
+                            android:gravity="center"
+                            android:minHeight="76dp"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/role_admin_title"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:gravity="center"
+                                android:lineSpacingExtra="1dp"
+                                android:text="@string/role_admin_desc"
+                                android:textColor="@color/pale_mint"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Sign In Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoToLogin"
+                style="@style/Widget.AROHI.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/already_have_account" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

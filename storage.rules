@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // User profile avatars
+    match /profiles/{userId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Professional verification documents (Doctor/Nurse credentials)
+    match /verificationDocs/{userId}/{fileName} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}

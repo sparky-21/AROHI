@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Application Theme -->
+    <style name="Theme.AROHI" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Brand Color Tokens -->
+        <item name="colorPrimary">@color/primary_moss_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/pale_mint</item>
+        <item name="colorOnPrimaryContainer">@color/deep_forest_green</item>
+
+        <item name="colorSecondary">@color/secondary_sage</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/soft_sage</item>
+        <item name="colorOnSecondaryContainer">@color/deep_forest_green</item>
+
+        <item name="colorTertiary">@color/deep_forest_green</item>
+        <item name="colorOnTertiary">@color/white</item>
+
+        <item name="colorError">@color/status_emergency</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/status_emergency_bg</item>
+        <item name="colorOnErrorContainer">@color/status_emergency</item>
+
+        <!-- Background & Surfaces -->
+        <item name="android:windowBackground">@color/warm_ivory</item>
+        <item name="android:colorBackground">@color/warm_ivory</item>
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/pale_mint</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/border_stroke</item>
+
+        <!-- System Bars -->
+        <item name="android:statusBarColor">@color/deep_forest_green</item>
+        <item name="android:navigationBarColor">@color/warm_ivory</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Default Component Styles -->
+        <item name="materialButtonStyle">@style/Widget.AROHI.Button.Primary</item>
+        <item name="textInputStyle">@style/Widget.AROHI.TextInputLayout</item>
+        <item name="materialCardViewStyle">@style/Widget.AROHI.Card</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="Theme.AROHI.Splash" parent="Theme.AROHI">
+        <item name="android:windowBackground">@color/deep_forest_green</item>
+        <item name="android:statusBarColor">@color/deep_forest_green</item>
+        <item name="android:navigationBarColor">@color/deep_forest_green</item>
+    </style>
+
+    <!-- Typography Styles -->
+    <style name="TextAppearance.AROHI.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TextAppearance.AROHI.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.AROHI.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.AROHI.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.AROHI.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+
+    <style name="TextAppearance.AROHI.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <style name="TextAppearance.AROHI.Caption" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <!-- Button Styles -->
+    <style name="Widget.AROHI.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="backgroundTint">@color/primary_moss_green</item>
+        <item name="cornerRadius">@dimen/input_corner_radius</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="Widget.AROHI.Button.DeepForest" parent="Widget.AROHI.Button.Primary">
+        <item name="backgroundTint">@color/deep_forest_green</item>
+    </style>
+
+    <style name="Widget.AROHI.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:textColor">@color/deep_forest_green</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="strokeColor">@color/primary_moss_green</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="cornerRadius">@dimen/input_corner_radius</item>
+    </style>
+
+    <style name="Widget.AROHI.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary_moss_green</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- TextInputLayout Style -->
+    <style name="Widget.AROHI.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/white</item>
+        <item name="boxStrokeColor">@color/primary_moss_green</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxCornerRadiusTopStart">@dimen/input_corner_radius</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/input_corner_radius</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/input_corner_radius</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/input_corner_radius</item>
+        <item name="hintTextColor">@color/primary_moss_green</item>
+        <item name="errorTextColor">@color/status_emergency</item>
+        <item name="boxStrokeErrorColor">@color/status_emergency</item>
+    </style>
+
+    <!-- Card Style -->
+    <style name="Widget.AROHI.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="cardCornerRadius">@dimen/radius_md</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="strokeColor">@color/border_stroke</item>
+        <item name="strokeWidth">@dimen/card_stroke_width</item>
+    </style>
+</resources>

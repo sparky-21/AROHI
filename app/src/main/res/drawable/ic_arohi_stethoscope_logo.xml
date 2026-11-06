@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="76dp"
+    android:height="76dp"
+    android:viewportWidth="76"
+    android:viewportHeight="76">
+    <!-- Outer Stethoscope Loop (White) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M38,10C22.5,10 10,22.5 10,38C10,53.5 22.5,66 38,66C49,66 57,60 61,52"
+        android:strokeWidth="4.5"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+    <!-- Inner Stethoscope Tube -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M28,26V38C28,44.6 33.4,50 40,50C46.6,50 52,44.6 52,38V26"
+        android:strokeWidth="4"
+        android:strokeColor="#E8EFE2"
+        android:strokeLineCap="round" />
+    <!-- Medical Cross Accent -->
+    <path
+        android:fillColor="#AFC2A1"
+        android:pathData="M38,24h4v10h-4zM35,27h10v4h-10z" />
+    <!-- Stethoscope Diaphragm Chestpiece -->
+    <path
+        android:fillColor="#557B52"
+        android:pathData="M60,52m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,52m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+</vector>

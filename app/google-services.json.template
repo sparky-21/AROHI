@@ -1,0 +1,24 @@
+{
+  "_comment": "TEMPLATE ONLY - Replace this file with your real google-services.json downloaded from the Firebase Console for package 'com.arohi.healthcare' and rename it to 'google-services.json'.",
+  "project_info": {
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "your-arohi-firebase-project-id",
+    "storage_bucket": "your-arohi-firebase-project-id.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:YOUR_APP_ID",
+        "android_client_info": {
+          "package_name": "com.arohi.healthcare"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "YOUR_FIREBASE_WEB_API_KEY"
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}

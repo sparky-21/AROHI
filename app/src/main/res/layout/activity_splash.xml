@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/deep_forest_green"
+    android:padding="@dimen/screen_horizontal_padding">
+
+    <!-- Symmetrical Center Brand Block -->
+    <LinearLayout
+        android:id="@+id/brandContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/footerContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="108dp"
+            android:layout_height="108dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_arohi_logo" />
+
+        <TextView
+            android:id="@+id/tvAppName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:gravity="center"
+            android:letterSpacing="0.18"
+            android:text="@string/app_name"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvTagline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:gravity="center"
+            android:text="@string/app_tagline"
+            android:textAlignment="center"
+            android:textColor="@color/soft_sage"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:background="@drawable/bg_badge_pill"
+            android:gravity="center"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp"
+            android:text="@string/app_subtitle"
+            android:textAlignment="center"
+            android:textColor="@color/deep_forest_green"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Symmetrical Bottom Session Check Status -->
+    <LinearLayout
+        android:id="@+id/footerContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_lg"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/splashProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            app:indicatorColor="@color/pale_mint"
+            app:indicatorSize="28dp"
+            app:trackColor="@color/primary_moss_green"
+            app:trackThickness="3dp" />
+
+        <TextView
+            android:id="@+id/tvSplashStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:gravity="center"
+            android:text="@string/loading_please_wait"
+            android:textAlignment="center"
+            android:textColor="@color/pale_mint"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

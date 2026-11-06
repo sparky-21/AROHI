@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AROHI</string>
+    <string name="app_tagline">Every Step Towards Better Health.</string>
+    <string name="app_subtitle">Digital Healthcare &amp; Hospital Management Ecosystem</string>
+
+    <!-- Splash & Common -->
+    <string name="loading_please_wait">Synchronizing secure healthcare session…</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_back">Back</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_next">Next</string>
+    <string name="action_get_started">Begin Healthcare Journey</string>
+    <string name="action_sign_in">Sign In</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="action_retry">Retry</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Connected Care Ecosystem</string>
+    <string name="onboarding_desc_1">Seamlessly linking patients, verified doctors, nurses, laboratories, operation theatres, and pharmacies into one unified medical journey.</string>
+    <string name="onboarding_badge_1">END-TO-END WORKFLOW</string>
+
+    <string name="onboarding_title_2">Authorized Clinical Trust</string>
+    <string name="onboarding_desc_2">Every specialist and nursing professional undergoes strict hospital credential verification. Medical records and communications are protected by permission-based access.</string>
+    <string name="onboarding_badge_2">VERIFIED PROFESSIONALS</string>
+
+    <string name="onboarding_title_3">Synchronized Health Timeline</string>
+    <string name="onboarding_desc_3">From consultation requests and digital prescriptions to laboratory diagnostics and post-operative follow-ups, every step updates in real time.</string>
+    <string name="onboarding_badge_3">SMART PATIENT JOURNEY</string>
+
+    <!-- Role Selection -->
+    <string name="role_who_you_are">Who You Are?</string>
+    <string name="role_selection_title">Select Your Portal</string>
+    <string name="role_selection_subtitle">Choose your role in the AROHI ecosystem. Patient, Doctor, and Nurse accounts require Hospital Admin approval.</string>
+    <string name="role_patient_title">Patient</string>
+    <string name="role_patient_desc">Book consultations, view prescriptions, lab reports &amp; health timeline.</string>
+    <string name="role_doctor_title">Doctor</string>
+    <string name="role_doctor_desc">Manage consultations, digital prescriptions, diagnostics &amp; operations.</string>
+    <string name="role_nurse_title">Nurse</string>
+    <string name="role_nurse_desc">Monitor assigned wards, record vitals, care tasks &amp; OT schedules.</string>
+    <string name="role_admin_title">Hospital Admin</string>
+    <string name="role_admin_desc">Restricted portal to verify staff credentials &amp; manage hospital operations.</string>
+    <string name="already_have_account">Already have an AROHI account? Sign In</string>
+
+    <!-- Login -->
+    <string name="login_title">Welcome Back to AROHI</string>
+    <string name="login_subtitle">Sign in with your registered email and password to access your healthcare portal.</string>
+    <string name="label_email">Email Address</string>
+    <string name="label_password">Password</string>
+    <string name="label_confirm_password">Confirm Password</string>
+    <string name="label_full_name">Full Legal Name</string>
+    <string name="label_phone">Phone Number</string>
+    <string name="forgot_password_prompt">Forgot Password?</string>
+    <string name="no_account_prompt">New to AROHI? Select Role &amp; Register</string>
+
+    <!-- Patient Registration -->
+    <string name="patient_reg_title">Patient Registration</string>
+    <string name="patient_reg_subtitle">Submit your personal AROHI health profile. Your account will remain in PENDING status until approved by Hospital Authority.</string>
+    <string name="label_dob">Date of Birth</string>
+    <string name="dob_helper_format">Recommended format: YYYY/MM/DD or tap calendar icon</string>
+    <string name="label_gender">Gender</string>
+    <string name="helper_gender">e.g., Male, Female, Other</string>
+    <string name="label_blood_group">Blood Group</string>
+    <string name="helper_blood_group">e.g., A+, A-, B+, B-, AB+, AB-, O+, O-</string>
+    <string name="label_emergency_contact_name">Emergency Contact Name</string>
+    <string name="label_emergency_contact_phone">Emergency Contact Phone</string>
+    <string name="label_allergies">Known Allergies (Optional)</string>
+    <string name="helper_allergies">e.g., Penicillin, Dust, None</string>
+    <string name="label_chronic_conditions">Existing Medical Conditions (Optional)</string>
+    <string name="action_register_patient">Create Patient Account</string>
+
+    <!-- Doctor Registration -->
+    <string name="doctor_reg_title">Doctor Credential Registration</string>
+    <string name="doctor_reg_subtitle">Submit your medical license and specialty details. Your account will remain in PENDING verification status until approved by Hospital Authority.</string>
+    <string name="label_medical_license">Medical Registration / BMDC License No.</string>
+    <string name="helper_medical_license">e.g., BMDC-45901</string>
+    <string name="label_specialty">Primary Medical Specialty</string>
+    <string name="helper_specialty">e.g., Cardiology, Neurology, Medicine</string>
+    <string name="label_qualifications">Degrees &amp; Qualifications</string>
+    <string name="helper_qualifications">e.g., MBBS, FCPS, MD, FRCS</string>
+    <string name="label_department">Hospital Department</string>
+    <string name="helper_department">e.g., Department of Cardiology</string>
+    <string name="label_experience_years">Years of Clinical Experience</string>
+    <string name="helper_experience_years">e.g., 8 (enter number of years)</string>
+    <string name="label_consultation_fee">Consultation Fee (BDT)</string>
+    <string name="helper_consultation_fee">e.g., 1000</string>
+    <string name="action_register_doctor">Submit Doctor Application</string>
+
+    <!-- Nurse Registration -->
+    <string name="nurse_reg_title">Nurse Credential Registration</string>
+    <string name="nurse_reg_subtitle">Submit your nursing license and ward details for Hospital Authority verification. Access to patient data is restricted until verified and assigned.</string>
+    <string name="label_nursing_license">Nursing Council Registration No.</string>
+    <string name="helper_nursing_license">e.g., BNMC-33812</string>
+    <string name="label_nursing_qualification">Nursing Qualification</string>
+    <string name="helper_nursing_qualification">e.g., BSc in Nursing, Diploma in Nursing</string>
+    <string name="label_preferred_ward">Primary Department / Ward</string>
+    <string name="helper_preferred_ward">e.g., ICU Ward A, General Medicine Ward</string>
+    <string name="label_shift_preference">Preferred Duty Shift</string>
+    <string name="helper_shift_preference">e.g., Morning, Evening, Night</string>
+    <string name="action_register_nurse">Submit Nurse Application</string>
+
+    <!-- Authorized Admin Setup -->
+    <string name="admin_setup_title">Authorized Admin Verification</string>
+    <string name="admin_setup_subtitle">Ordinary users cannot self-register as administrators. Enter your institutional credentials and pre-issued Hospital Authority Security Token.</string>
+    <string name="label_admin_employee_id">Hospital Authority Employee ID</string>
+    <string name="label_admin_designation">Official Designation</string>
+    <string name="label_admin_auth_code">Institutional Authorization Token</string>
+    <string name="admin_security_notice">Security Policy: Self-selected privilege escalation is strictly blocked by Firestore Security Rules and Audit Logging.</string>
+    <string name="action_setup_admin">Verify &amp; Activate Admin Account</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_password_title">Reset Your Password</string>
+    <string name="forgot_password_subtitle">Enter the email address associated with your AROHI account. We will send a secure password reset link.</string>
+    <string name="action_send_reset_link">Send Password Reset Link</string>
+    <string name="reset_link_sent_message">A password reset email has been dispatched. Please check your inbox and spam folder.</string>
+
+    <!-- Email Verification -->
+    <string name="email_verification_title">Verify Your Email Address</string>
+    <string name="email_verification_subtitle">To protect sensitive healthcare records, please verify your email address before continuing.</string>
+    <string name="action_check_verification">I Have Verified My Email</string>
+    <string name="action_resend_verification">Resend Verification Email</string>
+    <string name="verification_sent_feedback">Verification email sent! Please check your inbox.</string>
+
+    <!-- Basic Profile Setup & Phase 1 Role Status Hub -->
+    <string name="profile_setup_title">Complete Profile &amp; Identity</string>
+    <string name="profile_setup_subtitle">Review your AROHI Healthcare ID, verification status, and complete your core profile details.</string>
+    <string name="label_address">Residential / Chamber Address</string>
+    <string name="label_bio_notes">Health Summary / Professional Bio</string>
+    <string name="action_save_profile">Save &amp; Complete Setup</string>
+    <string name="status_banner_pending_title">Verification Pending Admin Approval</string>
+    <string name="status_banner_pending_desc">Your registration has been submitted and is awaiting Hospital Authority / Admin approval. Full portal access remains locked until verified.</string>
+    <string name="status_banner_verified_title">Authenticated &amp; Verified Identity</string>
+    <string name="status_banner_verified_desc">Your AROHI identity and role permissions are active. Phase 1 Foundation &amp; Authentication is complete.</string>
+</resources>

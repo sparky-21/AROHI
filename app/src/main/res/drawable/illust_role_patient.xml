@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="140dp"
+    android:height="100dp"
+    android:viewportWidth="140"
+    android:viewportHeight="100">
+    <!-- Soft Clinical Room Background -->
+    <path
+        android:fillColor="#E8EFE2"
+        android:pathData="M0,0h140v100h-140z" />
+    <!-- Window Frame -->
+    <path
+        android:fillColor="#F7F8F3"
+        android:pathData="M92,12h34v44h-34z" />
+    <path
+        android:fillColor="#D5E0CE"
+        android:pathData="M108,12h2v44h-2zM92,33h34v2h-34z" />
+    <!-- Patient Care Circle -->
+    <path
+        android:fillColor="#AFC2A1"
+        android:pathData="M54,48m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
+    <!-- Patient Silhouette -->
+    <path
+        android:fillColor="#263D2B"
+        android:pathData="M45,40m-9,0a9,9 0,1 1,18 0a9,9 0,1 1,-18 0" />
+    <path
+        android:fillColor="#263D2B"
+        android:pathData="M27,72c0,-10 8,-18 18,-18s18,8 18,18v6H27v-6z" />
+    <!-- Family / Caregiver Silhouette -->
+    <path
+        android:fillColor="#557B52"
+        android:pathData="M74,44m-7.5,0a7.5,7.5 0,1 1,15 0a7.5,7.5 0,1 1,-15 0" />
+    <path
+        android:fillColor="#557B52"
+        android:pathData="M60,72c0,-8 6.5,-15 14.5,-15s14.5,7 14.5,15v6H60v-6z" />
+    <!-- Heart Health Badge -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M106,68m-12,0a12,12 0,1 1,24 0a12,12 0,1 1,-24 0" />
+    <path
+        android:fillColor="#557B52"
+        android:pathData="M104,62h4v12h-4zM100,66h12v4h-12z" />
+</vector>

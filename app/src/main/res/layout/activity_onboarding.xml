@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/warm_ivory"
+    android:padding="@dimen/screen_horizontal_padding">
+
+    <!-- Top Bar with Brand & Skip -->
+    <TextView
+        android:id="@+id/tvBrandSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:letterSpacing="0.12"
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.AROHI.TitleLarge"
+        android:textColor="@color/deep_forest_green"
+        app:layout_constraintBottom_toBottomOf="@+id/btnSkip"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btnSkip" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSkip"
+        style="@style/Widget.AROHI.Button.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_skip"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Onboarding ViewPager2 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPagerOnboarding"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginVertical="@dimen/spacing_lg"
+        app:layout_constraintBottom_toTopOf="@+id/indicatorContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSkip" />
+
+    <!-- Page Indicator Dots -->
+    <LinearLayout
+        android:id="@+id/indicatorContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_lg"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/btnNextOrStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <View
+            android:id="@+id/dot1"
+            android:layout_width="24dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/dot_indicator_active" />
+
+        <View
+            android:id="@+id/dot2"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/dot_indicator_inactive" />
+
+        <View
+            android:id="@+id/dot3"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/dot_indicator_inactive" />
+    </LinearLayout>
+
+    <!-- Primary CTA Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNextOrStart"
+        style="@style/Widget.AROHI.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/action_next"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

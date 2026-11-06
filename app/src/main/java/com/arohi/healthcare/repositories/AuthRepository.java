@@ -1,0 +1,505 @@
+package com.arohi.healthcare.repositories;
+
+import android.content.Context;
+import com.arohi.healthcare.database.FirestoreCollections;
+import com.arohi.healthcare.models.AdminProfile;
+import com.arohi.healthcare.models.DoctorProfile;
+import com.arohi.healthcare.models.NurseProfile;
+import com.arohi.healthcare.models.PatientProfile;
+import com.arohi.healthcare.models.UserAccount;
+import com.arohi.healthcare.models.UserRole;
+import com.arohi.healthcare.models.VerificationStatus;
+import com.arohi.healthcare.services.FirebaseProvider;
+import com.arohi.healthcare.utils.IdGenerator;
+import com.arohi.healthcare.utils.SessionManager;
+import com.arohi.healthcare.utils.ValidationUtils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Repository managing authentication, role-specific registration, email verification,
+ * password reset, and user profile persistence across Firebase Auth and Cloud Firestore.
+ *
+ * When google-services.json is absent, operations clearly report Local Sandbox mode
+ * so UI flows can still be tested locally without pretending live Firebase is connected.
+ */
+public class AuthRepository {
+
+    private final Context appContext;
+    private final SessionManager sessionManager;
+
+    public AuthRepository(Context context) {
+        this.appContext = context.getApplicationContext();
+        this.sessionManager = new SessionManager(appContext);
+    }
+
+    public boolean isFirebaseConnected() {
+        return FirebaseProvider.isFirebaseConfigured(appContext);
+    }
+
+    public SessionManager getSessionManager() {
+        return sessionManager;
+    }
+
+    /**
+     * Registers a new PATIENT account in Firebase Auth, /users/{uid}, and /patients/{uid}.
+     * Starts with PENDING verification status until approved by Hospital Authority / Admin.
+     */
+    public void registerPatient(String fullName, String email, String phone,
+                                String dob, String gender, String bloodGroup,
+                                String emergencyName, String emergencyPhone,
+                                String allergies, String password,
+                                AuthCallback<UserAccount> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+
+        if (auth == null || db == null) {
+            // Local Sandbox fallback when google-services.json is not yet added
+            String uid = "local_pat_" + UUID.randomUUID().toString().substring(0, 8);
+            String patientId = IdGenerator.generateRoleIdentifier(UserRole.PATIENT, uid);
+            // Patients also start as PENDING until approved by Hospital Admin
+            UserAccount account = new UserAccount(
+                    uid, patientId, email.trim(), fullName.trim(), phone.trim(),
+                    UserRole.PATIENT, VerificationStatus.PENDING, false, false
+            );
+            sessionManager.saveUserSession(account);
+            sessionManager.saveLocalSandboxPasswordHash(email.trim(), password);
+            callback.onSuccess(account);
+            return;
+        }
+
+        auth.createUserWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser == null) {
+                        callback.onError("Unable to retrieve authenticated Firebase user.");
+                        return;
+                    }
+                    String uid = firebaseUser.getUid();
+                    String patientId = IdGenerator.generateRoleIdentifier(UserRole.PATIENT, uid);
+
+                    // Enforce PENDING status until Hospital Authority / Admin approval
+                    UserAccount userAccount = new UserAccount(
+                            uid, patientId, email.trim(), fullName.trim(), phone.trim(),
+                            UserRole.PATIENT, VerificationStatus.PENDING,
+                            firebaseUser.isEmailVerified(), false
+                    );
+
+                    PatientProfile patientProfile = new PatientProfile(
+                            uid, patientId, fullName.trim(), email.trim(), phone.trim(),
+                            dob.trim(), gender.trim(), bloodGroup.trim().toUpperCase(),
+                            emergencyName.trim(), emergencyPhone.trim(), allergies.trim()
+                    );
+
+                    WriteBatch batch = db.batch();
+                    batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
+                    batch.set(db.collection(FirestoreCollections.PATIENTS).document(uid), patientProfile.toMap());
+
+                    batch.commit()
+                            .addOnSuccessListener(unused -> {
+                                firebaseUser.sendEmailVerification();
+                                sessionManager.saveUserSession(userAccount);
+                                callback.onSuccess(userAccount);
+                            })
+                            .addOnFailureListener(e -> callback.onError("Failed to save Patient profile: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Patient registration failed."));
+    }
+
+    /**
+     * Registers a new DOCTOR account with strict PENDING verification status.
+     */
+    public void registerDoctor(String fullName, String email, String phone,
+                               String licenseNumber, String specialty, String qualifications,
+                               String department, int experienceYears, double consultationFee,
+                               String password, AuthCallback<UserAccount> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+
+        if (auth == null || db == null) {
+            String uid = "local_doc_" + UUID.randomUUID().toString().substring(0, 8);
+            String doctorId = IdGenerator.generateRoleIdentifier(UserRole.DOCTOR, uid);
+            // Doctors MUST remain PENDING until verified by Hospital Authority
+            UserAccount account = new UserAccount(
+                    uid, doctorId, email.trim(), fullName.trim(), phone.trim(),
+                    UserRole.DOCTOR, VerificationStatus.PENDING, false, false
+            );
+            sessionManager.saveUserSession(account);
+            sessionManager.saveLocalSandboxPasswordHash(email.trim(), password);
+            callback.onSuccess(account);
+            return;
+        }
+
+        auth.createUserWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser == null) {
+                        callback.onError("Unable to retrieve authenticated Firebase user.");
+                        return;
+                    }
+                    String uid = firebaseUser.getUid();
+                    String doctorId = IdGenerator.generateRoleIdentifier(UserRole.DOCTOR, uid);
+
+                    // Enforce PENDING status on registration
+                    UserAccount userAccount = new UserAccount(
+                            uid, doctorId, email.trim(), fullName.trim(), phone.trim(),
+                            UserRole.DOCTOR, VerificationStatus.PENDING,
+                            firebaseUser.isEmailVerified(), false
+                    );
+
+                    DoctorProfile doctorProfile = new DoctorProfile(
+                            uid, doctorId, fullName.trim(), email.trim(), phone.trim(),
+                            licenseNumber.trim(), specialty.trim(), qualifications.trim(),
+                            department.trim(), experienceYears, consultationFee
+                    );
+
+                    WriteBatch batch = db.batch();
+                    batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
+                    batch.set(db.collection(FirestoreCollections.DOCTORS).document(uid), doctorProfile.toMap());
+
+                    batch.commit()
+                            .addOnSuccessListener(unused -> {
+                                firebaseUser.sendEmailVerification();
+                                sessionManager.saveUserSession(userAccount);
+                                callback.onSuccess(userAccount);
+                            })
+                            .addOnFailureListener(e -> callback.onError("Failed to save Doctor credentials: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Doctor registration failed."));
+    }
+
+    /**
+     * Registers a new NURSE account with strict PENDING verification status.
+     */
+    public void registerNurse(String fullName, String email, String phone,
+                              String nursingLicense, String qualification,
+                              String preferredWard, String shiftPreference,
+                              String password, AuthCallback<UserAccount> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+
+        if (auth == null || db == null) {
+            String uid = "local_nrs_" + UUID.randomUUID().toString().substring(0, 8);
+            String nurseId = IdGenerator.generateRoleIdentifier(UserRole.NURSE, uid);
+            // Nurses MUST remain PENDING until verified by Hospital Authority
+            UserAccount account = new UserAccount(
+                    uid, nurseId, email.trim(), fullName.trim(), phone.trim(),
+                    UserRole.NURSE, VerificationStatus.PENDING, false, false
+            );
+            sessionManager.saveUserSession(account);
+            sessionManager.saveLocalSandboxPasswordHash(email.trim(), password);
+            callback.onSuccess(account);
+            return;
+        }
+
+        auth.createUserWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser == null) {
+                        callback.onError("Unable to retrieve authenticated Firebase user.");
+                        return;
+                    }
+                    String uid = firebaseUser.getUid();
+                    String nurseId = IdGenerator.generateRoleIdentifier(UserRole.NURSE, uid);
+
+                    UserAccount userAccount = new UserAccount(
+                            uid, nurseId, email.trim(), fullName.trim(), phone.trim(),
+                            UserRole.NURSE, VerificationStatus.PENDING,
+                            firebaseUser.isEmailVerified(), false
+                    );
+
+                    NurseProfile nurseProfile = new NurseProfile(
+                            uid, nurseId, fullName.trim(), email.trim(), phone.trim(),
+                            nursingLicense.trim(), qualification.trim(),
+                            preferredWard.trim(), shiftPreference.trim()
+                    );
+
+                    WriteBatch batch = db.batch();
+                    batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
+                    batch.set(db.collection(FirestoreCollections.NURSES).document(uid), nurseProfile.toMap());
+
+                    batch.commit()
+                            .addOnSuccessListener(unused -> {
+                                firebaseUser.sendEmailVerification();
+                                sessionManager.saveUserSession(userAccount);
+                                callback.onSuccess(userAccount);
+                            })
+                            .addOnFailureListener(e -> callback.onError("Failed to save Nurse credentials: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Nurse registration failed."));
+    }
+
+    /**
+     * Sets up an Authorized Admin account.
+     * Ordinary users cannot self-register as administrators: requires a valid institutional token
+     * format AND pre-authorized server/Firestore record in /adminAuthorizations/{uid}.
+     */
+    public void setupAuthorizedAdmin(String fullName, String email, String phone,
+                                     String employeeId, String designation,
+                                     String authorizationToken, String password,
+                                     AuthCallback<UserAccount> callback) {
+        if (!ValidationUtils.isValidAdminTokenFormat(authorizationToken)) {
+            callback.onError("Access Denied: Invalid Institutional Authorization Token format. Ordinary users cannot register as Administrators.");
+            return;
+        }
+
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+
+        if (auth == null || db == null) {
+            String uid = "local_adm_" + UUID.randomUUID().toString().substring(0, 8);
+            String adminId = IdGenerator.generateRoleIdentifier(UserRole.ADMIN, uid);
+            // Validated via Institutional Authorization Token -> Immediately VERIFIED
+            UserAccount account = new UserAccount(
+                    uid, adminId, email.trim(), fullName.trim(), phone.trim(),
+                    UserRole.ADMIN, VerificationStatus.VERIFIED, false, false
+            );
+            sessionManager.saveUserSession(account);
+            sessionManager.saveLocalSandboxPasswordHash(email.trim(), password);
+            callback.onSuccess(account);
+            return;
+        }
+
+        auth.createUserWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser == null) {
+                        callback.onError("Unable to retrieve authenticated Firebase user.");
+                        return;
+                    }
+                    String uid = firebaseUser.getUid();
+                    String adminId = IdGenerator.generateRoleIdentifier(UserRole.ADMIN, uid);
+
+                    // Verify whether a pre-authorized document exists in /adminAuthorizations/{uid}
+                    db.collection(FirestoreCollections.ADMIN_AUTHORIZATIONS).document(uid).get()
+                            .addOnSuccessListener(authDoc -> {
+                                if (!authDoc.exists()) {
+                                    // Rollback unauthorized admin creation attempt
+                                    firebaseUser.delete();
+                                    callback.onError("Security Violation: Your UID is not pre-authorized in /adminAuthorizations. Self-registration as Admin is prohibited.");
+                                    return;
+                                }
+
+                                UserAccount userAccount = new UserAccount(
+                                        uid, adminId, email.trim(), fullName.trim(), phone.trim(),
+                                        UserRole.ADMIN, VerificationStatus.VERIFIED,
+                                        firebaseUser.isEmailVerified(), false
+                                );
+
+                                AdminProfile adminProfile = new AdminProfile(
+                                        uid, adminId, fullName.trim(), email.trim(), phone.trim(),
+                                        employeeId.trim(), designation.trim(), VerificationStatus.VERIFIED
+                                );
+
+                                WriteBatch batch = db.batch();
+                                batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
+                                batch.set(db.collection(FirestoreCollections.ADMINISTRATORS).document(uid), adminProfile.toMap());
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> {
+                                            firebaseUser.sendEmailVerification();
+                                            sessionManager.saveUserSession(userAccount);
+                                            callback.onSuccess(userAccount);
+                                        })
+                                        .addOnFailureListener(e -> callback.onError("Admin setup blocked by Firestore Security Rules: " + e.getMessage()));
+                            })
+                            .addOnFailureListener(e -> callback.onError("Authorization verification failed: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Admin setup failed."));
+    }
+
+    /**
+     * Authenticates an existing user and resolves their authoritative role and verification status from Firestore.
+     */
+    public void login(String email, String password, AuthCallback<UserAccount> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+
+        if (auth == null || db == null) {
+            UserAccount cached = sessionManager.getCachedAccountByEmail(email.trim());
+            if (cached != null && sessionManager.verifyLocalSandboxPassword(email.trim(), password)) {
+                sessionManager.saveUserSession(cached);
+                callback.onSuccess(cached);
+            } else {
+                callback.onError("Local Sandbox Mode: No matching local account found for this email/password. Register an account first or add google-services.json for live Firebase Auth.");
+            }
+            return;
+        }
+
+        auth.signInWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser == null) {
+                        callback.onError("Authentication succeeded but user session is null.");
+                        return;
+                    }
+                    fetchUserAccountFromFirestore(firebaseUser, callback);
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Invalid email or password."));
+    }
+
+    /**
+     * Fetches the authoritative UserAccount from /users/{uid}.
+     */
+    public void fetchUserAccountFromFirestore(FirebaseUser firebaseUser, AuthCallback<UserAccount> callback) {
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+        if (db == null || firebaseUser == null) {
+            UserAccount local = sessionManager.getCurrentSessionAccount();
+            if (local != null) {
+                callback.onSuccess(local);
+            } else {
+                callback.onError("No active session available.");
+            }
+            return;
+        }
+
+        db.collection(FirestoreCollections.USERS).document(firebaseUser.getUid()).get()
+                .addOnSuccessListener((DocumentSnapshot snapshot) -> {
+                    if (!snapshot.exists()) {
+                        callback.onError("Account profile record not found in Firestore.");
+                        return;
+                    }
+                    UserAccount account = snapshot.toObject(UserAccount.class);
+                    if (account == null) {
+                        callback.onError("Failed to parse user profile document.");
+                        return;
+                    }
+                    account.setEmailVerified(firebaseUser.isEmailVerified());
+                    sessionManager.saveUserSession(account);
+                    callback.onSuccess(account);
+                })
+                .addOnFailureListener(e -> callback.onError("Failed to load user role from Firestore: " + e.getMessage()));
+    }
+
+    /**
+     * Sends a password reset email via Firebase Auth.
+     */
+    public void sendPasswordResetEmail(String email, AuthCallback<Void> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        if (auth == null) {
+            UserAccount cached = sessionManager.getCachedAccountByEmail(email.trim());
+            if (cached != null) {
+                callback.onSuccess(null);
+            } else {
+                callback.onError("Local Sandbox Mode: Email not found in local sandbox registry. Connect google-services.json for live Firebase password reset emails.");
+            }
+            return;
+        }
+
+        auth.sendPasswordResetEmail(email.trim())
+                .addOnSuccessListener(unused -> callback.onSuccess(null))
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Failed to send password reset email."));
+    }
+
+    /**
+     * Reloads the current Firebase user and checks whether their email address has been verified.
+     */
+    public void checkEmailVerificationStatus(AuthCallback<Boolean> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+
+        if (auth == null || auth.getCurrentUser() == null) {
+            UserAccount account = sessionManager.getCurrentSessionAccount();
+            if (account != null) {
+                account.setEmailVerified(true);
+                sessionManager.saveUserSession(account);
+                callback.onSuccess(true);
+            } else {
+                callback.onError("No active user session.");
+            }
+            return;
+        }
+
+        FirebaseUser user = auth.getCurrentUser();
+        user.reload()
+                .addOnSuccessListener(unused -> {
+                    boolean verified = user.isEmailVerified();
+                    UserAccount current = sessionManager.getCurrentSessionAccount();
+                    if (current != null) {
+                        current.setEmailVerified(verified);
+                        sessionManager.saveUserSession(current);
+                    }
+                    if (verified && db != null) {
+                        db.collection(FirestoreCollections.USERS)
+                                .document(user.getUid())
+                                .update("emailVerified", true, "updatedAt", System.currentTimeMillis());
+                    }
+                    callback.onSuccess(verified);
+                })
+                .addOnFailureListener(e -> callback.onError("Unable to refresh verification state: " + e.getMessage()));
+    }
+
+    /**
+     * Resends the Firebase email verification link.
+     */
+    public void resendVerificationEmail(AuthCallback<Void> callback) {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        if (auth == null || auth.getCurrentUser() == null) {
+            callback.onSuccess(null);
+            return;
+        }
+
+        auth.getCurrentUser().sendEmailVerification()
+                .addOnSuccessListener(unused -> callback.onSuccess(null))
+                .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Could not resend verification email."));
+    }
+
+    /**
+     * Updates Basic Profile Setup fields (/users/{uid} and role-specific collection) without altering role or verificationStatus.
+     */
+    public void updateBasicProfile(String fullName, String phone, String address, String bioNotes,
+                                   AuthCallback<UserAccount> callback) {
+        UserAccount current = sessionManager.getCurrentSessionAccount();
+        if (current == null) {
+            callback.onError("No active authenticated user session.");
+            return;
+        }
+
+        current.setFullName(fullName.trim());
+        current.setPhone(phone.trim());
+        current.setAddress(address.trim());
+        current.setBioNotes(bioNotes.trim());
+        current.setProfileCompleted(true);
+        current.setUpdatedAt(System.currentTimeMillis());
+
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+        if (db == null) {
+            sessionManager.saveUserSession(current);
+            callback.onSuccess(current);
+            return;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("fullName", current.getFullName());
+        updates.put("phone", current.getPhone());
+        updates.put("address", current.getAddress());
+        updates.put("bioNotes", current.getBioNotes());
+        updates.put("profileCompleted", true);
+        updates.put("updatedAt", current.getUpdatedAt());
+
+        db.collection(FirestoreCollections.USERS).document(current.getUid())
+                .update(updates)
+                .addOnSuccessListener(unused -> {
+                    sessionManager.saveUserSession(current);
+                    callback.onSuccess(current);
+                })
+                .addOnFailureListener(e -> callback.onError("Failed to update basic profile: " + e.getMessage()));
+    }
+
+    /**
+     * Signs out from Firebase Auth and clears local session persistence.
+     */
+    public void logout() {
+        FirebaseAuth auth = FirebaseProvider.getAuth(appContext);
+        if (auth != null) {
+            auth.signOut();
+        }
+        sessionManager.clearSession();
+    }
+}

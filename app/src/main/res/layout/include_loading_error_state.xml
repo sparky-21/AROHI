@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layoutFeedbackContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Inline Error / Warning / Success Feedback Banner -->
+    <LinearLayout
+        android:id="@+id/bannerFeedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:background="@drawable/bg_status_error"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/ivFeedbackIcon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:contentDescription="Status Icon"
+            android:src="@drawable/ic_warning_alert" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvFeedbackTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Authentication Notice"
+                android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvFeedbackMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textAppearance="@style/TextAppearance.AROHI.BodyMedium"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Loading Progress Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLoading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/pale_mint"
+        app:cardCornerRadius="@dimen/radius_sm"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/soft_sage"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_md">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                app:indicatorColor="@color/deep_forest_green"
+                app:indicatorSize="26dp"
+                app:trackColor="@color/soft_sage"
+                app:trackThickness="3dp" />
+
+            <TextView
+                android:id="@+id/tvLoadingMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:layout_weight="1"
+                android:text="@string/loading_please_wait"
+                android:textAppearance="@style/TextAppearance.AROHI.BodyLarge"
+                android:textColor="@color/deep_forest_green"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>
