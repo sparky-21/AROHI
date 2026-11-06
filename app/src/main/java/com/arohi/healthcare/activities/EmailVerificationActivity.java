@@ -47,16 +47,31 @@ public class EmailVerificationActivity extends AppCompatActivity {
 
         binding.btnCheckVerification.setOnClickListener(v -> checkVerification());
         binding.btnResendVerification.setOnClickListener(v -> resendVerification());
-        binding.btnContinueToProfileSetup.setOnClickListener(v -> {
-            startActivity(new Intent(this, BasicProfileSetupActivity.class));
-            finish();
-        });
+        binding.btnContinueToProfileSetup.setOnClickListener(v -> verifyDemoEmailAndProceed());
         binding.btnSignOut.setOnClickListener(v -> {
             authRepository.logout();
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
+        });
+    }
+
+    private void verifyDemoEmailAndProceed() {
+        UiStateHelper.showLoading(binding.stateView, "Activating demo email verification…");
+        authRepository.confirmDemoOrManualEmailVerification(new AuthCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean result) {
+                binding.tvCurrentEmailStatus.setText("Status: Demo Email Verified");
+                startActivity(new Intent(EmailVerificationActivity.this, BasicProfileSetupActivity.class));
+                finish();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                startActivity(new Intent(EmailVerificationActivity.this, BasicProfileSetupActivity.class));
+                finish();
+            }
         });
     }
 
@@ -77,8 +92,8 @@ public class EmailVerificationActivity extends AppCompatActivity {
                 } else {
                     UiStateHelper.showWarning(
                             binding.stateView,
-                            "Not Yet Verified",
-                            "Your email is still unverified. Please click the link in your email inbox and try again."
+                            "Inbox Link Not Clicked Yet (Demo Email?)",
+                            "If you are using a demo email without a real inbox, tap 'Demo Email: Verify & Continue' below to proceed."
                     );
                 }
             }

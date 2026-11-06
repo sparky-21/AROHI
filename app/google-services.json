@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "340780752759",
+    "project_id": "arohi-694a5",
+    "storage_bucket": "arohi-694a5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:340780752759:android:99c3382d80a8322a8dcb72",
+        "android_client_info": {
+          "package_name": "com.arohi.healthcare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgkKcPREeFtEuNfzn4UAvEw0f8Xk6enBQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

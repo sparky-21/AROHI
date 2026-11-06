@@ -76,7 +76,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_xs"
-                    android:text="1. Click the verification link sent to your email address.\n2. Return to AROHI and tap 'I Have Verified My Email'.\n3. Complete your Basic Profile Setup to activate your healthcare identity."
+                    android:text="1. Real Email: Click the verification link sent to your inbox, then tap 'I Have Verified My Email'.\n2. Demo / Test Email: If using a demo Gmail without a real inbox, tap 'Demo Email: Verify &amp; Continue' below."
                     android:textAppearance="@style/TextAppearance.AROHI.BodyMedium" />
 
                 <TextView
@@ -112,11 +112,11 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnContinueToProfileSetup"
-            style="@style/Widget.AROHI.Button.Text"
+            style="@style/Widget.AROHI.Button.DeepForest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
-            android:text="Continue to Basic Profile Setup" />
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:text="Demo Email: Verify &amp; Continue" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignOut"
