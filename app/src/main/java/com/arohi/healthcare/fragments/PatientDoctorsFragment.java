@@ -628,6 +628,15 @@ public class PatientDoctorsFragment extends Fragment {
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            refreshDoctorsAndRequests();
+            loadConversations();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         refreshDoctorsAndRequests();

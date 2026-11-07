@@ -23,7 +23,9 @@ import com.arohi.healthcare.fragments.NurseProfileFragment;
 import com.arohi.healthcare.fragments.PatientDashboardFragment;
 import com.arohi.healthcare.fragments.PatientDoctorsFragment;
 import com.arohi.healthcare.fragments.PatientProfileFragment;
+import com.arohi.healthcare.fragments.PatientRecordsFragment;
 import com.arohi.healthcare.fragments.RoleSectionInfoFragment;
+import com.arohi.healthcare.fragments.UnifiedCalendarFragment;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
@@ -134,19 +136,42 @@ public class RolePortalActivity extends AppCompatActivity {
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            currentTabId = itemId;
-            Fragment target = createFragmentForMenuItem(itemId);
-            if (target != null) {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragmentContainer, target)
-                        .commit();
+            if (itemId == currentTabId) {
                 return true;
             }
-            return false;
+            switchToTabInternal(itemId);
+            return true;
         });
 
         binding.bottomNavigation.setSelectedItemId(defaultTabId);
+    }
+
+    private void switchToTabInternal(@IdRes int itemId) {
+        String targetTag = "tab_" + itemId;
+        String currentTag = currentTabId != -1 ? "tab_" + currentTabId : null;
+
+        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+        androidx.fragment.app.FragmentTransaction ft = fm.beginTransaction();
+
+        if (currentTag != null) {
+            Fragment currentFragment = fm.findFragmentByTag(currentTag);
+            if (currentFragment != null) {
+                ft.hide(currentFragment);
+            }
+        }
+
+        Fragment targetFragment = fm.findFragmentByTag(targetTag);
+        if (targetFragment == null) {
+            targetFragment = createFragmentForMenuItem(itemId);
+            if (targetFragment != null) {
+                ft.add(R.id.fragmentContainer, targetFragment, targetTag);
+            }
+        } else {
+            ft.show(targetFragment);
+        }
+
+        ft.commitAllowingStateLoss();
+        currentTabId = itemId;
     }
 
     private Fragment createFragmentForMenuItem(@IdRes int itemId) {
@@ -156,19 +181,9 @@ public class RolePortalActivity extends AppCompatActivity {
         } else if (itemId == R.id.nav_patient_doctors) {
             return new PatientDoctorsFragment();
         } else if (itemId == R.id.nav_patient_records) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Digital Medical Records & Vault",
-                    "Connected to Cloud Firestore /prescriptions & /laboratoryReports.",
-                    "RECORDS",
-                    "Phase 4 Digital Prescriptions & Medical Vault: Access structured digital prescriptions, dosage schedules, and diagnostic lab reports."
-            );
+            return new PatientRecordsFragment();
         } else if (itemId == R.id.nav_patient_calendar) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Medical Calendar & Reminders",
-                    "Connected to Cloud Firestore /appointments.",
-                    "CALENDAR",
-                    "Phase 3 & 4 Smart Medical Calendar: Track upcoming consultation dates, medicine dosage reminders, and follow-up milestones."
-            );
+            return UnifiedCalendarFragment.newInstance(false);
         } else if (itemId == R.id.nav_patient_profile) {
             return new PatientProfileFragment();
         }
@@ -179,12 +194,7 @@ public class RolePortalActivity extends AppCompatActivity {
         } else if (itemId == R.id.nav_doctor_patients) {
             return new DoctorPatientsFragment();
         } else if (itemId == R.id.nav_doctor_schedule) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Consultation & OT Schedule",
-                    "Connected to Cloud Firestore /appointments & /operations.",
-                    "DOCTOR_SCHEDULE",
-                    "Phase 3 & 5 Clinical Schedule: Manage daily consultation slots and view assigned Operation Theatre (OT) surgical schedules."
-            );
+            return UnifiedCalendarFragment.newInstance(true);
         } else if (itemId == R.id.nav_doctor_messages) {
             return new ConversationsListFragment();
         } else if (itemId == R.id.nav_doctor_profile) {

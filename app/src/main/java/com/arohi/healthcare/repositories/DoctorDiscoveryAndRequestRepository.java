@@ -53,9 +53,11 @@ public class DoctorDiscoveryAndRequestRepository {
     // 1. DOCTOR DISCOVERY (MERGING FIRESTORE & LOCAL REGISTRY)
     // =========================================================================
     public void loadVerifiedDoctors(AuthCallback<List<DoctorProfile>> callback) {
+        // INSTANT RENDER (0 ms): Serve cached local doctors immediately
+        callback.onSuccess(buildMergedDoctorList(null, null));
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(buildMergedDoctorList(null, null));
             return;
         }
 
@@ -309,9 +311,12 @@ public class DoctorDiscoveryAndRequestRepository {
             callback.onSuccess(new ArrayList<>());
             return;
         }
+
+        // INSTANT RENDER (0 ms): Serve cached local requests immediately
+        callback.onSuccess(filterRequestsByPatient(patientUid, null));
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(filterRequestsByPatient(patientUid, null));
             return;
         }
 
@@ -407,9 +412,12 @@ public class DoctorDiscoveryAndRequestRepository {
             callback.onSuccess(new ArrayList<>());
             return;
         }
+
+        // INSTANT RENDER (0 ms): Serve cached local incoming requests immediately
+        callback.onSuccess(filterRequestsByDoctor(doctorUid, null));
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(filterRequestsByDoctor(doctorUid, null));
             return;
         }
 

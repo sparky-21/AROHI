@@ -5,14 +5,19 @@ import android.content.SharedPreferences;
 
 import com.arohi.healthcare.models.AdminProfile;
 import com.arohi.healthcare.models.AppNotification;
+import com.arohi.healthcare.models.Appointment;
+import com.arohi.healthcare.models.CalendarEvent;
 import com.arohi.healthcare.models.ChatMessage;
 import com.arohi.healthcare.models.ConsultationRequest;
 import com.arohi.healthcare.models.ConversationThread;
+import com.arohi.healthcare.models.DigitalPrescription;
 import com.arohi.healthcare.models.DoctorPatientConnection;
 import com.arohi.healthcare.models.DoctorProfile;
 import com.arohi.healthcare.models.HospitalAnnouncement;
+import com.arohi.healthcare.models.LaboratoryRequest;
 import com.arohi.healthcare.models.NurseProfile;
 import com.arohi.healthcare.models.PatientProfile;
+import com.arohi.healthcare.models.PrescriptionMedicine;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
@@ -60,6 +65,10 @@ public class SessionManager {
     private static final String KEY_MESSAGES_PREFIX = "registry_messages_";
     private static final String KEY_NOTIFICATIONS_REGISTRY_JSON = "registry_notifications_json";
     private static final String KEY_ANNOUNCEMENTS_REGISTRY_JSON = "registry_announcements_json";
+    private static final String KEY_APPOINTMENTS_REGISTRY_JSON = "registry_appointments_json";
+    private static final String KEY_PRESCRIPTIONS_REGISTRY_JSON = "registry_prescriptions_json";
+    private static final String KEY_LAB_REQUESTS_REGISTRY_JSON = "registry_lab_requests_json";
+    private static final String KEY_CALENDAR_EVENTS_REGISTRY_JSON = "registry_calendar_events_json";
 
     private final SharedPreferences prefs;
 
@@ -278,6 +287,14 @@ public class SessionManager {
         } catch (JSONException ignored) {
         }
         return list;
+    }
+
+    public void updateAccountVerificationInRegistry(UserAccount account, VerificationStatus newStatus) {
+        if (account == null || account.getUid() == null || newStatus == null) return;
+        account.setVerificationStatus(newStatus.getKey());
+        account.setUpdatedAt(System.currentTimeMillis());
+        upsertAccountInRegistry(account);
+        updateAccountVerificationInRegistry(account.getUid(), newStatus);
     }
 
     public void updateAccountVerificationInRegistry(String uid, VerificationStatus newStatus) {
@@ -1014,6 +1031,399 @@ public class SessionManager {
         } catch (JSONException ignored) {
         }
         return list;
+    }
+
+    // =========================================================================
+    // 7. PHASE 4: APPOINTMENTS LOCAL PERSISTENCE
+    // =========================================================================
+    public void saveAppointmentLocal(Appointment a) {
+        if (a == null || a.getAppointmentId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_APPOINTMENTS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("appointmentId", a.getAppointmentId());
+            o.put("patientUid", nonNull(a.getPatientUid()));
+            o.put("patientId", nonNull(a.getPatientId()));
+            o.put("patientName", nonNull(a.getPatientName()));
+            o.put("patientPhone", nonNull(a.getPatientPhone()));
+            o.put("patientBloodGroup", nonNull(a.getPatientBloodGroup()));
+            o.put("doctorUid", nonNull(a.getDoctorUid()));
+            o.put("doctorId", nonNull(a.getDoctorId()));
+            o.put("doctorName", nonNull(a.getDoctorName()));
+            o.put("doctorSpecialty", nonNull(a.getDoctorSpecialty()));
+            o.put("consultationFee", a.getConsultationFee());
+            o.put("appointmentDate", nonNull(a.getAppointmentDate()));
+            o.put("appointmentTime", nonNull(a.getAppointmentTime()));
+            o.put("consultationType", nonNull(a.getConsultationType()));
+            o.put("reason", nonNull(a.getReason()));
+            o.put("patientNotes", nonNull(a.getPatientNotes()));
+            o.put("doctorNotes", nonNull(a.getDoctorNotes()));
+            o.put("cancellationReason", nonNull(a.getCancellationReason()));
+            o.put("status", nonNull(a.getStatus()));
+            o.put("scheduledTimestamp", a.getScheduledTimestamp());
+            o.put("createdAt", a.getCreatedAt());
+            o.put("updatedAt", a.getUpdatedAt());
+            root.put(a.getAppointmentId(), o);
+            prefs.edit().putString(KEY_APPOINTMENTS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public Appointment getAppointmentLocal(String appointmentId) {
+        if (appointmentId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_APPOINTMENTS_REGISTRY_JSON);
+            if (!root.has(appointmentId)) return null;
+            return parseAppointment(root.getJSONObject(appointmentId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<Appointment> getAllAppointmentsLocal() {
+        List<Appointment> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_APPOINTMENTS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                Appointment a = parseAppointment(root.getJSONObject(k));
+                if (a != null) list.add(a);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private Appointment parseAppointment(JSONObject o) {
+        Appointment a = new Appointment();
+        a.setAppointmentId(o.optString("appointmentId", ""));
+        a.setPatientUid(o.optString("patientUid", ""));
+        a.setPatientId(o.optString("patientId", ""));
+        a.setPatientName(o.optString("patientName", ""));
+        a.setPatientPhone(o.optString("patientPhone", ""));
+        a.setPatientBloodGroup(o.optString("patientBloodGroup", ""));
+        a.setDoctorUid(o.optString("doctorUid", ""));
+        a.setDoctorId(o.optString("doctorId", ""));
+        a.setDoctorName(o.optString("doctorName", ""));
+        a.setDoctorSpecialty(o.optString("doctorSpecialty", ""));
+        a.setConsultationFee(o.optDouble("consultationFee", 0.0));
+        a.setAppointmentDate(o.optString("appointmentDate", ""));
+        a.setAppointmentTime(o.optString("appointmentTime", ""));
+        a.setConsultationType(o.optString("consultationType", Appointment.TYPE_IN_PERSON));
+        a.setReason(o.optString("reason", ""));
+        a.setPatientNotes(o.optString("patientNotes", ""));
+        a.setDoctorNotes(o.optString("doctorNotes", ""));
+        a.setCancellationReason(o.optString("cancellationReason", ""));
+        a.setStatus(o.optString("status", Appointment.STATUS_PENDING));
+        a.setScheduledTimestamp(o.optLong("scheduledTimestamp", 0));
+        a.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        a.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        return a;
+    }
+
+    // =========================================================================
+    // 8. PHASE 4: DIGITAL PRESCRIPTIONS LOCAL PERSISTENCE
+    // =========================================================================
+    public void savePrescriptionLocal(DigitalPrescription p) {
+        if (p == null || p.getPrescriptionId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_PRESCRIPTIONS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("prescriptionId", p.getPrescriptionId());
+            o.put("appointmentId", nonNull(p.getAppointmentId()));
+            o.put("patientUid", nonNull(p.getPatientUid()));
+            o.put("patientId", nonNull(p.getPatientId()));
+            o.put("patientName", nonNull(p.getPatientName()));
+            o.put("patientAgeOrDob", nonNull(p.getPatientAgeOrDob()));
+            o.put("patientGender", nonNull(p.getPatientGender()));
+            o.put("patientBloodGroup", nonNull(p.getPatientBloodGroup()));
+            o.put("doctorUid", nonNull(p.getDoctorUid()));
+            o.put("doctorId", nonNull(p.getDoctorId()));
+            o.put("doctorName", nonNull(p.getDoctorName()));
+            o.put("doctorSpecialty", nonNull(p.getDoctorSpecialty()));
+            o.put("doctorLicense", nonNull(p.getDoctorLicense()));
+            o.put("doctorDepartment", nonNull(p.getDoctorDepartment()));
+            o.put("diagnosis", nonNull(p.getDiagnosis()));
+            o.put("clinicalObservations", nonNull(p.getClinicalObservations()));
+            o.put("adviceInstructions", nonNull(p.getAdviceInstructions()));
+            o.put("followUpDate", nonNull(p.getFollowUpDate()));
+            o.put("createdAt", p.getCreatedAt());
+            o.put("updatedAt", p.getUpdatedAt());
+
+            JSONArray medsArr = new JSONArray();
+            if (p.getMedicines() != null) {
+                for (PrescriptionMedicine m : p.getMedicines()) {
+                    if (m == null) continue;
+                    JSONObject mo = new JSONObject();
+                    mo.put("medicineName", nonNull(m.getMedicineName()));
+                    mo.put("dosage", nonNull(m.getDosage()));
+                    mo.put("frequency", nonNull(m.getFrequency()));
+                    mo.put("duration", nonNull(m.getDuration()));
+                    mo.put("mealInstruction", nonNull(m.getMealInstruction()));
+                    mo.put("instructions", nonNull(m.getInstructions()));
+                    medsArr.put(mo);
+                }
+            }
+            o.put("medicines", medsArr);
+
+            root.put(p.getPrescriptionId(), o);
+            prefs.edit().putString(KEY_PRESCRIPTIONS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public DigitalPrescription getPrescriptionLocal(String prescriptionId) {
+        if (prescriptionId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_PRESCRIPTIONS_REGISTRY_JSON);
+            if (!root.has(prescriptionId)) return null;
+            return parsePrescription(root.getJSONObject(prescriptionId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<DigitalPrescription> getAllPrescriptionsLocal() {
+        List<DigitalPrescription> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_PRESCRIPTIONS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                DigitalPrescription p = parsePrescription(root.getJSONObject(k));
+                if (p != null) list.add(p);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private DigitalPrescription parsePrescription(JSONObject o) {
+        DigitalPrescription p = new DigitalPrescription();
+        p.setPrescriptionId(o.optString("prescriptionId", ""));
+        p.setAppointmentId(o.optString("appointmentId", ""));
+        p.setPatientUid(o.optString("patientUid", ""));
+        p.setPatientId(o.optString("patientId", ""));
+        p.setPatientName(o.optString("patientName", ""));
+        p.setPatientAgeOrDob(o.optString("patientAgeOrDob", ""));
+        p.setPatientGender(o.optString("patientGender", ""));
+        p.setPatientBloodGroup(o.optString("patientBloodGroup", ""));
+        p.setDoctorUid(o.optString("doctorUid", ""));
+        p.setDoctorId(o.optString("doctorId", ""));
+        p.setDoctorName(o.optString("doctorName", ""));
+        p.setDoctorSpecialty(o.optString("doctorSpecialty", ""));
+        p.setDoctorLicense(o.optString("doctorLicense", ""));
+        p.setDoctorDepartment(o.optString("doctorDepartment", ""));
+        p.setDiagnosis(o.optString("diagnosis", ""));
+        p.setClinicalObservations(o.optString("clinicalObservations", ""));
+        p.setAdviceInstructions(o.optString("adviceInstructions", ""));
+        p.setFollowUpDate(o.optString("followUpDate", ""));
+        p.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        p.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+
+        JSONArray medsArr = o.optJSONArray("medicines");
+        List<PrescriptionMedicine> meds = new ArrayList<>();
+        if (medsArr != null) {
+            for (int i = 0; i < medsArr.length(); i++) {
+                JSONObject mo = medsArr.optJSONObject(i);
+                if (mo != null) {
+                    PrescriptionMedicine m = new PrescriptionMedicine(
+                            mo.optString("medicineName", ""),
+                            mo.optString("dosage", ""),
+                            mo.optString("frequency", ""),
+                            mo.optString("duration", ""),
+                            mo.optString("mealInstruction", "After Meal"),
+                            mo.optString("instructions", "")
+                    );
+                    meds.add(m);
+                }
+            }
+        }
+        p.setMedicines(meds);
+        return p;
+    }
+
+    // =========================================================================
+    // 9. PHASE 4: LABORATORY REQUESTS LOCAL PERSISTENCE
+    // =========================================================================
+    public void saveLabRequestLocal(LaboratoryRequest r) {
+        if (r == null || r.getRequestId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_LAB_REQUESTS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("requestId", r.getRequestId());
+            o.put("appointmentId", nonNull(r.getAppointmentId()));
+            o.put("patientUid", nonNull(r.getPatientUid()));
+            o.put("patientId", nonNull(r.getPatientId()));
+            o.put("patientName", nonNull(r.getPatientName()));
+            o.put("patientPhone", nonNull(r.getPatientPhone()));
+            o.put("patientBloodGroup", nonNull(r.getPatientBloodGroup()));
+            o.put("doctorUid", nonNull(r.getDoctorUid()));
+            o.put("doctorId", nonNull(r.getDoctorId()));
+            o.put("doctorName", nonNull(r.getDoctorName()));
+            o.put("doctorSpecialty", nonNull(r.getDoctorSpecialty()));
+            o.put("testName", nonNull(r.getTestName()));
+            o.put("testCategory", nonNull(r.getTestCategory()));
+            o.put("clinicalIndication", nonNull(r.getClinicalIndication()));
+            o.put("urgency", nonNull(r.getUrgency()));
+            o.put("status", nonNull(r.getStatus()));
+            o.put("reportFileUrl", nonNull(r.getReportFileUrl()));
+            o.put("reportFileName", nonNull(r.getReportFileName()));
+            o.put("reportFileType", nonNull(r.getReportFileType()));
+            o.put("reportFindingsSummary", nonNull(r.getReportFindingsSummary()));
+            o.put("reportUploadedAt", r.getReportUploadedAt());
+            o.put("doctorReviewNotes", nonNull(r.getDoctorReviewNotes()));
+            o.put("doctorReviewedAt", r.getDoctorReviewedAt());
+            o.put("createdAt", r.getCreatedAt());
+            o.put("updatedAt", r.getUpdatedAt());
+            root.put(r.getRequestId(), o);
+            prefs.edit().putString(KEY_LAB_REQUESTS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public LaboratoryRequest getLabRequestLocal(String requestId) {
+        if (requestId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_LAB_REQUESTS_REGISTRY_JSON);
+            if (!root.has(requestId)) return null;
+            return parseLabRequest(root.getJSONObject(requestId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<LaboratoryRequest> getAllLabRequestsLocal() {
+        List<LaboratoryRequest> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_LAB_REQUESTS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                LaboratoryRequest r = parseLabRequest(root.getJSONObject(k));
+                if (r != null) list.add(r);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private LaboratoryRequest parseLabRequest(JSONObject o) {
+        LaboratoryRequest r = new LaboratoryRequest();
+        r.setRequestId(o.optString("requestId", ""));
+        r.setAppointmentId(o.optString("appointmentId", ""));
+        r.setPatientUid(o.optString("patientUid", ""));
+        r.setPatientId(o.optString("patientId", ""));
+        r.setPatientName(o.optString("patientName", ""));
+        r.setPatientPhone(o.optString("patientPhone", ""));
+        r.setPatientBloodGroup(o.optString("patientBloodGroup", ""));
+        r.setDoctorUid(o.optString("doctorUid", ""));
+        r.setDoctorId(o.optString("doctorId", ""));
+        r.setDoctorName(o.optString("doctorName", ""));
+        r.setDoctorSpecialty(o.optString("doctorSpecialty", ""));
+        r.setTestName(o.optString("testName", ""));
+        r.setTestCategory(o.optString("testCategory", ""));
+        r.setClinicalIndication(o.optString("clinicalIndication", ""));
+        r.setUrgency(o.optString("urgency", LaboratoryRequest.URGENCY_ROUTINE));
+        r.setStatus(o.optString("status", LaboratoryRequest.STATUS_REQUESTED));
+        r.setReportFileUrl(o.optString("reportFileUrl", ""));
+        r.setReportFileName(o.optString("reportFileName", ""));
+        r.setReportFileType(o.optString("reportFileType", "PDF"));
+        r.setReportFindingsSummary(o.optString("reportFindingsSummary", ""));
+        r.setReportUploadedAt(o.optLong("reportUploadedAt", 0));
+        r.setDoctorReviewNotes(o.optString("doctorReviewNotes", ""));
+        r.setDoctorReviewedAt(o.optLong("doctorReviewedAt", 0));
+        r.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        r.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        return r;
+    }
+
+    // =========================================================================
+    // 10. PHASE 4: UNIFIED CALENDAR EVENTS LOCAL PERSISTENCE
+    // =========================================================================
+    public void saveCalendarEventLocal(CalendarEvent e) {
+        if (e == null || e.getEventId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_CALENDAR_EVENTS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("eventId", e.getEventId());
+            o.put("title", nonNull(e.getTitle()));
+            o.put("description", nonNull(e.getDescription()));
+            o.put("eventType", nonNull(e.getEventType()));
+            o.put("eventDate", nonNull(e.getEventDate()));
+            o.put("eventTime", nonNull(e.getEventTime()));
+            o.put("timestamp", e.getTimestamp());
+            o.put("patientUid", nonNull(e.getPatientUid()));
+            o.put("patientName", nonNull(e.getPatientName()));
+            o.put("patientId", nonNull(e.getPatientId()));
+            o.put("doctorUid", nonNull(e.getDoctorUid()));
+            o.put("doctorName", nonNull(e.getDoctorName()));
+            o.put("doctorId", nonNull(e.getDoctorId()));
+            o.put("nurseUid", nonNull(e.getNurseUid()));
+            o.put("nurseName", nonNull(e.getNurseName()));
+            o.put("departmentOrLocation", nonNull(e.getDepartmentOrLocation()));
+            o.put("status", nonNull(e.getStatus()));
+            o.put("referenceId", nonNull(e.getReferenceId()));
+            o.put("roleVisibility", nonNull(e.getRoleVisibility()));
+            o.put("createdAt", e.getCreatedAt());
+            o.put("updatedAt", e.getUpdatedAt());
+            root.put(e.getEventId(), o);
+            prefs.edit().putString(KEY_CALENDAR_EVENTS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public CalendarEvent getCalendarEventLocal(String eventId) {
+        if (eventId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_CALENDAR_EVENTS_REGISTRY_JSON);
+            if (!root.has(eventId)) return null;
+            return parseCalendarEvent(root.getJSONObject(eventId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<CalendarEvent> getAllCalendarEventsLocal() {
+        List<CalendarEvent> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_CALENDAR_EVENTS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                CalendarEvent e = parseCalendarEvent(root.getJSONObject(k));
+                if (e != null) list.add(e);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private CalendarEvent parseCalendarEvent(JSONObject o) {
+        CalendarEvent e = new CalendarEvent();
+        e.setEventId(o.optString("eventId", ""));
+        e.setTitle(o.optString("title", ""));
+        e.setDescription(o.optString("description", ""));
+        e.setEventType(o.optString("eventType", CalendarEvent.TYPE_APPOINTMENT));
+        e.setEventDate(o.optString("eventDate", ""));
+        e.setEventTime(o.optString("eventTime", ""));
+        e.setTimestamp(o.optLong("timestamp", System.currentTimeMillis()));
+        e.setPatientUid(o.optString("patientUid", ""));
+        e.setPatientName(o.optString("patientName", ""));
+        e.setPatientId(o.optString("patientId", ""));
+        e.setDoctorUid(o.optString("doctorUid", ""));
+        e.setDoctorName(o.optString("doctorName", ""));
+        e.setDoctorId(o.optString("doctorId", ""));
+        e.setNurseUid(o.optString("nurseUid", ""));
+        e.setNurseName(o.optString("nurseName", ""));
+        e.setDepartmentOrLocation(o.optString("departmentOrLocation", ""));
+        e.setStatus(o.optString("status", CalendarEvent.STATUS_SCHEDULED));
+        e.setReferenceId(o.optString("referenceId", ""));
+        e.setRoleVisibility(o.optString("roleVisibility", "ALL"));
+        e.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        e.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        return e;
     }
 
     private JSONObject getJsonObject(String key) {

@@ -21,5 +21,15 @@ service firebase.storage {
         && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024;
     }
+
+    // Diagnostic laboratory reports (PDF / images)
+    match /laboratory_reports/{patientUid}/{fileName} {
+      allow read: if isSignedIn()
+        && (request.auth.uid == patientUid
+            || exists(/databases/(default)/documents/connections/$(request.auth.uid + '_' + patientUid))
+            || exists(/databases/(default)/documents/connections/$(patientUid + '_' + request.auth.uid)));
+      allow write: if isSignedIn()
+        && request.resource.size < 15 * 1024 * 1024;
+    }
   }
 }

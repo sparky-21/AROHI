@@ -170,6 +170,28 @@ public class NurseDashboardFragment extends Fragment {
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && sessionManager != null) {
+            UserAccount account = sessionManager.getCurrentSessionAccount();
+            if (account != null) {
+                loadNurseProfileAndMetrics(account.getUid());
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sessionManager != null) {
+            UserAccount account = sessionManager.getCurrentSessionAccount();
+            if (account != null) {
+                loadNurseProfileAndMetrics(account.getUid());
+            }
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;

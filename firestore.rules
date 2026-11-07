@@ -169,16 +169,100 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // =========================================================================
+    // PHASE 4: APPOINTMENTS, PRESCRIPTIONS, LABORATORY & CALENDAR
+    // =========================================================================
     match /appointments/{docId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create: if isSignedIn()
+        && (request.resource.data.patientUid == request.auth.uid
+            || request.resource.data.doctorUid == request.auth.uid);
+
+      allow update: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow delete: if isAdmin();
     }
 
     match /prescriptions/{docId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create: if isSignedIn()
+        && request.resource.data.doctorUid == request.auth.uid;
+
+      allow update: if isSignedIn()
+        && (resource.data.doctorUid == request.auth.uid || isAdmin());
+
+      allow delete: if isAdmin();
+    }
+
+    match /laboratoryRequests/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create: if isSignedIn()
+        && request.resource.data.doctorUid == request.auth.uid;
+
+      allow update: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow delete: if isAdmin();
     }
 
     match /laboratoryReports/{docId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create, update: if isSignedIn()
+        && (request.resource.data.patientUid == request.auth.uid
+            || request.resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow delete: if isAdmin();
+    }
+
+    match /calendarEvents/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || resource.data.nurseUid == request.auth.uid
+            || isAdmin());
+
+      allow create, update: if isSignedIn()
+        && (request.resource.data.patientUid == request.auth.uid
+            || request.resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow delete: if isAdmin();
+    }
+
+    match /medicalRecords/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create, update: if isSignedIn()
+        && (request.resource.data.patientUid == request.auth.uid
+            || request.resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow delete: if isAdmin();
     }
 
     match /operations/{docId} {

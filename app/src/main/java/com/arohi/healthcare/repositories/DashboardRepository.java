@@ -3,19 +3,25 @@ package com.arohi.healthcare.repositories;
 import android.content.Context;
 import com.arohi.healthcare.database.FirestoreCollections;
 import com.arohi.healthcare.models.AppNotification;
+import com.arohi.healthcare.models.Appointment;
 import com.arohi.healthcare.models.ConsultationRequest;
 import com.arohi.healthcare.models.DashboardMetrics;
+import com.arohi.healthcare.models.DigitalPrescription;
 import com.arohi.healthcare.models.DoctorPatientConnection;
 import com.arohi.healthcare.models.HospitalAnnouncement;
+import com.arohi.healthcare.models.LaboratoryRequest;
 import com.arohi.healthcare.models.NurseProfile;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.services.FirebaseProvider;
 import com.arohi.healthcare.utils.SessionManager;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
@@ -59,6 +65,31 @@ public class DashboardRepository {
         }
         metrics.setConnectedDoctorsCount(localAcceptedDocs);
 
+        int localAppts = 0;
+        for (Appointment a : sessionManager.getAllAppointmentsLocal()) {
+            if (patientUid.equals(a.getPatientUid()) && a.isActive()) {
+                localAppts++;
+            }
+        }
+        metrics.setUpcomingAppointmentsCount(localAppts);
+
+        int localRx = 0;
+        for (DigitalPrescription rx : sessionManager.getAllPrescriptionsLocal()) {
+            if (patientUid.equals(rx.getPatientUid())) {
+                localRx++;
+            }
+        }
+        metrics.setRecentPrescriptionsCount(localRx);
+        metrics.setActiveMedicationsCount(localRx);
+
+        int localReports = 0;
+        for (LaboratoryRequest lab : sessionManager.getAllLabRequestsLocal()) {
+            if (patientUid.equals(lab.getPatientUid())) {
+                localReports++;
+            }
+        }
+        metrics.setPendingReportsCount(localReports);
+
         int localUnread = 0;
         for (AppNotification n : sessionManager.getNotificationsForRecipientLocal(patientUid)) {
             if (!n.isRead()) {
@@ -68,69 +99,75 @@ public class DashboardRepository {
         metrics.setUnreadNotificationsCount(localUnread);
         applyLocalAnnouncementsToMetrics(metrics);
 
+        // INSTANT RENDER (0 ms): Serve cached local state immediately to the UI
+        callback.onSuccess(metrics);
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(metrics);
             return;
         }
 
         final int fallbackDocs = localAcceptedDocs;
+        final int fallbackAppts = localAppts;
+        final int fallbackRx = localRx;
+        final int fallbackReports = localReports;
         final int fallbackUnread = localUnread;
 
-        db.collection(FirestoreCollections.APPOINTMENTS)
-                .whereEqualTo("patientUid", patientUid)
-                .get()
-                .addOnSuccessListener(appointmentsSnap -> {
-                    metrics.setUpcomingAppointmentsCount(appointmentsSnap.size());
+        // PARALLEL EXECUTION: Launch all Firestore queries concurrently
+        Task<QuerySnapshot> apptTask = db.collection(FirestoreCollections.APPOINTMENTS)
+                .whereEqualTo("patientUid", patientUid).get();
+        Task<QuerySnapshot> rxTask = db.collection(FirestoreCollections.PRESCRIPTIONS)
+                .whereEqualTo("patientUid", patientUid).get();
+        Task<QuerySnapshot> labTask = db.collection(FirestoreCollections.LABORATORY_REQUESTS)
+                .whereEqualTo("patientUid", patientUid).get();
+        Task<QuerySnapshot> connTask = db.collection(FirestoreCollections.CONNECTIONS)
+                .whereEqualTo("patientUid", patientUid).get();
+        Task<QuerySnapshot> notifTask = db.collection(FirestoreCollections.NOTIFICATIONS)
+                .whereEqualTo("recipientUid", patientUid).get();
+        Task<QuerySnapshot> postTask = db.collection(FirestoreCollections.COMMUNITY_POSTS)
+                .orderBy("createdAt", Query.Direction.DESCENDING).limit(1).get();
 
-                    db.collection(FirestoreCollections.PRESCRIPTIONS)
-                            .whereEqualTo("patientUid", patientUid)
-                            .get()
-                            .addOnSuccessListener(prescriptionsSnap -> {
-                                metrics.setRecentPrescriptionsCount(prescriptionsSnap.size());
-                                metrics.setActiveMedicationsCount(prescriptionsSnap.size());
-
-                                db.collection(FirestoreCollections.LABORATORY_REPORTS)
-                                        .whereEqualTo("patientUid", patientUid)
-                                        .get()
-                                        .addOnSuccessListener(reportsSnap -> {
-                                            metrics.setPendingReportsCount(reportsSnap.size());
-
-                                            db.collection(FirestoreCollections.CONNECTIONS)
-                                                    .whereEqualTo("patientUid", patientUid)
-                                                    .get()
-                                                    .addOnSuccessListener(connSnap -> {
-                                                        int acceptedCount = 0;
-                                                        for (DocumentSnapshot d : connSnap.getDocuments()) {
-                                                            if ("Accepted".equalsIgnoreCase(d.getString("status"))) {
-                                                                acceptedCount++;
-                                                            }
-                                                        }
-                                                        metrics.setConnectedDoctorsCount(Math.max(acceptedCount, fallbackDocs));
-
-                                                        db.collection(FirestoreCollections.NOTIFICATIONS)
-                                                                .whereEqualTo("recipientUid", patientUid)
-                                                                .get()
-                                                                .addOnSuccessListener(notifSnap -> {
-                                                                    int unread = 0;
-                                                                    for (DocumentSnapshot nd : notifSnap.getDocuments()) {
-                                                                        Boolean r = nd.getBoolean("read");
-                                                                        if (r == null || !r) {
-                                                                            unread++;
-                                                                        }
-                                                                    }
-                                                                    metrics.setUnreadNotificationsCount(Math.max(unread, fallbackUnread));
-                                                                    loadLatestAnnouncementIntoMetrics(db, metrics, callback);
-                                                                })
-                                                                .addOnFailureListener(e -> loadLatestAnnouncementIntoMetrics(db, metrics, callback));
-                                                    })
-                                                    .addOnFailureListener(e -> callback.onSuccess(metrics));
-                                        })
-                                        .addOnFailureListener(e -> callback.onSuccess(metrics));
-                            })
-                            .addOnFailureListener(e -> callback.onSuccess(metrics));
+        Tasks.whenAllComplete(apptTask, rxTask, labTask, connTask, notifTask, postTask)
+                .addOnSuccessListener(tasks -> {
+                    if (apptTask.isSuccessful() && apptTask.getResult() != null) {
+                        metrics.setUpcomingAppointmentsCount(Math.max(apptTask.getResult().size(), fallbackAppts));
+                    }
+                    if (rxTask.isSuccessful() && rxTask.getResult() != null) {
+                        metrics.setRecentPrescriptionsCount(Math.max(rxTask.getResult().size(), fallbackRx));
+                        metrics.setActiveMedicationsCount(Math.max(rxTask.getResult().size(), fallbackRx));
+                    }
+                    if (labTask.isSuccessful() && labTask.getResult() != null) {
+                        metrics.setPendingReportsCount(Math.max(labTask.getResult().size(), fallbackReports));
+                    }
+                    if (connTask.isSuccessful() && connTask.getResult() != null) {
+                        int acceptedCount = 0;
+                        for (DocumentSnapshot d : connTask.getResult().getDocuments()) {
+                            if ("Accepted".equalsIgnoreCase(d.getString("status"))) {
+                                acceptedCount++;
+                            }
+                        }
+                        metrics.setConnectedDoctorsCount(Math.max(acceptedCount, fallbackDocs));
+                    }
+                    if (notifTask.isSuccessful() && notifTask.getResult() != null) {
+                        int unread = 0;
+                        for (DocumentSnapshot nd : notifTask.getResult().getDocuments()) {
+                            Boolean r = nd.getBoolean("read");
+                            if (r == null || !r) {
+                                unread++;
+                            }
+                        }
+                        metrics.setUnreadNotificationsCount(Math.max(unread, fallbackUnread));
+                    }
+                    if (postTask.isSuccessful() && postTask.getResult() != null && !postTask.getResult().isEmpty()) {
+                        DocumentSnapshot latest = postTask.getResult().getDocuments().get(0);
+                        metrics.setLatestAnnouncementTitle(latest.getString("title"));
+                        metrics.setLatestAnnouncementBody(latest.getString("content"));
+                    }
+                    callback.onSuccess(metrics);
                 })
-                .addOnFailureListener(e -> callback.onSuccess(metrics));
+                .addOnFailureListener(e -> {
+                    // Local state already rendered
+                });
     }
 
     // =========================================================================
@@ -158,61 +195,92 @@ public class DashboardRepository {
             }
         }
         metrics.setAcceptedPatientsCount(localAcceptedPats);
+
+        int localTodayAppts = 0;
+        for (Appointment a : sessionManager.getAllAppointmentsLocal()) {
+            if (doctorUid.equals(a.getDoctorUid()) && a.isActive()) {
+                localTodayAppts++;
+            }
+        }
+        metrics.setTodayAppointmentsCount(localTodayAppts);
+
+        int localPendingReports = 0;
+        for (LaboratoryRequest lab : sessionManager.getAllLabRequestsLocal()) {
+            if (doctorUid.equals(lab.getDoctorUid()) && lab.isReportReady() && !lab.isReviewed()) {
+                localPendingReports++;
+            }
+        }
+        metrics.setPendingReportReviewsCount(localPendingReports);
+
+        int localFollowUps = 0;
+        for (DigitalPrescription rx : sessionManager.getAllPrescriptionsLocal()) {
+            if (doctorUid.equals(rx.getDoctorUid()) && rx.getFollowUpDate() != null && !rx.getFollowUpDate().isEmpty()) {
+                localFollowUps++;
+            }
+        }
+        metrics.setFollowUpRemindersCount(localFollowUps);
+
         applyLocalAnnouncementsToMetrics(metrics);
+
+        // INSTANT RENDER (0 ms): Serve cached local state immediately
+        callback.onSuccess(metrics);
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(metrics);
             return;
         }
 
         final int fallbackPending = localPendingReqs;
         final int fallbackAccepted = localAcceptedPats;
+        final int fallbackTodayAppts = localTodayAppts;
 
-        db.collection(FirestoreCollections.APPOINTMENTS)
-                .whereEqualTo("doctorUid", doctorUid)
-                .get()
-                .addOnSuccessListener(apptSnap -> {
-                    metrics.setTodayAppointmentsCount(apptSnap.size());
+        Task<QuerySnapshot> apptTask = db.collection(FirestoreCollections.APPOINTMENTS)
+                .whereEqualTo("doctorUid", doctorUid).get();
+        Task<QuerySnapshot> reqTask = db.collection(FirestoreCollections.DOCTOR_REQUESTS)
+                .whereEqualTo("doctorUid", doctorUid).get();
+        Task<QuerySnapshot> connTask = db.collection(FirestoreCollections.CONNECTIONS)
+                .whereEqualTo("doctorUid", doctorUid).get();
+        Task<QuerySnapshot> opTask = db.collection(FirestoreCollections.OPERATIONS)
+                .whereEqualTo("doctorUid", doctorUid).get();
+        Task<QuerySnapshot> postTask = db.collection(FirestoreCollections.COMMUNITY_POSTS)
+                .orderBy("createdAt", Query.Direction.DESCENDING).limit(1).get();
 
-                    db.collection(FirestoreCollections.DOCTOR_REQUESTS)
-                            .whereEqualTo("doctorUid", doctorUid)
-                            .get()
-                            .addOnSuccessListener(reqSnap -> {
-                                int pendingReqs = 0;
-                                for (DocumentSnapshot d : reqSnap.getDocuments()) {
-                                    if ("Pending".equalsIgnoreCase(d.getString("status"))) {
-                                        pendingReqs++;
-                                    }
-                                }
-                                metrics.setPendingRequestsCount(Math.max(pendingReqs, fallbackPending));
-
-                                db.collection(FirestoreCollections.CONNECTIONS)
-                                        .whereEqualTo("doctorUid", doctorUid)
-                                        .get()
-                                        .addOnSuccessListener(connSnap -> {
-                                            int acceptedCount = 0;
-                                            for (DocumentSnapshot cd : connSnap.getDocuments()) {
-                                                if ("Accepted".equalsIgnoreCase(cd.getString("status"))) {
-                                                    acceptedCount++;
-                                                }
-                                            }
-                                            metrics.setAcceptedPatientsCount(Math.max(acceptedCount, fallbackAccepted));
-
-                                            db.collection(FirestoreCollections.OPERATIONS)
-                                                    .whereEqualTo("doctorUid", doctorUid)
-                                                    .get()
-                                                    .addOnSuccessListener(opSnap -> {
-                                                        metrics.setUpcomingOperationsCount(opSnap.size());
-                                                        loadLatestAnnouncementIntoMetrics(db, metrics, callback);
-                                                    })
-                                                    .addOnFailureListener(e -> callback.onSuccess(metrics));
-                                        })
-                                        .addOnFailureListener(e -> callback.onSuccess(metrics));
-                            })
-                            .addOnFailureListener(e -> callback.onSuccess(metrics));
+        Tasks.whenAllComplete(apptTask, reqTask, connTask, opTask, postTask)
+                .addOnSuccessListener(tasks -> {
+                    if (apptTask.isSuccessful() && apptTask.getResult() != null) {
+                        metrics.setTodayAppointmentsCount(Math.max(apptTask.getResult().size(), fallbackTodayAppts));
+                    }
+                    if (reqTask.isSuccessful() && reqTask.getResult() != null) {
+                        int pendingReqs = 0;
+                        for (DocumentSnapshot d : reqTask.getResult().getDocuments()) {
+                            if ("Pending".equalsIgnoreCase(d.getString("status"))) {
+                                pendingReqs++;
+                            }
+                        }
+                        metrics.setPendingRequestsCount(Math.max(pendingReqs, fallbackPending));
+                    }
+                    if (connTask.isSuccessful() && connTask.getResult() != null) {
+                        int acceptedCount = 0;
+                        for (DocumentSnapshot cd : connTask.getResult().getDocuments()) {
+                            if ("Accepted".equalsIgnoreCase(cd.getString("status"))) {
+                                acceptedCount++;
+                            }
+                        }
+                        metrics.setAcceptedPatientsCount(Math.max(acceptedCount, fallbackAccepted));
+                    }
+                    if (opTask.isSuccessful() && opTask.getResult() != null) {
+                        metrics.setUpcomingOperationsCount(opTask.getResult().size());
+                    }
+                    if (postTask.isSuccessful() && postTask.getResult() != null && !postTask.getResult().isEmpty()) {
+                        DocumentSnapshot latest = postTask.getResult().getDocuments().get(0);
+                        metrics.setLatestAnnouncementTitle(latest.getString("title"));
+                        metrics.setLatestAnnouncementBody(latest.getString("content"));
+                    }
+                    callback.onSuccess(metrics);
                 })
-                .addOnFailureListener(e -> callback.onSuccess(metrics));
+                .addOnFailureListener(e -> {
+                    // Local state already rendered
+                });
     }
 
     // =========================================================================
@@ -231,42 +299,52 @@ public class DashboardRepository {
         }
         applyLocalAnnouncementsToMetrics(metrics);
 
+        // INSTANT RENDER (0 ms): Serve cached local state immediately
+        callback.onSuccess(metrics);
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(metrics);
             return;
         }
 
-        db.collection(FirestoreCollections.NURSES).document(nurseUid).get()
-                .addOnSuccessListener(nurseDoc -> {
-                    if (nurseDoc.exists()) {
-                        NurseProfile profile = nurseDoc.toObject(NurseProfile.class);
+        Task<DocumentSnapshot> nurseDocTask = db.collection(FirestoreCollections.NURSES).document(nurseUid).get();
+        Task<QuerySnapshot> assignTask = db.collection(FirestoreCollections.NURSE_ASSIGNMENTS)
+                .whereEqualTo("nurseUid", nurseUid).get();
+        Task<QuerySnapshot> postTask = db.collection(FirestoreCollections.COMMUNITY_POSTS)
+                .orderBy("createdAt", Query.Direction.DESCENDING).limit(1).get();
+
+        Tasks.whenAllComplete(nurseDocTask, assignTask, postTask)
+                .addOnSuccessListener(tasks -> {
+                    if (nurseDocTask.isSuccessful() && nurseDocTask.getResult() != null && nurseDocTask.getResult().exists()) {
+                        NurseProfile profile = nurseDocTask.getResult().toObject(NurseProfile.class);
                         if (profile != null) {
                             sessionManager.saveNurseProfileLocal(profile);
                             applyNurseProfileToMetrics(profile, metrics);
                         }
                     }
-
-                    db.collection(FirestoreCollections.NURSE_ASSIGNMENTS)
-                            .whereEqualTo("nurseUid", nurseUid)
-                            .get()
-                            .addOnSuccessListener(assignSnap -> {
-                                int total = assignSnap.size();
-                                int completed = 0;
-                                for (DocumentSnapshot doc : assignSnap.getDocuments()) {
-                                    String status = doc.getString("status");
-                                    if ("COMPLETED".equalsIgnoreCase(status)) {
-                                        completed++;
-                                    }
-                                }
-                                metrics.setAssignedPatientsCount(total);
-                                metrics.setTodayTasksCount(total);
-                                metrics.setCompletedTasksCount(completed);
-                                loadLatestAnnouncementIntoMetrics(db, metrics, callback);
-                            })
-                            .addOnFailureListener(e -> callback.onSuccess(metrics));
+                    if (assignTask.isSuccessful() && assignTask.getResult() != null) {
+                        int total = assignTask.getResult().size();
+                        int completed = 0;
+                        for (DocumentSnapshot doc : assignTask.getResult().getDocuments()) {
+                            String status = doc.getString("status");
+                            if ("COMPLETED".equalsIgnoreCase(status)) {
+                                completed++;
+                            }
+                        }
+                        metrics.setAssignedPatientsCount(total);
+                        metrics.setTodayTasksCount(total);
+                        metrics.setCompletedTasksCount(completed);
+                    }
+                    if (postTask.isSuccessful() && postTask.getResult() != null && !postTask.getResult().isEmpty()) {
+                        DocumentSnapshot latest = postTask.getResult().getDocuments().get(0);
+                        metrics.setLatestAnnouncementTitle(latest.getString("title"));
+                        metrics.setLatestAnnouncementBody(latest.getString("content"));
+                    }
+                    callback.onSuccess(metrics);
                 })
-                .addOnFailureListener(e -> callback.onSuccess(metrics));
+                .addOnFailureListener(e -> {
+                    // Local state already rendered
+                });
     }
 
     private void applyNurseProfileToMetrics(NurseProfile profile, DashboardMetrics metrics) {
@@ -290,45 +368,54 @@ public class DashboardRepository {
         populateUserCountsIntoMetrics(sessionManager.getAllRegisteredAccounts(), metrics);
         applyLocalAnnouncementsToMetrics(metrics);
 
+        // INSTANT RENDER (0 ms): Serve cached local state immediately
+        callback.onSuccess(metrics);
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(metrics);
             return;
         }
 
-        db.collection(FirestoreCollections.USERS).get()
-                .addOnSuccessListener(usersSnap -> {
-                    List<UserAccount> mergedUsers = mergeFirestoreAndLocalUsers(usersSnap.getDocuments());
-                    populateUserCountsIntoMetrics(mergedUsers, metrics);
+        Task<QuerySnapshot> usersTask = db.collection(FirestoreCollections.USERS).get();
+        Task<QuerySnapshot> deptTask = db.collection(FirestoreCollections.HOSPITAL_DEPARTMENTS).get();
+        Task<QuerySnapshot> wardTask = db.collection(FirestoreCollections.WARDS).get();
+        Task<QuerySnapshot> bedTask = db.collection(FirestoreCollections.BEDS).get();
+        Task<QuerySnapshot> otTask = db.collection(FirestoreCollections.OPERATION_ROOMS).get();
+        Task<QuerySnapshot> opTask = db.collection(FirestoreCollections.OPERATIONS).get();
+        Task<QuerySnapshot> postTask = db.collection(FirestoreCollections.COMMUNITY_POSTS)
+                .orderBy("createdAt", Query.Direction.DESCENDING).limit(1).get();
 
-                    db.collection(FirestoreCollections.HOSPITAL_DEPARTMENTS).get()
-                            .addOnSuccessListener(deptSnap -> {
-                                metrics.setDepartmentsCount(deptSnap.size());
-                                db.collection(FirestoreCollections.WARDS).get()
-                                        .addOnSuccessListener(wardSnap -> {
-                                            metrics.setWardsCount(wardSnap.size());
-                                            db.collection(FirestoreCollections.BEDS).get()
-                                                    .addOnSuccessListener(bedSnap -> {
-                                                        metrics.setTotalBedsCount(bedSnap.size());
-                                                        db.collection(FirestoreCollections.OPERATION_ROOMS).get()
-                                                                .addOnSuccessListener(otSnap -> {
-                                                                    metrics.setOtRoomsCount(otSnap.size());
-                                                                    db.collection(FirestoreCollections.OPERATIONS).get()
-                                                                            .addOnSuccessListener(opSnap -> {
-                                                                                metrics.setScheduledSurgeriesCount(opSnap.size());
-                                                                                loadLatestAnnouncementIntoMetrics(db, metrics, callback);
-                                                                            })
-                                                                            .addOnFailureListener(e -> loadLatestAnnouncementIntoMetrics(db, metrics, callback));
-                                                                })
-                                                                .addOnFailureListener(e -> loadLatestAnnouncementIntoMetrics(db, metrics, callback));
-                                                    })
-                                                    .addOnFailureListener(e -> loadLatestAnnouncementIntoMetrics(db, metrics, callback));
-                                        })
-                                        .addOnFailureListener(e -> loadLatestAnnouncementIntoMetrics(db, metrics, callback));
-                            })
-                            .addOnFailureListener(e -> loadLatestAnnouncementIntoMetrics(db, metrics, callback));
+        Tasks.whenAllComplete(usersTask, deptTask, wardTask, bedTask, otTask, opTask, postTask)
+                .addOnSuccessListener(tasks -> {
+                    if (usersTask.isSuccessful() && usersTask.getResult() != null) {
+                        List<UserAccount> mergedUsers = mergeFirestoreAndLocalUsers(usersTask.getResult().getDocuments());
+                        populateUserCountsIntoMetrics(mergedUsers, metrics);
+                    }
+                    if (deptTask.isSuccessful() && deptTask.getResult() != null) {
+                        metrics.setDepartmentsCount(deptTask.getResult().size());
+                    }
+                    if (wardTask.isSuccessful() && wardTask.getResult() != null) {
+                        metrics.setWardsCount(wardTask.getResult().size());
+                    }
+                    if (bedTask.isSuccessful() && bedTask.getResult() != null) {
+                        metrics.setTotalBedsCount(bedTask.getResult().size());
+                    }
+                    if (otTask.isSuccessful() && otTask.getResult() != null) {
+                        metrics.setOtRoomsCount(otTask.getResult().size());
+                    }
+                    if (opTask.isSuccessful() && opTask.getResult() != null) {
+                        metrics.setScheduledSurgeriesCount(opTask.getResult().size());
+                    }
+                    if (postTask.isSuccessful() && postTask.getResult() != null && !postTask.getResult().isEmpty()) {
+                        DocumentSnapshot latest = postTask.getResult().getDocuments().get(0);
+                        metrics.setLatestAnnouncementTitle(latest.getString("title"));
+                        metrics.setLatestAnnouncementBody(latest.getString("content"));
+                    }
+                    callback.onSuccess(metrics);
                 })
-                .addOnFailureListener(e -> callback.onSuccess(metrics));
+                .addOnFailureListener(e -> {
+                    // Local state already rendered
+                });
     }
 
     private void populateUserCountsIntoMetrics(List<UserAccount> accounts, DashboardMetrics metrics) {
@@ -398,17 +485,50 @@ public class DashboardRepository {
 
         for (UserAccount remote : remoteByUid.values()) {
             UserAccount existingLocal = byUid.get(remote.getUid());
-            if (existingLocal != null && existingLocal.getUpdatedAt() > remote.getUpdatedAt()) {
-                remote.setVerificationStatus(existingLocal.getVerificationStatus());
-                if (db != null) {
+            boolean shouldUpdateRemoteInFirestore = false;
+            if (existingLocal != null) {
+                // If local account has an Admin decision (VERIFIED or REJECTED) while remote is still PENDING,
+                // NEVER let stale PENDING overwrite the Admin's explicit verification!
+                if (!VerificationStatus.PENDING.getKey().equalsIgnoreCase(existingLocal.getVerificationStatus())
+                        && VerificationStatus.PENDING.getKey().equalsIgnoreCase(remote.getVerificationStatus())) {
+                    remote.setVerificationStatus(existingLocal.getVerificationStatus());
+                    shouldUpdateRemoteInFirestore = true;
+                } else if (existingLocal.getUpdatedAt() > remote.getUpdatedAt()) {
+                    remote.setVerificationStatus(existingLocal.getVerificationStatus());
+                    shouldUpdateRemoteInFirestore = true;
+                }
+                if (shouldUpdateRemoteInFirestore && db != null) {
+                    Map<String, Object> update = new HashMap<>();
+                    update.put("verificationStatus", remote.getVerificationStatus());
+                    update.put("updatedAt", System.currentTimeMillis());
                     db.collection(FirestoreCollections.USERS).document(remote.getUid())
-                            .set(remote.toMap(), SetOptions.merge());
+                            .set(update, SetOptions.merge());
+                    String col = getRoleCollection(remote.getUserRoleEnum());
+                    if (col != null) {
+                        db.collection(col).document(remote.getUid())
+                                .set(update, SetOptions.merge());
+                    }
                 }
             }
             byUid.put(remote.getUid(), remote);
             sessionManager.upsertAccountInRegistry(remote);
         }
         return new ArrayList<>(byUid.values());
+    }
+
+    private String getRoleCollection(UserRole role) {
+        if (role == null) return FirestoreCollections.PATIENTS;
+        switch (role) {
+            case DOCTOR:
+                return FirestoreCollections.DOCTORS;
+            case NURSE:
+                return FirestoreCollections.NURSES;
+            case ADMIN:
+                return FirestoreCollections.ADMINISTRATORS;
+            case PATIENT:
+            default:
+                return FirestoreCollections.PATIENTS;
+        }
     }
 
     private void pushLocalRoleProfileToCloud(FirebaseFirestore db, UserAccount acc) {
@@ -436,9 +556,11 @@ public class DashboardRepository {
      * Loads all accounts with verificationStatus == PENDING from /users and local registry for Admin review.
      */
     public void loadPendingVerifications(AuthCallback<List<UserAccount>> callback) {
+        // INSTANT RENDER (0 ms): Serve cached local state immediately
+        callback.onSuccess(filterPendingAccounts(sessionManager.getAllRegisteredAccounts()));
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(filterPendingAccounts(sessionManager.getAllRegisteredAccounts()));
             return;
         }
 
@@ -447,8 +569,7 @@ public class DashboardRepository {
                 .addOnSuccessListener(querySnapshot -> {
                     List<UserAccount> merged = mergeFirestoreAndLocalUsers(querySnapshot.getDocuments());
                     callback.onSuccess(filterPendingAccounts(merged));
-                })
-                .addOnFailureListener(e -> callback.onSuccess(filterPendingAccounts(sessionManager.getAllRegisteredAccounts())));
+                });
     }
 
     private List<UserAccount> filterPendingAccounts(List<UserAccount> accounts) {
@@ -465,9 +586,11 @@ public class DashboardRepository {
      * Loads all registered user & staff accounts from /users and local registry for the Admin Staff & Accounts tab.
      */
     public void loadAllUsersAndStaff(AuthCallback<List<UserAccount>> callback) {
+        // INSTANT RENDER (0 ms): Serve cached local state immediately
+        callback.onSuccess(sessionManager.getAllRegisteredAccounts());
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(sessionManager.getAllRegisteredAccounts());
             return;
         }
 
@@ -476,8 +599,7 @@ public class DashboardRepository {
                 .addOnSuccessListener(querySnapshot -> {
                     List<UserAccount> merged = mergeFirestoreAndLocalUsers(querySnapshot.getDocuments());
                     callback.onSuccess(merged);
-                })
-                .addOnFailureListener(e -> callback.onSuccess(sessionManager.getAllRegisteredAccounts()));
+                });
     }
 
     /**
@@ -493,9 +615,10 @@ public class DashboardRepository {
         }
 
         String uid = targetUser.getUid();
+        long now = System.currentTimeMillis();
         targetUser.setVerificationStatus(newStatus.getKey());
-        targetUser.setUpdatedAt(System.currentTimeMillis());
-        sessionManager.updateAccountVerificationInRegistry(uid, newStatus);
+        targetUser.setUpdatedAt(now);
+        sessionManager.updateAccountVerificationInRegistry(targetUser, newStatus);
 
         UserAccount currentAdmin = sessionManager.getCurrentSessionAccount();
         String adminUid = currentAdmin != null ? currentAdmin.getUid() : "ADMIN";
@@ -524,27 +647,11 @@ public class DashboardRepository {
             return;
         }
 
-        UserRole role = targetUser.getUserRoleEnum();
-        String roleCollection;
-        switch (role) {
-            case DOCTOR:
-                roleCollection = FirestoreCollections.DOCTORS;
-                break;
-            case NURSE:
-                roleCollection = FirestoreCollections.NURSES;
-                break;
-            case ADMIN:
-                roleCollection = FirestoreCollections.ADMINISTRATORS;
-                break;
-            case PATIENT:
-            default:
-                roleCollection = FirestoreCollections.PATIENTS;
-                break;
-        }
+        String roleCollection = getRoleCollection(targetUser.getUserRoleEnum());
 
         Map<String, Object> statusUpdate = new HashMap<>();
         statusUpdate.put("verificationStatus", newStatus.getKey());
-        statusUpdate.put("updatedAt", System.currentTimeMillis());
+        statusUpdate.put("updatedAt", now);
 
         WriteBatch batch = db.batch();
         batch.set(db.collection(FirestoreCollections.USERS).document(uid), statusUpdate, SetOptions.merge());
@@ -553,7 +660,14 @@ public class DashboardRepository {
 
         batch.commit()
                 .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onSuccess(null));
+                .addOnFailureListener(e -> {
+                    // Direct set fallback in case batch was rejected by a collection rule
+                    db.collection(FirestoreCollections.USERS).document(uid)
+                            .set(statusUpdate, SetOptions.merge());
+                    db.collection(roleCollection).document(uid)
+                            .set(statusUpdate, SetOptions.merge());
+                    callback.onSuccess(null);
+                });
     }
 
     // =========================================================================

@@ -14,6 +14,15 @@ public class AppNotification {
     public static final String TYPE_REQUEST_DECLINED = "REQUEST_DECLINED";
     public static final String TYPE_NEW_MESSAGE = "NEW_MESSAGE";
 
+    // Phase 4 Clinical Notifications
+    public static final String TYPE_APPOINTMENT_REQUEST = "APPOINTMENT_REQUEST";
+    public static final String TYPE_APPOINTMENT_UPDATE = "APPOINTMENT_UPDATE";
+    public static final String TYPE_APPOINTMENT_RESCHEDULED = "APPOINTMENT_RESCHEDULED";
+    public static final String TYPE_PRESCRIPTION_ISSUED = "PRESCRIPTION_ISSUED";
+    public static final String TYPE_LAB_TEST_ORDERED = "LAB_TEST_ORDERED";
+    public static final String TYPE_LAB_REPORT_READY = "LAB_REPORT_READY";
+    public static final String TYPE_LAB_REPORT_REVIEWED = "LAB_REPORT_REVIEWED";
+
     private String notificationId;
     private String recipientUid;
     private String senderUid;

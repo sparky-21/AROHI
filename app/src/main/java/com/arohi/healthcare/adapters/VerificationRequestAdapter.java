@@ -89,15 +89,16 @@ public class VerificationRequestAdapter extends RecyclerView.Adapter<Verificatio
             binding.tvItemArohiId.setText(arohiId);
             binding.tvItemRoleBadge.setText(role);
             binding.tvItemEmailPhone.setText(email + " • " + phone);
-            binding.tvItemCurrentStatus.setText("Verification Status: " + status.getKey() + " (" + status.getDisplayLabel() + ")");
-
             if (status == VerificationStatus.VERIFIED) {
+                binding.tvItemCurrentStatus.setText("✓ Status: VERIFIED (Authorized " + role + ")");
                 binding.tvItemCurrentStatus.setTextColor(
                         ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_verified));
             } else if (status == VerificationStatus.REJECTED) {
+                binding.tvItemCurrentStatus.setText("✕ Status: REJECTED (Credential Declined)");
                 binding.tvItemCurrentStatus.setTextColor(
                         ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_emergency));
             } else {
+                binding.tvItemCurrentStatus.setText("⏳ Status: PENDING (Pending Authority Approval)");
                 binding.tvItemCurrentStatus.setTextColor(
                         ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_warning));
             }
@@ -106,8 +107,22 @@ public class VerificationRequestAdapter extends RecyclerView.Adapter<Verificatio
                 binding.layoutVerificationActions.setVisibility(View.GONE);
             } else {
                 binding.layoutVerificationActions.setVisibility(View.VISIBLE);
-                binding.btnApproveAccount.setEnabled(status != VerificationStatus.VERIFIED);
-                binding.btnRejectAccount.setEnabled(status != VerificationStatus.REJECTED);
+                if (status == VerificationStatus.VERIFIED) {
+                    binding.btnApproveAccount.setText("✓ Verified");
+                    binding.btnApproveAccount.setEnabled(false);
+                    binding.btnRejectAccount.setText("Revoke");
+                    binding.btnRejectAccount.setEnabled(true);
+                } else if (status == VerificationStatus.REJECTED) {
+                    binding.btnApproveAccount.setText("Approve & Verify");
+                    binding.btnApproveAccount.setEnabled(true);
+                    binding.btnRejectAccount.setText("✕ Declined");
+                    binding.btnRejectAccount.setEnabled(false);
+                } else {
+                    binding.btnApproveAccount.setText("Approve & Verify");
+                    binding.btnApproveAccount.setEnabled(true);
+                    binding.btnRejectAccount.setText("Decline");
+                    binding.btnRejectAccount.setEnabled(true);
+                }
 
                 binding.btnApproveAccount.setOnClickListener(v -> listener.onApprove(account));
                 binding.btnRejectAccount.setOnClickListener(v -> listener.onReject(account));

@@ -96,6 +96,9 @@ public class AdminDashboardFragment extends Fragment {
 
     private void handleVerificationAction(@NonNull UserAccount target,
                                           @NonNull VerificationStatus newStatus) {
+        target.setVerificationStatus(newStatus.getKey());
+        target.setUpdatedAt(System.currentTimeMillis());
+
         dashboardRepository.updateUserVerificationStatus(target, newStatus, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -110,6 +113,7 @@ public class AdminDashboardFragment extends Fragment {
             public void onError(String message) {
                 if (binding == null) return;
                 UiStateHelper.showError(binding.getRoot(), message);
+                refreshDashboardData();
             }
         });
     }
@@ -252,6 +256,20 @@ public class AdminDashboardFragment extends Fragment {
 
     private String notEmpty(String value, String fallback) {
         return value != null && !value.trim().isEmpty() ? value.trim() : fallback;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            refreshDashboardData();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshDashboardData();
     }
 
     @Override

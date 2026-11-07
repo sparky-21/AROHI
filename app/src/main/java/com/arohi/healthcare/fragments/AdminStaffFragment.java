@@ -149,12 +149,18 @@ public class AdminStaffFragment extends Fragment {
     }
 
     private void updateAccountStatus(@NonNull UserAccount target, @NonNull VerificationStatus newStatus) {
+        // Optimistically update target in memory immediately so UI reflects change with zero lag
+        target.setVerificationStatus(newStatus.getKey());
+        target.setUpdatedAt(System.currentTimeMillis());
+        applyFilter(currentFilter);
+
         dashboardRepository.updateUserVerificationStatus(target, newStatus, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 if (binding == null) return;
+                String actionWord = newStatus == VerificationStatus.VERIFIED ? "Approved & Verified" : "Declined / Revoked";
                 UiStateHelper.showSuccess(binding.getRoot(),
-                        "Updated " + target.getFullName() + " to " + newStatus.getKey());
+                        actionWord + ": " + target.getFullName() + " (" + target.getRole() + ")");
                 loadDirectory();
             }
 
@@ -162,8 +168,23 @@ public class AdminStaffFragment extends Fragment {
             public void onError(String message) {
                 if (binding == null) return;
                 UiStateHelper.showError(binding.getRoot(), message);
+                loadDirectory();
             }
         });
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            loadDirectory();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadDirectory();
     }
 
     @Override
