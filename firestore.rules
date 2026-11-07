@@ -286,7 +286,51 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 9. AUDIT LOGS
+    // 9. PHASE 5: SMART E-PHARMACY, EMERGENCY & FAMILY ACCESS CONTROL
+    // =========================================================================
+    match /pharmacyProducts/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /pharmacyOrders/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn()
+        && request.resource.data.patientUid == request.auth.uid;
+
+      allow update: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid || isAdmin());
+
+      allow delete: if isAdmin();
+    }
+
+    match /emergencyProfiles/{patientUid} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn()
+        && (patientUid == request.auth.uid || request.resource.data.patientUid == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /familyMembers/{memberId} {
+      allow read: if isSignedIn()
+        && (resource.data.primaryPatientUid == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn()
+        && request.resource.data.primaryPatientUid == request.auth.uid;
+
+      allow update, delete: if isSignedIn()
+        && (resource.data.primaryPatientUid == request.auth.uid || isAdmin());
+    }
+
+    match /hospitalDepartments/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 10. AUDIT LOGS
     // =========================================================================
     match /auditLogs/{logId} {
       allow read, create: if isSignedIn();

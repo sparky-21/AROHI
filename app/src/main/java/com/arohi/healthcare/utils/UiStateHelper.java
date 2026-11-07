@@ -99,6 +99,16 @@ public final class UiStateHelper {
                 .show();
     }
 
+    public static void showWarning(View anchorView, String message) {
+        if (anchorView == null || message == null) {
+            return;
+        }
+        Snackbar.make(anchorView, message, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(anchorView.getContext().getColor(R.color.status_warning))
+                .setTextColor(anchorView.getContext().getColor(R.color.white))
+                .show();
+    }
+
     /**
      * Moves the active visual highlight box across segmented mode buttons or filter chips.
      */

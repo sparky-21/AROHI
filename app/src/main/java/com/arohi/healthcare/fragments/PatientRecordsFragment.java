@@ -320,6 +320,13 @@ public class PatientRecordsFragment extends Fragment {
             dialog.dismiss();
             exportPrescriptionPdf(rx);
         });
+        dBinding.btnOrderPrescriptionMedicines.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
+                ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).openSubFragment(
+                        PharmacyFragment.newInstance(rx.getPrescriptionId()), "pharmacy_rx");
+            }
+        });
 
         dialog.show();
     }

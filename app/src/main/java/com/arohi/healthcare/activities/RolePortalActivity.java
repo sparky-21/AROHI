@@ -14,16 +14,20 @@ import com.arohi.healthcare.databinding.ActivityRolePortalBinding;
 import com.arohi.healthcare.fragments.AdminDashboardFragment;
 import com.arohi.healthcare.fragments.AdminProfileFragment;
 import com.arohi.healthcare.fragments.AdminStaffFragment;
+import com.arohi.healthcare.fragments.AiAssistantFragment;
 import com.arohi.healthcare.fragments.ConversationsListFragment;
 import com.arohi.healthcare.fragments.DoctorDashboardFragment;
 import com.arohi.healthcare.fragments.DoctorPatientsFragment;
 import com.arohi.healthcare.fragments.DoctorProfileFragment;
+import com.arohi.healthcare.fragments.FamilyProfilesFragment;
+import com.arohi.healthcare.fragments.HospitalMapFragment;
 import com.arohi.healthcare.fragments.NurseDashboardFragment;
 import com.arohi.healthcare.fragments.NurseProfileFragment;
 import com.arohi.healthcare.fragments.PatientDashboardFragment;
 import com.arohi.healthcare.fragments.PatientDoctorsFragment;
 import com.arohi.healthcare.fragments.PatientProfileFragment;
 import com.arohi.healthcare.fragments.PatientRecordsFragment;
+import com.arohi.healthcare.fragments.PharmacyFragment;
 import com.arohi.healthcare.fragments.RoleSectionInfoFragment;
 import com.arohi.healthcare.fragments.UnifiedCalendarFragment;
 import com.arohi.healthcare.models.UserAccount;
@@ -233,19 +237,9 @@ public class RolePortalActivity extends AppCompatActivity {
         else if (itemId == R.id.nav_admin_overview) {
             return new AdminDashboardFragment();
         } else if (itemId == R.id.nav_admin_departments) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Hospital Departments & Wards",
-                    "Connected to Cloud Firestore /hospitalDepartments, /wards, & /beds.",
-                    "ADMIN_DEPARTMENTS",
-                    "Phase 5 Hospital Infrastructure Management: Configure clinical departments, inpatient wards, and real-time bed occupancy."
-            );
+            return HospitalMapFragment.newInstance();
         } else if (itemId == R.id.nav_admin_operations) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Operation Theatre (OT) Management",
-                    "Connected to Cloud Firestore /operationRooms & /operations.",
-                    "ADMIN_OPERATIONS",
-                    "Phase 5 Operation Theatre Scheduling: Manage OT rooms, assign surgical teams, and coordinate scheduled operations."
-            );
+            return PharmacyFragment.newInstance(null);
         } else if (itemId == R.id.nav_admin_staff) {
             return new AdminStaffFragment();
         } else if (itemId == R.id.nav_admin_settings) {
@@ -253,6 +247,14 @@ public class RolePortalActivity extends AppCompatActivity {
         }
 
         return new PatientDashboardFragment();
+    }
+
+    public void openSubFragment(Fragment fragment, String tag) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(tag)
+                .commitAllowingStateLoss();
     }
 
     public void switchToTab(@IdRes int menuItemId) {

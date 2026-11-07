@@ -18,6 +18,12 @@ import com.arohi.healthcare.models.LaboratoryRequest;
 import com.arohi.healthcare.models.NurseProfile;
 import com.arohi.healthcare.models.PatientProfile;
 import com.arohi.healthcare.models.PrescriptionMedicine;
+import com.arohi.healthcare.models.EmergencyCardProfile;
+import com.arohi.healthcare.models.FamilyMember;
+import com.arohi.healthcare.models.HospitalLocation;
+import com.arohi.healthcare.models.Medicine;
+import com.arohi.healthcare.models.PharmacyOrder;
+import com.arohi.healthcare.models.PharmacyOrderItem;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
@@ -69,6 +75,10 @@ public class SessionManager {
     private static final String KEY_PRESCRIPTIONS_REGISTRY_JSON = "registry_prescriptions_json";
     private static final String KEY_LAB_REQUESTS_REGISTRY_JSON = "registry_lab_requests_json";
     private static final String KEY_CALENDAR_EVENTS_REGISTRY_JSON = "registry_calendar_events_json";
+    private static final String KEY_MEDICINES_REGISTRY_JSON = "registry_medicines_json";
+    private static final String KEY_PHARMACY_ORDERS_REGISTRY_JSON = "registry_pharmacy_orders_json";
+    private static final String KEY_EMERGENCY_PROFILES_REGISTRY_JSON = "registry_emergency_profiles_json";
+    private static final String KEY_FAMILY_MEMBERS_REGISTRY_JSON = "registry_family_members_json";
 
     private final SharedPreferences prefs;
 
@@ -1452,6 +1462,494 @@ public class SessionManager {
 
     private String nonNull(String s) {
         return s != null ? s : "";
+    }
+
+    
+    // =========================================================================
+    // 11. PHASE 5: SMART E-PHARMACY LOCAL PERSISTENCE & CATALOGUE SEED
+    // =========================================================================
+
+    public void saveMedicineLocal(Medicine m) {
+        if (m == null || m.getMedicineId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_MEDICINES_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("medicineId", m.getMedicineId());
+            o.put("name", nonNull(m.getName()));
+            o.put("genericName", nonNull(m.getGenericName()));
+            o.put("category", nonNull(m.getCategory()));
+            o.put("strength", nonNull(m.getStrength()));
+            o.put("dosageForm", nonNull(m.getDosageForm()));
+            o.put("unitPrice", m.getUnitPrice());
+            o.put("stockQuantity", m.getStockQuantity());
+            o.put("requiresPrescription", m.isRequiresPrescription());
+            o.put("manufacturer", nonNull(m.getManufacturer()));
+            o.put("description", nonNull(m.getDescription()));
+            o.put("sideEffects", nonNull(m.getSideEffects()));
+            o.put("dosageInstructions", nonNull(m.getDosageInstructions()));
+            o.put("createdAtTimestamp", m.getCreatedAtTimestamp());
+
+            root.put(m.getMedicineId(), o);
+            prefs.edit().putString(KEY_MEDICINES_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {}
+    }
+
+    public Medicine getMedicineLocal(String medicineId) {
+        if (medicineId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_MEDICINES_REGISTRY_JSON);
+            if (!root.has(medicineId)) return null;
+            return parseMedicine(root.getJSONObject(medicineId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<Medicine> getAllMedicinesLocal() {
+        List<Medicine> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_MEDICINES_REGISTRY_JSON);
+            if (root.length() == 0) {
+                seedDefaultPharmacyCatalogue();
+                root = getJsonObject(KEY_MEDICINES_REGISTRY_JSON);
+            }
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                Medicine m = parseMedicine(root.getJSONObject(k));
+                if (m != null) list.add(m);
+            }
+        } catch (JSONException ignored) {}
+        return list;
+    }
+
+    public void updateMedicineStockLocal(String medicineId, int newStock) {
+        Medicine m = getMedicineLocal(medicineId);
+        if (m != null) {
+            m.setStockQuantity(Math.max(0, newStock));
+            saveMedicineLocal(m);
+        }
+    }
+
+    private void seedDefaultPharmacyCatalogue() {
+        List<Medicine> defaults = new ArrayList<>();
+        defaults.add(new Medicine("med_001", "Paracetamol 500mg", "Paracetamol", Medicine.CATEGORY_ANALGESICS,
+                "500 mg", "Tablet", 12.0, 250, false, "Square Pharmaceuticals",
+                "Fast fever reduction and mild-to-moderate pain relief.", "Safe when used as directed.", "Take 1-2 tablets after food every 6 hours."));
+        defaults.add(new Medicine("med_002", "Amoxicillin 500mg", "Amoxicillin Trihydrate", Medicine.CATEGORY_ANTIBIOTICS,
+                "500 mg", "Capsule", 45.0, 120, true, "Beximco Pharma",
+                "Broad-spectrum antibiotic for bacterial respiratory & ear infections.", "Mild nausea, rash in penicillin-allergic patients.", "Take 1 capsule 3 times daily for 7 days."));
+        defaults.add(new Medicine("med_003", "Atorvastatin 20mg", "Atorvastatin Calcium", Medicine.CATEGORY_CARDIOVASCULAR,
+                "20 mg", "Tablet", 35.0, 80, true, "Incepta Pharmaceuticals",
+                "Lowers LDL cholesterol and reduces cardiovascular risk.", "Muscle fatigue, mild headache.", "Take 1 tablet daily at bedtime."));
+        defaults.add(new Medicine("med_004", "Omeprazole 20mg", "Omeprazole", Medicine.CATEGORY_GASTROINTESTINAL,
+                "20 mg", "Capsule", 18.0, 180, false, "Renata Limited",
+                "Proton-pump inhibitor for gastric acidity, reflux, and heartburn.", "Headache, mild stomach discomfort.", "Take 1 capsule 30 minutes before breakfast."));
+        defaults.add(new Medicine("med_005", "Cetirizine 10mg", "Cetirizine Hydrochloride", Medicine.CATEGORY_RESPIRATORY,
+                "10 mg", "Tablet", 10.0, 300, false, "Square Pharmaceuticals",
+                "Antihistamine for allergic rhinitis, sneezing, hives, and itchy skin.", "Mild drowsiness in some individuals.", "Take 1 tablet daily in the evening."));
+        defaults.add(new Medicine("med_006", "Metformin 500mg", "Metformin Hydrochloride", Medicine.CATEGORY_DIABETES,
+                "500 mg", "Tablet", 22.0, 160, true, "Eskayef Pharmaceuticals",
+                "First-line oral antidiabetic therapy for glycemic control in Type 2 Diabetes.", "Gastrointestinal upset, metallic taste.", "Take 1 tablet with or after meals twice daily."));
+        defaults.add(new Medicine("med_007", "Salbutamol Inhaler 100mcg", "Salbutamol Sulfate", Medicine.CATEGORY_RESPIRATORY,
+                "100 mcg/dose", "Inhaler", 220.0, 45, true, "Beximco Pharma",
+                "Fast-acting bronchodilator for rapid relief of asthma and bronchospasm.", "Transient fine tremor, palpitations.", "Inhale 1-2 puffs as required for acute shortness of breath."));
+        defaults.add(new Medicine("med_008", "Azithromycin 500mg", "Azithromycin", Medicine.CATEGORY_ANTIBIOTICS,
+                "500 mg", "Tablet", 95.0, 60, true, "Incepta Pharmaceuticals",
+                "Macrolide antibiotic for throat, chest, and soft tissue infections.", "Abdominal cramps, loose stools.", "Take 1 tablet daily 1 hour before or 2 hours after meals for 3-5 days."));
+        defaults.add(new Medicine("med_009", "Amlodipine 5mg", "Amlodipine Besylate", Medicine.CATEGORY_CARDIOVASCULAR,
+                "5 mg", "Tablet", 25.0, 95, true, "Square Pharmaceuticals",
+                "Calcium channel blocker for hypertension and chronic stable angina.", "Peripheral ankle swelling, flushing.", "Take 1 tablet daily with or without food."));
+        defaults.add(new Medicine("med_010", "Calcium 500mg + Vitamin D3", "Calcium Carbonate + Cholecalciferol", Medicine.CATEGORY_VITAMINS,
+                "500 mg + 200 IU", "Tablet", 15.0, 200, false, "Healthcare Pharma",
+                "Strengthens bone density, supports calcium homeostasis.", "Constipation if taken with insufficient water.", "Take 1 tablet twice daily with food."));
+        defaults.add(new Medicine("med_011", "Hydrocortisone Cream 1%", "Hydrocortisone", Medicine.CATEGORY_DERMATOLOGY,
+                "1% w/w", "Tube", 60.0, 50, false, "Renata Limited",
+                "Topical corticosteroid for inflammatory dermatitis, eczema, and rashes.", "Skin thinning if overused.", "Apply thinly to affected area 1-2 times daily."));
+
+        for (Medicine m : defaults) {
+            saveMedicineLocal(m);
+        }
+    }
+
+    private Medicine parseMedicine(JSONObject o) {
+        Medicine m = new Medicine();
+        m.setMedicineId(o.optString("medicineId", ""));
+        m.setName(o.optString("name", ""));
+        m.setGenericName(o.optString("genericName", ""));
+        m.setCategory(o.optString("category", ""));
+        m.setStrength(o.optString("strength", ""));
+        m.setDosageForm(o.optString("dosageForm", "Tablet"));
+        m.setUnitPrice(o.optDouble("unitPrice", 0.0));
+        m.setStockQuantity(o.optInt("stockQuantity", 0));
+        m.setRequiresPrescription(o.optBoolean("requiresPrescription", false));
+        m.setManufacturer(o.optString("manufacturer", ""));
+        m.setDescription(o.optString("description", ""));
+        m.setSideEffects(o.optString("sideEffects", ""));
+        m.setDosageInstructions(o.optString("dosageInstructions", ""));
+        m.setCreatedAtTimestamp(o.optLong("createdAtTimestamp", System.currentTimeMillis()));
+        return m;
+    }
+
+    // =========================================================================
+    // 12. PHASE 5: PHARMACY ORDERS LOCAL PERSISTENCE
+    // =========================================================================
+
+    public void savePharmacyOrderLocal(PharmacyOrder o) {
+        if (o == null || o.getOrderId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_PHARMACY_ORDERS_REGISTRY_JSON);
+            JSONObject jo = new JSONObject();
+            jo.put("orderId", o.getOrderId());
+            jo.put("patientUid", nonNull(o.getPatientUid()));
+            jo.put("patientArohiId", nonNull(o.getPatientArohiId()));
+            jo.put("patientName", nonNull(o.getPatientName()));
+            jo.put("patientPhone", nonNull(o.getPatientPhone()));
+            jo.put("prescriptionId", nonNull(o.getPrescriptionId()));
+            jo.put("prescriptionDoctorName", nonNull(o.getPrescriptionDoctorName()));
+
+            JSONArray itemsArr = new JSONArray();
+            if (o.getItems() != null) {
+                for (PharmacyOrderItem item : o.getItems()) {
+                    JSONObject itemObj = new JSONObject();
+                    itemObj.put("medicineId", nonNull(item.getMedicineId()));
+                    itemObj.put("medicineName", nonNull(item.getMedicineName()));
+                    itemObj.put("strength", nonNull(item.getStrength()));
+                    itemObj.put("quantity", item.getQuantity());
+                    itemObj.put("unitPrice", item.getUnitPrice());
+                    itemObj.put("subtotal", item.getSubtotal());
+                    itemsArr.put(itemObj);
+                }
+            }
+            jo.put("items", itemsArr);
+            jo.put("totalAmount", o.getTotalAmount());
+            jo.put("deliveryType", nonNull(o.getDeliveryType()));
+            jo.put("deliveryAddress", nonNull(o.getDeliveryAddress()));
+            jo.put("status", nonNull(o.getStatus()));
+            jo.put("orderDate", nonNull(o.getOrderDate()));
+            jo.put("createdAtTimestamp", o.getCreatedAtTimestamp());
+            jo.put("pharmacistNotes", nonNull(o.getPharmacistNotes()));
+            jo.put("verifiedByStaffUid", nonNull(o.getVerifiedByStaffUid()));
+
+            root.put(o.getOrderId(), jo);
+            prefs.edit().putString(KEY_PHARMACY_ORDERS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {}
+    }
+
+    public PharmacyOrder getPharmacyOrderLocal(String orderId) {
+        if (orderId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_PHARMACY_ORDERS_REGISTRY_JSON);
+            if (!root.has(orderId)) return null;
+            return parsePharmacyOrder(root.getJSONObject(orderId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<PharmacyOrder> getAllPharmacyOrdersLocal() {
+        List<PharmacyOrder> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_PHARMACY_ORDERS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                PharmacyOrder o = parsePharmacyOrder(root.getJSONObject(k));
+                if (o != null) list.add(o);
+            }
+        } catch (JSONException ignored) {}
+        return list;
+    }
+
+    public List<PharmacyOrder> getPatientPharmacyOrdersLocal(String patientUid) {
+        List<PharmacyOrder> list = new ArrayList<>();
+        if (patientUid == null) return list;
+        for (PharmacyOrder o : getAllPharmacyOrdersLocal()) {
+            if (patientUid.equals(o.getPatientUid())) {
+                list.add(o);
+            }
+        }
+        return list;
+    }
+
+    public void updatePharmacyOrderStatusLocal(String orderId, String newStatus, String notes, String staffUid) {
+        PharmacyOrder o = getPharmacyOrderLocal(orderId);
+        if (o != null) {
+            o.setStatus(newStatus);
+            if (notes != null) o.setPharmacistNotes(notes);
+            if (staffUid != null) o.setVerifiedByStaffUid(staffUid);
+            savePharmacyOrderLocal(o);
+        }
+    }
+
+    private PharmacyOrder parsePharmacyOrder(JSONObject jo) {
+        PharmacyOrder o = new PharmacyOrder();
+        o.setOrderId(jo.optString("orderId", ""));
+        o.setPatientUid(jo.optString("patientUid", ""));
+        o.setPatientArohiId(jo.optString("patientArohiId", ""));
+        o.setPatientName(jo.optString("patientName", ""));
+        o.setPatientPhone(jo.optString("patientPhone", ""));
+        o.setPrescriptionId(jo.optString("prescriptionId", ""));
+        o.setPrescriptionDoctorName(jo.optString("prescriptionDoctorName", ""));
+
+        List<PharmacyOrderItem> items = new ArrayList<>();
+        JSONArray arr = jo.optJSONArray("items");
+        if (arr != null) {
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject itemObj = arr.optJSONObject(i);
+                if (itemObj != null) {
+                    PharmacyOrderItem item = new PharmacyOrderItem(
+                            itemObj.optString("medicineId", ""),
+                            itemObj.optString("medicineName", ""),
+                            itemObj.optString("strength", ""),
+                            itemObj.optInt("quantity", 1),
+                            itemObj.optDouble("unitPrice", 0.0)
+                    );
+                    items.add(item);
+                }
+            }
+        }
+        o.setItems(items);
+        o.setTotalAmount(jo.optDouble("totalAmount", 0.0));
+        o.setDeliveryType(jo.optString("deliveryType", PharmacyOrder.DELIVERY_HOSPITAL_PICKUP));
+        o.setDeliveryAddress(jo.optString("deliveryAddress", ""));
+        o.setStatus(jo.optString("status", PharmacyOrder.STATUS_RECEIVED));
+        o.setOrderDate(jo.optString("orderDate", ""));
+        o.setCreatedAtTimestamp(jo.optLong("createdAtTimestamp", System.currentTimeMillis()));
+        o.setPharmacistNotes(jo.optString("pharmacistNotes", ""));
+        o.setVerifiedByStaffUid(jo.optString("verifiedByStaffUid", ""));
+        return o;
+    }
+
+    // =========================================================================
+    // 13. PHASE 5: EMERGENCY HEALTH CARD LOCAL PERSISTENCE
+    // =========================================================================
+
+    public void saveEmergencyCardLocal(EmergencyCardProfile p) {
+        if (p == null || p.getPatientUid() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_EMERGENCY_PROFILES_REGISTRY_JSON);
+            JSONObject jo = new JSONObject();
+            jo.put("patientUid", p.getPatientUid());
+            jo.put("arohiId", nonNull(p.getArohiId()));
+            jo.put("fullName", nonNull(p.getFullName()));
+            jo.put("dateOfBirth", nonNull(p.getDateOfBirth()));
+            jo.put("gender", nonNull(p.getGender()));
+            jo.put("bloodGroup", nonNull(p.getBloodGroup()));
+            jo.put("primaryPhone", nonNull(p.getPrimaryPhone()));
+            jo.put("knownAllergies", nonNull(p.getKnownAllergies()));
+            jo.put("chronicConditions", nonNull(p.getChronicConditions()));
+            jo.put("currentMedications", nonNull(p.getCurrentMedications()));
+            jo.put("emergencyContactName", nonNull(p.getEmergencyContactName()));
+            jo.put("emergencyContactPhone", nonNull(p.getEmergencyContactPhone()));
+            jo.put("emergencyContactRelation", nonNull(p.getEmergencyContactRelation()));
+            jo.put("organDonor", p.isOrganDonor());
+            jo.put("insuranceProvider", nonNull(p.getInsuranceProvider()));
+            jo.put("insurancePolicyNumber", nonNull(p.getInsurancePolicyNumber()));
+
+            jo.put("showBloodGroup", p.isShowBloodGroup());
+            jo.put("showAllergies", p.isShowAllergies());
+            jo.put("showChronicConditions", p.isShowChronicConditions());
+            jo.put("showCurrentMedications", p.isShowCurrentMedications());
+            jo.put("showEmergencyContact", p.isShowEmergencyContact());
+            jo.put("showOrganDonorStatus", p.isShowOrganDonorStatus());
+            jo.put("lastUpdatedAt", p.getLastUpdatedAt());
+
+            root.put(p.getPatientUid(), jo);
+            prefs.edit().putString(KEY_EMERGENCY_PROFILES_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {}
+    }
+
+    public EmergencyCardProfile getEmergencyCardLocal(String patientUid) {
+        if (patientUid == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_EMERGENCY_PROFILES_REGISTRY_JSON);
+            if (!root.has(patientUid)) return null;
+            JSONObject jo = root.getJSONObject(patientUid);
+            EmergencyCardProfile p = new EmergencyCardProfile();
+            p.setPatientUid(jo.optString("patientUid", patientUid));
+            p.setArohiId(jo.optString("arohiId", ""));
+            p.setFullName(jo.optString("fullName", ""));
+            p.setDateOfBirth(jo.optString("dateOfBirth", ""));
+            p.setGender(jo.optString("gender", ""));
+            p.setBloodGroup(jo.optString("bloodGroup", ""));
+            p.setPrimaryPhone(jo.optString("primaryPhone", ""));
+            p.setKnownAllergies(jo.optString("knownAllergies", ""));
+            p.setChronicConditions(jo.optString("chronicConditions", ""));
+            p.setCurrentMedications(jo.optString("currentMedications", ""));
+            p.setEmergencyContactName(jo.optString("emergencyContactName", ""));
+            p.setEmergencyContactPhone(jo.optString("emergencyContactPhone", ""));
+            p.setEmergencyContactRelation(jo.optString("emergencyContactRelation", ""));
+            p.setOrganDonor(jo.optBoolean("organDonor", false));
+            p.setInsuranceProvider(jo.optString("insuranceProvider", ""));
+            p.setInsurancePolicyNumber(jo.optString("insurancePolicyNumber", ""));
+
+            p.setShowBloodGroup(jo.optBoolean("showBloodGroup", true));
+            p.setShowAllergies(jo.optBoolean("showAllergies", true));
+            p.setShowChronicConditions(jo.optBoolean("showChronicConditions", true));
+            p.setShowCurrentMedications(jo.optBoolean("showCurrentMedications", true));
+            p.setShowEmergencyContact(jo.optBoolean("showEmergencyContact", true));
+            p.setShowOrganDonorStatus(jo.optBoolean("showOrganDonorStatus", true));
+            p.setLastUpdatedAt(jo.optLong("lastUpdatedAt", System.currentTimeMillis()));
+            return p;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    // =========================================================================
+    // 14. PHASE 5: FAMILY MEMBERS LOCAL PERSISTENCE
+    // =========================================================================
+
+    public void saveFamilyMemberLocal(FamilyMember f) {
+        if (f == null || f.getMemberId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_FAMILY_MEMBERS_REGISTRY_JSON);
+            JSONObject jo = new JSONObject();
+            jo.put("memberId", f.getMemberId());
+            jo.put("primaryPatientUid", nonNull(f.getPrimaryPatientUid()));
+            jo.put("fullName", nonNull(f.getFullName()));
+            jo.put("relationship", nonNull(f.getRelationship()));
+            jo.put("dateOfBirth", nonNull(f.getDateOfBirth()));
+            jo.put("gender", nonNull(f.getGender()));
+            jo.put("bloodGroup", nonNull(f.getBloodGroup()));
+            jo.put("knownAllergies", nonNull(f.getKnownAllergies()));
+            jo.put("emergencyPhone", nonNull(f.getEmergencyPhone()));
+            jo.put("hasExplicitAuthorization", f.isHasExplicitAuthorization());
+            jo.put("authorizationNotes", nonNull(f.getAuthorizationNotes()));
+            jo.put("linkedPatientArohiId", nonNull(f.getLinkedPatientArohiId()));
+            jo.put("createdAtTimestamp", f.getCreatedAtTimestamp());
+
+            root.put(f.getMemberId(), jo);
+            prefs.edit().putString(KEY_FAMILY_MEMBERS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {}
+    }
+
+    public void deleteFamilyMemberLocal(String memberId) {
+        if (memberId == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_FAMILY_MEMBERS_REGISTRY_JSON);
+            if (root.has(memberId)) {
+                root.remove(memberId);
+                prefs.edit().putString(KEY_FAMILY_MEMBERS_REGISTRY_JSON, root.toString()).apply();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public List<FamilyMember> getFamilyMembersForPatientLocal(String primaryPatientUid) {
+        List<FamilyMember> list = new ArrayList<>();
+        if (primaryPatientUid == null) return list;
+        try {
+            JSONObject root = getJsonObject(KEY_FAMILY_MEMBERS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                JSONObject jo = root.getJSONObject(k);
+                if (primaryPatientUid.equals(jo.optString("primaryPatientUid", ""))) {
+                    FamilyMember f = new FamilyMember();
+                    f.setMemberId(jo.optString("memberId", ""));
+                    f.setPrimaryPatientUid(jo.optString("primaryPatientUid", ""));
+                    f.setFullName(jo.optString("fullName", ""));
+                    f.setRelationship(jo.optString("relationship", FamilyMember.RELATION_OTHER));
+                    f.setDateOfBirth(jo.optString("dateOfBirth", ""));
+                    f.setGender(jo.optString("gender", ""));
+                    f.setBloodGroup(jo.optString("bloodGroup", ""));
+                    f.setKnownAllergies(jo.optString("knownAllergies", ""));
+                    f.setEmergencyPhone(jo.optString("emergencyPhone", ""));
+                    f.setHasExplicitAuthorization(jo.optBoolean("hasExplicitAuthorization", true));
+                    f.setAuthorizationNotes(jo.optString("authorizationNotes", ""));
+                    f.setLinkedPatientArohiId(jo.optString("linkedPatientArohiId", ""));
+                    f.setCreatedAtTimestamp(jo.optLong("createdAtTimestamp", System.currentTimeMillis()));
+                    list.add(f);
+                }
+            }
+        } catch (JSONException ignored) {}
+        return list;
+    }
+
+    // =========================================================================
+    // 15. PHASE 5: HOSPITAL MAP LOCATIONS DIRECTORY
+    // =========================================================================
+
+    public List<HospitalLocation> getAllHospitalLocationsLocal() {
+        List<HospitalLocation> list = new ArrayList<>();
+        // Ground Floor
+        list.add(new HospitalLocation("loc_g01", "Emergency & Trauma Centre", HospitalLocation.TYPE_EMERGENCY,
+                HospitalLocation.FLOOR_GROUND, "West Wing", "Room G-01",
+                "24/7 emergency resuscitation, acute trauma response, and ambulance triage bay.",
+                "24 Hours / 7 Days", "Ext: 101, 102",
+                "Enter hospital Main Entrance -> Immediate turn left -> Follow red floor markers to Emergency Bay.",
+                0, 0));
+        list.add(new HospitalLocation("loc_g02", "Main Reception & Central Information", HospitalLocation.TYPE_RECEPTION,
+                HospitalLocation.FLOOR_GROUND, "Central Atrium", "Main Lobby",
+                "Patient registration, admission desk, consultation token counter, and hospital directory.",
+                "24 Hours / 7 Days", "Ext: 100",
+                "Located directly facing the Main Entrance Glass Doors in the central glass atrium.",
+                1, 1));
+        list.add(new HospitalLocation("loc_g03", "AROHI Smart E-Pharmacy (Central Dispensary)", HospitalLocation.TYPE_PHARMACY,
+                HospitalLocation.FLOOR_GROUND, "East Wing", "Room G-12",
+                "Full-service outpatient & emergency dispensary, prescription fulfillment, and home delivery dispatch.",
+                "24 Hours / 7 Days", "Ext: 105",
+                "From Main Reception -> Walk east past Elevator Bank A -> Room G-12 on the right.",
+                0, 2));
+        list.add(new HospitalLocation("loc_g04", "Radiology & Diagnostic Imaging", HospitalLocation.TYPE_RADIOLOGY,
+                HospitalLocation.FLOOR_GROUND, "North Wing", "Room G-05",
+                "Digital X-Ray, 128-Slice CT Scan, 3.0 Tesla MRI, and Ultrasound imaging suites.",
+                "7:00 AM - 11:00 PM (Emergency 24/7)", "Ext: 108",
+                "From Main Reception -> Head straight north -> Take corridor past Cafe to Radiology Wing.",
+                2, 1));
+
+        // Floor 1
+        list.add(new HospitalLocation("loc_f1_01", "Clinical Pathology & Diagnostic Laboratory", HospitalLocation.TYPE_LABORATORY,
+                HospitalLocation.FLOOR_1, "East Wing", "Room 108",
+                "Automated biochemistry, hematology, immunology, and rapid sample collection center.",
+                "6:30 AM - 10:00 PM", "Ext: 205",
+                "Take Elevator A or Stairs to Floor 1 -> Turn right into East Wing -> Follow blue signs to Room 108.",
+                0, 2));
+        list.add(new HospitalLocation("loc_f1_02", "Specialist Outpatient Clinics (OPD)", HospitalLocation.TYPE_RECEPTION,
+                HospitalLocation.FLOOR_1, "West Wing", "Suites 101-106",
+                "Cardiology, Neurology, Pediatrics, General Medicine, and Orthopedic consultation chambers.",
+                "8:00 AM - 9:00 PM", "Ext: 201",
+                "Take Elevator A to Floor 1 -> Turn left -> Doctor consultation waiting lounge.",
+                0, 0));
+
+        // Floor 2
+        list.add(new HospitalLocation("loc_f2_01", "Inpatient Medical Ward (Ward A & B)", HospitalLocation.TYPE_WARD,
+                HospitalLocation.FLOOR_2, "East Wing", "Beds 201-224",
+                "Male and Female general medical inpatient care with central nurses' station.",
+                "Visiting Hours: 4:00 PM - 7:00 PM", "Ext: 301",
+                "Take Elevator B to Floor 2 -> Enter East Wing double doors -> Report to Ward A Nurses' Desk.",
+                0, 2));
+        list.add(new HospitalLocation("loc_f2_02", "Surgical Inpatient Ward (Ward C & D)", HospitalLocation.TYPE_WARD,
+                HospitalLocation.FLOOR_2, "West Wing", "Beds 225-248",
+                "Pre-operative and post-operative surgical recovery ward with telemetry monitoring.",
+                "Visiting Hours: 4:00 PM - 7:00 PM", "Ext: 302",
+                "Take Elevator B to Floor 2 -> Enter West Wing -> Report to Ward C Nurses' Desk.",
+                0, 0));
+
+        // Floor 3
+        list.add(new HospitalLocation("loc_f3_01", "Intensive Care Unit (ICU & CCU)", HospitalLocation.TYPE_ICU,
+                HospitalLocation.FLOOR_3, "North Wing", "ICU Complex 301",
+                "State-of-the-art critical care unit with dedicated ventilators, hemodynamic monitors, and 1:1 nurse ratio.",
+                "Restricted Access (Authorized Staff & Scheduled Family Briefing)", "Ext: 401",
+                "Take Elevator B to Floor 3 -> Follow sterile corridor north -> Intercom check-in at ICU Entrance.",
+                2, 1));
+        list.add(new HospitalLocation("loc_f3_02", "Operation Theatre Complex (OT 1 to 4)", HospitalLocation.TYPE_OT,
+                HospitalLocation.FLOOR_3, "South Wing", "OT Suites 310-314",
+                "Laminar airflow surgical suites for general, orthopedic, cardiac, and laparoscopic surgeries.",
+                "Sterile Surgical Zone (Staff Only)", "Ext: 405",
+                "Take Elevator B to Floor 3 -> Proceed south to Restricted Scrub Area.",
+                0, 1));
+
+        // Basement
+        list.add(new HospitalLocation("loc_b01", "Central Sterile Supply & Biomedical Engineering", HospitalLocation.TYPE_RECEPTION,
+                HospitalLocation.FLOOR_BASEMENT, "Central", "Suite B-02",
+                "Surgical instrument sterilization, medical equipment maintenance, and facility engineering.",
+                "24 Hours / 7 Days", "Ext: 005",
+                "Take Elevator A or Service Lift to Basement level.",
+                1, 1));
+
+        return list;
     }
 
     private String normalizeEmailKey(String email) {

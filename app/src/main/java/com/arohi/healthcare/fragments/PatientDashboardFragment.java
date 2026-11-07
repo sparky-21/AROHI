@@ -169,33 +169,35 @@ public class PatientDashboardFragment extends Fragment {
         binding.cardPatientMedReminders.setOnClickListener(v -> switchTab(R.id.nav_patient_calendar));
 
         binding.btnQuickEditProfile.setOnClickListener(v -> switchTab(R.id.nav_patient_profile));
+
+        // Phase 5 Quick Services
+        binding.btnQuickPharmacy.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).openSubFragment(PharmacyFragment.newInstance(null), "pharmacy");
+            }
+        });
+
+        binding.btnQuickAiAssistant.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).openSubFragment(AiAssistantFragment.newInstance(), "ai_assistant");
+            }
+        });
+
+        binding.btnQuickHospitalMap.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).openSubFragment(HospitalMapFragment.newInstance(), "hospital_map");
+            }
+        });
+
+        binding.btnQuickFamilyHealth.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).openSubFragment(FamilyProfilesFragment.newInstance(), "family_health");
+            }
+        });
     }
 
     private void showEmergencyCardDialog() {
-        String name = loadedProfile != null ? notEmpty(loadedProfile.getFullName(), "Patient") : "Patient";
-        String id = loadedProfile != null ? notEmpty(loadedProfile.getArohiId(), "AROHI-PAT") : "AROHI-PAT";
-        String dob = loadedProfile != null ? notEmpty(loadedProfile.getDateOfBirth(), "Not Set") : "Not Set";
-        String blood = loadedProfile != null ? notEmpty(loadedProfile.getBloodGroup(), "Not Set") : "Not Set";
-        String allergies = loadedProfile != null ? notEmpty(loadedProfile.getKnownAllergies(), "None") : "None";
-        String chronic = loadedProfile != null ? notEmpty(loadedProfile.getChronicConditions(), "None") : "None";
-        String emName = loadedProfile != null ? notEmpty(loadedProfile.getEmergencyContactName(), "Not Set") : "Not Set";
-        String emPhone = loadedProfile != null ? notEmpty(loadedProfile.getEmergencyContactPhone(), "Not Set") : "Not Set";
-
-        String message = "Patient: " + name + "\n"
-                + "AROHI ID: " + id + "\n"
-                + "Date of Birth: " + dob + "\n"
-                + "Blood Group: " + blood + "\n"
-                + "Known Allergies: " + allergies + "\n"
-                + "Chronic Conditions: " + chronic + "\n"
-                + "Emergency Contact: " + emName + "\n"
-                + "Emergency Phone: " + emPhone;
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("AROHI Emergency Health Card")
-                .setMessage(message)
-                .setPositiveButton("Update Health Card", (d, w) -> switchTab(R.id.nav_patient_profile))
-                .setNegativeButton("Close", null)
-                .show();
+        EmergencyCardDialogFragment.newInstance().show(getParentFragmentManager(), "emergency_card_dialog");
     }
 
     private void switchTab(int tabId) {

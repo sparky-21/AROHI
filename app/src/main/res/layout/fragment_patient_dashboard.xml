@@ -548,7 +548,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/spacing_md"
+            android:layout_marginBottom="@dimen/spacing_xs"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
@@ -575,6 +575,74 @@
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
                 android:text="Health Profile"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Phase 5 Quick Services Row 1: E-Pharmacy & AI Assistant -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_xs"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuickPharmacy"
+                style="@style/Widget.AROHI.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
+                android:text="Smart E-Pharmacy"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuickAiAssistant"
+                style="@style/Widget.AROHI.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
+                android:text="AROHI AI"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Phase 5 Quick Services Row 2: Hospital Map & Family Health -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuickHospitalMap"
+                style="@style/Widget.AROHI.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
+                android:text="Hospital Map"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuickFamilyHealth"
+                style="@style/Widget.AROHI.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
+                android:text="Family Health"
                 android:textSize="12sp" />
         </LinearLayout>
 
