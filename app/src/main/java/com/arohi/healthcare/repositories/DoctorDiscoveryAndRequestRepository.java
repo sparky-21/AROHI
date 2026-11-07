@@ -55,7 +55,7 @@ public class DoctorDiscoveryAndRequestRepository {
     public void loadVerifiedDoctors(AuthCallback<List<DoctorProfile>> callback) {
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            callback.onSuccess(buildMergedDoctorList(null));
+            callback.onSuccess(buildMergedDoctorList(null, null));
             return;
         }
 
@@ -70,15 +70,37 @@ public class DoctorDiscoveryAndRequestRepository {
                             remoteList.add(profile);
                         }
                     }
-                    callback.onSuccess(buildMergedDoctorList(remoteList));
+                    // Also fetch DOCTOR accounts from /users so global cross-phone doctor registrations and verification updates are always synced
+                    db.collection(FirestoreCollections.USERS)
+                            .whereEqualTo("role", UserRole.DOCTOR.getKey())
+                            .get()
+                            .addOnSuccessListener(userSnap -> {
+                                for (DocumentSnapshot uDoc : userSnap.getDocuments()) {
+                                    UserAccount uAcc = uDoc.toObject(UserAccount.class);
+                                    if (uAcc != null && uAcc.getUid() != null) {
+                                        sessionManager.upsertAccountInRegistry(uAcc);
+                                    }
+                                }
+                                callback.onSuccess(buildMergedDoctorList(remoteList, db));
+                            })
+                            .addOnFailureListener(e -> callback.onSuccess(buildMergedDoctorList(remoteList, db)));
                 })
-                .addOnFailureListener(e -> callback.onSuccess(buildMergedDoctorList(null)));
+                .addOnFailureListener(e -> callback.onSuccess(buildMergedDoctorList(null, db)));
     }
 
-    private List<DoctorProfile> buildMergedDoctorList(List<DoctorProfile> remoteDoctors) {
+    private List<DoctorProfile> buildMergedDoctorList(List<DoctorProfile> remoteDoctors, FirebaseFirestore db) {
         Map<String, DoctorProfile> byUid = new LinkedHashMap<>();
+        Map<String, DoctorProfile> remoteByUid = new HashMap<>();
 
-        // 1. Include all locally saved DoctorProfiles
+        if (remoteDoctors != null) {
+            for (DoctorProfile remote : remoteDoctors) {
+                if (remote.getUid() != null) {
+                    remoteByUid.put(remote.getUid(), remote);
+                }
+            }
+        }
+
+        // 1. Include all locally saved DoctorProfiles & push any local-only DoctorProfiles to Cloud Firestore
         for (DoctorProfile localDoc : sessionManager.getAllDoctorProfilesLocal()) {
             if (localDoc.getUid() != null) {
                 UserAccount regAcc = sessionManager.getRegisteredAccountByUid(localDoc.getUid());
@@ -87,6 +109,10 @@ public class DoctorDiscoveryAndRequestRepository {
                 }
                 if (!VerificationStatus.REJECTED.getKey().equalsIgnoreCase(localDoc.getVerificationStatus())) {
                     byUid.put(localDoc.getUid(), localDoc);
+                    if (db != null && !remoteByUid.containsKey(localDoc.getUid())) {
+                        db.collection(FirestoreCollections.DOCTORS).document(localDoc.getUid())
+                                .set(localDoc.toMap(), SetOptions.merge());
+                    }
                 }
             }
         }
@@ -130,6 +156,10 @@ public class DoctorDiscoveryAndRequestRepository {
                 );
                 synthesized.setVerificationStatus(acc.getVerificationStatus());
                 sessionManager.saveDoctorProfileLocal(synthesized);
+                if (db != null) {
+                    db.collection(FirestoreCollections.DOCTORS).document(acc.getUid())
+                            .set(synthesized.toMap(), SetOptions.merge());
+                }
                 byUid.put(acc.getUid(), synthesized);
             }
         }
@@ -302,21 +332,33 @@ public class DoctorDiscoveryAndRequestRepository {
     }
 
     private List<ConsultationRequest> filterRequestsByPatient(String patientUid, List<ConsultationRequest> remoteList) {
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         Map<String, ConsultationRequest> byId = new LinkedHashMap<>();
-        for (ConsultationRequest local : sessionManager.getAllConsultationRequestsLocal()) {
-            if (patientUid.equals(local.getPatientUid()) && local.getRequestId() != null) {
-                byId.put(local.getRequestId(), local);
-            }
-        }
+        Map<String, ConsultationRequest> remoteById = new HashMap<>();
         if (remoteList != null) {
             for (ConsultationRequest remote : remoteList) {
                 if (remote.getRequestId() != null) {
-                    ConsultationRequest existingLocal = byId.get(remote.getRequestId());
-                    if (existingLocal == null || remote.getUpdatedAt() >= existingLocal.getUpdatedAt()) {
-                        byId.put(remote.getRequestId(), remote);
-                        sessionManager.saveConsultationRequestLocal(remote);
-                    }
+                    remoteById.put(remote.getRequestId(), remote);
                 }
+            }
+        }
+        for (ConsultationRequest local : sessionManager.getAllConsultationRequestsLocal()) {
+            if (patientUid.equals(local.getPatientUid()) && local.getRequestId() != null) {
+                byId.put(local.getRequestId(), local);
+                if (db != null && !remoteById.containsKey(local.getRequestId())) {
+                    db.collection(FirestoreCollections.DOCTOR_REQUESTS).document(local.getRequestId())
+                            .set(local.toMap(), SetOptions.merge());
+                }
+            }
+        }
+        for (ConsultationRequest remote : remoteById.values()) {
+            ConsultationRequest existingLocal = byId.get(remote.getRequestId());
+            if (existingLocal == null || remote.getUpdatedAt() >= existingLocal.getUpdatedAt()) {
+                byId.put(remote.getRequestId(), remote);
+                sessionManager.saveConsultationRequestLocal(remote);
+            } else if (db != null) {
+                db.collection(FirestoreCollections.DOCTOR_REQUESTS).document(existingLocal.getRequestId())
+                        .set(existingLocal.toMap(), SetOptions.merge());
             }
         }
         List<ConsultationRequest> list = new ArrayList<>(byId.values());
@@ -388,21 +430,33 @@ public class DoctorDiscoveryAndRequestRepository {
     }
 
     private List<ConsultationRequest> filterRequestsByDoctor(String doctorUid, List<ConsultationRequest> remoteList) {
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         Map<String, ConsultationRequest> byId = new LinkedHashMap<>();
-        for (ConsultationRequest local : sessionManager.getAllConsultationRequestsLocal()) {
-            if (doctorUid.equals(local.getDoctorUid()) && local.getRequestId() != null) {
-                byId.put(local.getRequestId(), local);
-            }
-        }
+        Map<String, ConsultationRequest> remoteById = new HashMap<>();
         if (remoteList != null) {
             for (ConsultationRequest remote : remoteList) {
                 if (remote.getRequestId() != null) {
-                    ConsultationRequest existingLocal = byId.get(remote.getRequestId());
-                    if (existingLocal == null || remote.getUpdatedAt() >= existingLocal.getUpdatedAt()) {
-                        byId.put(remote.getRequestId(), remote);
-                        sessionManager.saveConsultationRequestLocal(remote);
-                    }
+                    remoteById.put(remote.getRequestId(), remote);
                 }
+            }
+        }
+        for (ConsultationRequest local : sessionManager.getAllConsultationRequestsLocal()) {
+            if (doctorUid.equals(local.getDoctorUid()) && local.getRequestId() != null) {
+                byId.put(local.getRequestId(), local);
+                if (db != null && !remoteById.containsKey(local.getRequestId())) {
+                    db.collection(FirestoreCollections.DOCTOR_REQUESTS).document(local.getRequestId())
+                            .set(local.toMap(), SetOptions.merge());
+                }
+            }
+        }
+        for (ConsultationRequest remote : remoteById.values()) {
+            ConsultationRequest existingLocal = byId.get(remote.getRequestId());
+            if (existingLocal == null || remote.getUpdatedAt() >= existingLocal.getUpdatedAt()) {
+                byId.put(remote.getRequestId(), remote);
+                sessionManager.saveConsultationRequestLocal(remote);
+            } else if (db != null) {
+                db.collection(FirestoreCollections.DOCTOR_REQUESTS).document(existingLocal.getRequestId())
+                        .set(existingLocal.toMap(), SetOptions.merge());
             }
         }
         List<ConsultationRequest> list = new ArrayList<>(byId.values());

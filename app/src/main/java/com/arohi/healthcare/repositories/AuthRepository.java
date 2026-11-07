@@ -472,6 +472,8 @@ public class AuthRepository {
                             && localRegistry.getVerificationStatusEnum() == VerificationStatus.VERIFIED
                             && account.getVerificationStatusEnum() == VerificationStatus.PENDING) {
                         account.setVerificationStatus(VerificationStatus.VERIFIED.getKey());
+                        db.collection(FirestoreCollections.USERS).document(uid)
+                                .set(account.toMap(), com.google.firebase.firestore.SetOptions.merge());
                     }
                     account.setEmailVerified(true);
                     sessionManager.saveUserSession(account);
@@ -501,21 +503,24 @@ public class AuthRepository {
             case DOCTOR: {
                 DoctorProfile doc = sessionManager.getDoctorProfileLocal(uid);
                 if (doc != null) {
-                    db.collection(FirestoreCollections.DOCTORS).document(uid).set(doc.toMap());
+                    db.collection(FirestoreCollections.DOCTORS).document(uid)
+                            .set(doc.toMap(), com.google.firebase.firestore.SetOptions.merge());
                 }
                 break;
             }
             case NURSE: {
                 NurseProfile nurse = sessionManager.getNurseProfileLocal(uid);
                 if (nurse != null) {
-                    db.collection(FirestoreCollections.NURSES).document(uid).set(nurse.toMap());
+                    db.collection(FirestoreCollections.NURSES).document(uid)
+                            .set(nurse.toMap(), com.google.firebase.firestore.SetOptions.merge());
                 }
                 break;
             }
             case ADMIN: {
                 AdminProfile adm = sessionManager.getAdminProfileLocal(uid);
                 if (adm != null) {
-                    db.collection(FirestoreCollections.ADMINISTRATORS).document(uid).set(adm.toMap());
+                    db.collection(FirestoreCollections.ADMINISTRATORS).document(uid)
+                            .set(adm.toMap(), com.google.firebase.firestore.SetOptions.merge());
                 }
                 break;
             }
@@ -523,7 +528,8 @@ public class AuthRepository {
             default: {
                 PatientProfile pat = sessionManager.getPatientProfileLocal(uid);
                 if (pat != null) {
-                    db.collection(FirestoreCollections.PATIENTS).document(uid).set(pat.toMap());
+                    db.collection(FirestoreCollections.PATIENTS).document(uid)
+                            .set(pat.toMap(), com.google.firebase.firestore.SetOptions.merge());
                 }
                 break;
             }

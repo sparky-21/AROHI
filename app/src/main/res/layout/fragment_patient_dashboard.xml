@@ -525,6 +525,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="Find Doctors"
                 android:textSize="12sp" />
 
@@ -535,6 +538,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="Medical Records"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -552,6 +558,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="Medical Calendar"
                 android:textSize="12sp" />
 
@@ -562,6 +571,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="Health Profile"
                 android:textSize="12sp" />
         </LinearLayout>

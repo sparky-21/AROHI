@@ -371,26 +371,65 @@ public class DashboardRepository {
     }
 
     private List<UserAccount> mergeFirestoreAndLocalUsers(List<DocumentSnapshot> firestoreDocs) {
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         Map<String, UserAccount> byUid = new LinkedHashMap<>();
-        for (UserAccount localAcc : sessionManager.getAllRegisteredAccounts()) {
-            if (localAcc.getUid() != null) {
-                byUid.put(localAcc.getUid(), localAcc);
-            }
-        }
+        Map<String, UserAccount> remoteByUid = new HashMap<>();
+
         if (firestoreDocs != null) {
             for (DocumentSnapshot doc : firestoreDocs) {
                 UserAccount remote = doc.toObject(UserAccount.class);
                 if (remote != null && remote.getUid() != null) {
-                    UserAccount existingLocal = byUid.get(remote.getUid());
-                    if (existingLocal != null && existingLocal.getUpdatedAt() > remote.getUpdatedAt()) {
-                        remote.setVerificationStatus(existingLocal.getVerificationStatus());
-                    }
-                    byUid.put(remote.getUid(), remote);
-                    sessionManager.upsertAccountInRegistry(remote);
+                    remoteByUid.put(remote.getUid(), remote);
                 }
             }
         }
+
+        for (UserAccount localAcc : sessionManager.getAllRegisteredAccounts()) {
+            if (localAcc.getUid() != null) {
+                byUid.put(localAcc.getUid(), localAcc);
+                if (db != null && !remoteByUid.containsKey(localAcc.getUid())) {
+                    // Push previously local-only account & its role profile to Cloud Firestore for global multi-phone visibility
+                    db.collection(FirestoreCollections.USERS).document(localAcc.getUid())
+                            .set(localAcc.toMap(), SetOptions.merge());
+                    pushLocalRoleProfileToCloud(db, localAcc);
+                }
+            }
+        }
+
+        for (UserAccount remote : remoteByUid.values()) {
+            UserAccount existingLocal = byUid.get(remote.getUid());
+            if (existingLocal != null && existingLocal.getUpdatedAt() > remote.getUpdatedAt()) {
+                remote.setVerificationStatus(existingLocal.getVerificationStatus());
+                if (db != null) {
+                    db.collection(FirestoreCollections.USERS).document(remote.getUid())
+                            .set(remote.toMap(), SetOptions.merge());
+                }
+            }
+            byUid.put(remote.getUid(), remote);
+            sessionManager.upsertAccountInRegistry(remote);
+        }
         return new ArrayList<>(byUid.values());
+    }
+
+    private void pushLocalRoleProfileToCloud(FirebaseFirestore db, UserAccount acc) {
+        if (db == null || acc == null || acc.getUid() == null) return;
+        String uid = acc.getUid();
+        com.arohi.healthcare.models.PatientProfile pat = sessionManager.getPatientProfileLocal(uid);
+        if (pat != null) {
+            db.collection(FirestoreCollections.PATIENTS).document(uid).set(pat.toMap(), SetOptions.merge());
+        }
+        com.arohi.healthcare.models.DoctorProfile doc = sessionManager.getDoctorProfileLocal(uid);
+        if (doc != null) {
+            db.collection(FirestoreCollections.DOCTORS).document(uid).set(doc.toMap(), SetOptions.merge());
+        }
+        NurseProfile nrs = sessionManager.getNurseProfileLocal(uid);
+        if (nrs != null) {
+            db.collection(FirestoreCollections.NURSES).document(uid).set(nrs.toMap(), SetOptions.merge());
+        }
+        com.arohi.healthcare.models.AdminProfile adm = sessionManager.getAdminProfileLocal(uid);
+        if (adm != null) {
+            db.collection(FirestoreCollections.ADMINISTRATORS).document(uid).set(adm.toMap(), SetOptions.merge());
+        }
     }
 
     /**

@@ -95,20 +95,26 @@
             android:textColor="@color/arohi_info_blue"
             android:textSize="12sp" />
 
-        <!-- Action Buttons Row -->
+        <!-- Action Buttons Row (Responsive Equal-Width Layout) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:gravity="end"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewDoctorProfile"
                 style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="View Profile"
                 android:textAllCaps="false"
                 android:textColor="@color/arohi_forest_primary"
@@ -118,8 +124,14 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRequestOrChatDoctor"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 android:text="Send Request"
                 android:textAllCaps="false"
                 android:textColor="@color/arohi_pure_white"

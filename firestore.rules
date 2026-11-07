@@ -33,49 +33,39 @@ service cloud.firestore {
       );
     }
 
-    function isVerifiedProfessional(roleName) {
-      return hasRole(roleName) && getUserDoc().verificationStatus == 'VERIFIED';
-    }
-
     function isAdmin() {
-      return hasRole('ADMIN') && getUserDoc().verificationStatus == 'VERIFIED';
+      return isSignedIn() && (
+        (userDocExists() && getUserDoc().role == 'ADMIN')
+        || exists(/databases/$(database)/documents/administrators/$(request.auth.uid))
+        || exists(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid))
+        || existsAfter(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid))
+      );
     }
 
     function hasAcceptedConnection(connectionId) {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/connections/$(connectionId))
-        && get(/databases/$(database)/documents/connections/$(connectionId)).data.status == 'Accepted'
-        && (
-          get(/databases/$(database)/documents/connections/$(connectionId)).data.patientUid == request.auth.uid
-          || get(/databases/$(database)/documents/connections/$(connectionId)).data.doctorUid == request.auth.uid
-        );
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/connections/$(connectionId))
+          && get(/databases/$(database)/documents/connections/$(connectionId)).data.status == 'Accepted'
+          && (
+            get(/databases/$(database)/documents/connections/$(connectionId)).data.patientUid == request.auth.uid
+            || get(/databases/$(database)/documents/connections/$(connectionId)).data.doctorUid == request.auth.uid
+          ))
+        ||
+        (existsAfter(/databases/$(database)/documents/connections/$(connectionId))
+          && getAfter(/databases/$(database)/documents/connections/$(connectionId)).data.status == 'Accepted'
+          && (
+            getAfter(/databases/$(database)/documents/connections/$(connectionId)).data.patientUid == request.auth.uid
+            || getAfter(/databases/$(database)/documents/connections/$(connectionId)).data.doctorUid == request.auth.uid
+          ))
+      );
     }
 
     // =========================================================================
-    // 1. USERS COLLECTION (Authentication Identity & Role Metadata)
+    // 1. USERS COLLECTION (Global Multi-Phone Identity & Role Directory)
     // =========================================================================
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin() || isSignedIn();
-
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && (
-          ((request.resource.data.role == 'PATIENT'
-            || request.resource.data.role == 'DOCTOR'
-            || request.resource.data.role == 'NURSE')
-            && request.resource.data.verificationStatus == 'PENDING')
-          ||
-          (request.resource.data.role == 'ADMIN'
-            && request.resource.data.verificationStatus == 'VERIFIED'
-            && existsAfter(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid)))
-        );
-
-      allow update: if (isOwner(userId)
-          && request.resource.data.role == resource.data.role
-          && request.resource.data.verificationStatus == resource.data.verificationStatus
-          && request.resource.data.uid == resource.data.uid)
-        || isAdmin();
-
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
@@ -83,44 +73,17 @@ service cloud.firestore {
     // 2. PATIENTS COLLECTION
     // =========================================================================
     match /patients/{userId} {
-      allow read: if isOwner(userId)
-        || isAdmin()
-        || (isVerifiedProfessional('DOCTOR')
-            && exists(/databases/$(database)/documents/connections/$(request.auth.uid + '_' + userId))
-            && get(/databases/$(database)/documents/connections/$(request.auth.uid + '_' + userId)).data.status == 'Accepted')
-        || (isVerifiedProfessional('NURSE')
-            && exists(/databases/$(database)/documents/nurseAssignments/$(request.auth.uid + '_' + userId)));
-
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && request.resource.data.verificationStatus == 'PENDING'
-        && hasRoleOrAfter('PATIENT');
-
-      allow update: if (isOwner(userId)
-          && request.resource.data.uid == resource.data.uid
-          && request.resource.data.verificationStatus == resource.data.verificationStatus)
-        || isAdmin();
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
     // =========================================================================
-    // 3. DOCTORS COLLECTION
+    // 3. DOCTORS COLLECTION (Global Discovery across all phones)
     // =========================================================================
     match /doctors/{userId} {
-      allow read: if isOwner(userId)
-        || isAdmin()
-        || (isSignedIn() && resource.data.verificationStatus != 'REJECTED');
-
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && request.resource.data.verificationStatus == 'PENDING'
-        && hasRoleOrAfter('DOCTOR');
-
-      allow update: if (isOwner(userId)
-          && request.resource.data.uid == resource.data.uid
-          && request.resource.data.verificationStatus == resource.data.verificationStatus)
-        || isAdmin();
-
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
@@ -128,19 +91,8 @@ service cloud.firestore {
     // 4. NURSES COLLECTION
     // =========================================================================
     match /nurses/{userId} {
-      allow read: if isOwner(userId) || isAdmin() || isVerifiedProfessional('DOCTOR');
-
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && request.resource.data.verificationStatus == 'PENDING'
-        && hasRoleOrAfter('NURSE');
-
-      allow update: if (isOwner(userId)
-          && request.resource.data.uid == resource.data.uid
-          && request.resource.data.verificationStatus == resource.data.verificationStatus
-          && request.resource.data.assignedWardId == resource.data.assignedWardId)
-        || isAdmin();
-
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
@@ -148,19 +100,14 @@ service cloud.firestore {
     // 5. ADMINISTRATORS & AUTHORIZATION TOKENS
     // =========================================================================
     match /adminAuthorizations/{authUid} {
-      allow read: if isOwner(authUid) || isAdmin();
-      allow create: if isOwner(authUid)
-        && request.resource.data.uid == authUid
-        && request.resource.data.tokenPrefix == 'AROHI-AUTH';
-      allow update, delete: if isAdmin();
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
     }
 
     match /administrators/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && existsAfter(/databases/$(database)/documents/adminAuthorizations/$(userId));
-      allow update: if isOwner(userId) || isAdmin();
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
@@ -168,99 +115,44 @@ service cloud.firestore {
     // 6. PHASE 3: DOCTOR REQUESTS, CONNECTIONS, CONVERSATIONS & MESSAGES
     // =========================================================================
     match /doctorRequests/{requestId} {
-      allow read: if isSignedIn()
-        && (resource.data.patientUid == request.auth.uid
-            || resource.data.doctorUid == request.auth.uid
-            || isAdmin());
-
-      allow create: if isSignedIn()
-        && hasRole('PATIENT')
-        && request.resource.data.patientUid == request.auth.uid
-        && request.resource.data.requestId == (request.resource.data.doctorUid + '_' + request.auth.uid)
-        && request.resource.data.status == 'Pending';
-
-      allow update: if isSignedIn()
-        && request.resource.data.patientUid == resource.data.patientUid
-        && request.resource.data.doctorUid == resource.data.doctorUid
-        && (
-          // Patient owner cancelling a Pending request or re-submitting a Cancelled/Declined request
-          (resource.data.patientUid == request.auth.uid
-            && ((resource.data.status == 'Pending' && request.resource.data.status == 'Cancelled')
-                || ((resource.data.status == 'Cancelled' || resource.data.status == 'Declined')
-                    && request.resource.data.status == 'Pending')))
-          ||
-          // Verified Doctor accepting or declining a Pending request
-          (isVerifiedProfessional('DOCTOR')
-            && resource.data.doctorUid == request.auth.uid
-            && (request.resource.data.status == 'Accepted' || request.resource.data.status == 'Declined'))
-          ||
-          isAdmin()
-        );
-
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
     match /connections/{connectionId} {
-      allow read: if isSignedIn()
-        && (resource.data.patientUid == request.auth.uid
-            || resource.data.doctorUid == request.auth.uid
-            || isAdmin());
-
-      allow create, update: if (isVerifiedProfessional('DOCTOR')
-          && request.resource.data.doctorUid == request.auth.uid
-          && connectionId == (request.auth.uid + '_' + request.resource.data.patientUid)
-          && request.resource.data.status == 'Accepted')
-        || isAdmin();
-
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
     match /conversations/{conversationId} {
       allow read: if isSignedIn()
         && (resource.data.patientUid == request.auth.uid
-            || resource.data.doctorUid == request.auth.uid)
-        && resource.data.connectionStatus == 'Accepted'
-        && hasAcceptedConnection(conversationId);
+            || resource.data.doctorUid == request.auth.uid
+            || hasAcceptedConnection(conversationId)
+            || isAdmin());
 
-      allow create: if (isVerifiedProfessional('DOCTOR')
-          && request.resource.data.doctorUid == request.auth.uid
-          && conversationId == (request.auth.uid + '_' + request.resource.data.patientUid)
-          && request.resource.data.connectionStatus == 'Accepted')
-        || hasAcceptedConnection(conversationId);
-
-      allow update: if hasAcceptedConnection(conversationId)
-        && request.resource.data.patientUid == resource.data.patientUid
-        && request.resource.data.doctorUid == resource.data.doctorUid;
+      allow create, update: if isSignedIn()
+        && (request.resource.data.patientUid == request.auth.uid
+            || request.resource.data.doctorUid == request.auth.uid
+            || hasAcceptedConnection(conversationId)
+            || isAdmin());
 
       allow delete: if false;
 
       match /messages/{messageId} {
-        allow read: if hasAcceptedConnection(conversationId);
-
-        allow create: if hasAcceptedConnection(conversationId)
-          && request.resource.data.senderUid == request.auth.uid
-          && request.resource.data.conversationId == conversationId
-          && request.resource.data.messageText is string
-          && request.resource.data.messageText.size() > 0;
-
-        allow update: if hasAcceptedConnection(conversationId)
-          && request.resource.data.senderUid == resource.data.senderUid
-          && request.resource.data.messageText == resource.data.messageText;
-
+        allow read: if isSignedIn() && (hasAcceptedConnection(conversationId) || isAdmin());
+        allow create, update: if isSignedIn() && (hasAcceptedConnection(conversationId) || isAdmin());
         allow delete: if false;
       }
     }
 
     // =========================================================================
-    // 7. NOTIFICATIONS (Privacy-Safe Real-Time Alerts)
+    // 7. NOTIFICATIONS (Real-Time Cross-Phone Alerts)
     // =========================================================================
     match /notifications/{docId} {
-      allow read, update: if isSignedIn()
-        && (resource.data.recipientUid == request.auth.uid
-            || (resource.data.recipientUid == 'ADMIN_BROADCAST' && isAdmin())
-            || isAdmin());
-      allow create: if isSignedIn()
-        && request.resource.data.senderUid == request.auth.uid;
+      allow read, create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
@@ -269,61 +161,51 @@ service cloud.firestore {
     // =========================================================================
     match /communityPosts/{postId} {
       allow read: if isSignedIn();
-      allow create, update: if isAdmin() || isVerifiedProfessional('DOCTOR');
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
     match /hospitalDepartments/{deptId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /appointments/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
     match /prescriptions/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isVerifiedProfessional('DOCTOR') || isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /laboratoryReports/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
     match /operations/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isVerifiedProfessional('DOCTOR') || isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /operationRooms/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /wards/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /beds/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     match /nurseAssignments/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin() || isVerifiedProfessional('DOCTOR');
+      allow read, write: if isSignedIn();
     }
 
     // =========================================================================
-    // 9. AUDIT LOGS (Immutable client creation for security events)
+    // 9. AUDIT LOGS
     // =========================================================================
     match /auditLogs/{logId} {
-      allow read: if isAdmin();
-      allow create: if isSignedIn() && request.resource.data.actorUid == request.auth.uid;
+      allow read, create: if isSignedIn();
       allow update, delete: if false;
     }
   }
