@@ -176,4 +176,12 @@ public class NurseProfile {
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getArohiId() {
+        return nurseId;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        // Optional timestamp setter for profile updates
+    }
 }

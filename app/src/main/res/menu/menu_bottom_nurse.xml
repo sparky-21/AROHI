@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_nurse_dashboard"
+        android:icon="@drawable/ic_nav_home"
+        android:title="Dashboard" />
+    <item
+        android:id="@+id/nav_nurse_patients"
+        android:icon="@drawable/ic_role_patient"
+        android:title="Patients" />
+    <item
+        android:id="@+id/nav_nurse_tasks"
+        android:icon="@drawable/ic_nav_records"
+        android:title="Tasks" />
+    <item
+        android:id="@+id/nav_nurse_schedule"
+        android:icon="@drawable/ic_calendar"
+        android:title="Schedule" />
+    <item
+        android:id="@+id/nav_nurse_profile"
+        android:icon="@drawable/ic_role_nurse"
+        android:title="Profile" />
+</menu>

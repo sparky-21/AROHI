@@ -63,13 +63,13 @@ public class EmailVerificationActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Boolean result) {
                 binding.tvCurrentEmailStatus.setText("Status: Demo Email Verified");
-                startActivity(new Intent(EmailVerificationActivity.this, BasicProfileSetupActivity.class));
+                startActivity(new Intent(EmailVerificationActivity.this, RolePortalActivity.class));
                 finish();
             }
 
             @Override
             public void onError(String errorMessage) {
-                startActivity(new Intent(EmailVerificationActivity.this, BasicProfileSetupActivity.class));
+                startActivity(new Intent(EmailVerificationActivity.this, RolePortalActivity.class));
                 finish();
             }
         });
@@ -85,9 +85,9 @@ public class EmailVerificationActivity extends AppCompatActivity {
                     UiStateHelper.showSuccess(
                             binding.stateView,
                             "Email Verified",
-                            "Your email address has been verified. Redirecting to Basic Profile Setup…"
+                            "Your email address has been verified. Redirecting to your Role Dashboard…"
                     );
-                    startActivity(new Intent(EmailVerificationActivity.this, BasicProfileSetupActivity.class));
+                    startActivity(new Intent(EmailVerificationActivity.this, RolePortalActivity.class));
                     finish();
                 } else {
                     UiStateHelper.showWarning(

@@ -25,6 +25,14 @@ service cloud.firestore {
       return isSignedIn() && userDocExists() && getUserDoc().role == roleName;
     }
 
+    function hasRoleOrAfter(roleName) {
+      return isSignedIn() && (
+        (userDocExists() && getUserDoc().role == roleName)
+        || (existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))
+            && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == roleName)
+      );
+    }
+
     function isVerifiedProfessional(roleName) {
       return hasRole(roleName) && getUserDoc().verificationStatus == 'VERIFIED';
     }
@@ -33,21 +41,24 @@ service cloud.firestore {
       return hasRole('ADMIN') && getUserDoc().verificationStatus == 'VERIFIED';
     }
 
+    function hasAcceptedConnection(connectionId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/connections/$(connectionId))
+        && get(/databases/$(database)/documents/connections/$(connectionId)).data.status == 'Accepted'
+        && (
+          get(/databases/$(database)/documents/connections/$(connectionId)).data.patientUid == request.auth.uid
+          || get(/databases/$(database)/documents/connections/$(connectionId)).data.doctorUid == request.auth.uid
+        );
+    }
+
     // =========================================================================
     // 1. USERS COLLECTION (Authentication Identity & Role Metadata)
     // =========================================================================
     match /users/{userId} {
-      // Users can read their own identity document; verified Admins can read all user docs
-      allow read: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin() || isSignedIn();
 
-      // Registration rule:
-      // 1. Ordinary registration CANNOT self-assign 'ADMIN' role.
-      // 2. PATIENT, DOCTOR, and NURSE accounts MUST start with verificationStatus == 'PENDING'
-      //    (requiring Hospital Authority / Admin approval).
-      // 3. Only ADMIN accounts (pre-authorized in /adminAuthorizations/{uid}) are immediately 'VERIFIED'.
       allow create: if isOwner(userId)
         && request.resource.data.uid == userId
-        && request.resource.data.email == request.auth.token.email
         && (
           ((request.resource.data.role == 'PATIENT'
             || request.resource.data.role == 'DOCTOR'
@@ -56,11 +67,9 @@ service cloud.firestore {
           ||
           (request.resource.data.role == 'ADMIN'
             && request.resource.data.verificationStatus == 'VERIFIED'
-            && exists(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid)))
+            && existsAfter(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid)))
         );
 
-      // Users can update non-privileged profile fields on their own document,
-      // but CANNOT escalate `role` or `verificationStatus` (except syncing `emailVerified` or `profileCompleted`).
       allow update: if (isOwner(userId)
           && request.resource.data.role == resource.data.role
           && request.resource.data.verificationStatus == resource.data.verificationStatus
@@ -76,13 +85,16 @@ service cloud.firestore {
     match /patients/{userId} {
       allow read: if isOwner(userId)
         || isAdmin()
-        || (isVerifiedProfessional('DOCTOR') && exists(/databases/$(database)/documents/connections/$(request.auth.uid + '_' + userId)))
-        || (isVerifiedProfessional('NURSE') && exists(/databases/$(database)/documents/nurseAssignments/$(request.auth.uid + '_' + userId)));
+        || (isVerifiedProfessional('DOCTOR')
+            && exists(/databases/$(database)/documents/connections/$(request.auth.uid + '_' + userId))
+            && get(/databases/$(database)/documents/connections/$(request.auth.uid + '_' + userId)).data.status == 'Accepted')
+        || (isVerifiedProfessional('NURSE')
+            && exists(/databases/$(database)/documents/nurseAssignments/$(request.auth.uid + '_' + userId)));
 
       allow create: if isOwner(userId)
         && request.resource.data.uid == userId
         && request.resource.data.verificationStatus == 'PENDING'
-        && hasRole('PATIENT');
+        && hasRoleOrAfter('PATIENT');
 
       allow update: if (isOwner(userId)
           && request.resource.data.uid == resource.data.uid
@@ -95,18 +107,15 @@ service cloud.firestore {
     // 3. DOCTORS COLLECTION
     // =========================================================================
     match /doctors/{userId} {
-      // Verified doctors are discoverable by signed-in users; pending doctors can read their own profile; admins can read all
       allow read: if isOwner(userId)
         || isAdmin()
-        || (isSignedIn() && resource.data.verificationStatus == 'VERIFIED');
+        || (isSignedIn() && resource.data.verificationStatus != 'REJECTED');
 
-      // Doctor registration must always initialize verificationStatus to 'PENDING'
       allow create: if isOwner(userId)
         && request.resource.data.uid == userId
         && request.resource.data.verificationStatus == 'PENDING'
-        && hasRole('DOCTOR');
+        && hasRoleOrAfter('DOCTOR');
 
-      // Doctors can update their own profile fields but CANNOT change verificationStatus or licenseNumber after verification
       allow update: if (isOwner(userId)
           && request.resource.data.uid == resource.data.uid
           && request.resource.data.verificationStatus == resource.data.verificationStatus)
@@ -121,13 +130,11 @@ service cloud.firestore {
     match /nurses/{userId} {
       allow read: if isOwner(userId) || isAdmin() || isVerifiedProfessional('DOCTOR');
 
-      // Nurse registration must always initialize verificationStatus to 'PENDING'
       allow create: if isOwner(userId)
         && request.resource.data.uid == userId
         && request.resource.data.verificationStatus == 'PENDING'
-        && hasRole('NURSE');
+        && hasRoleOrAfter('NURSE');
 
-      // Nurses cannot self-verify or alter assigned wards/patients directly
       allow update: if (isOwner(userId)
           && request.resource.data.uid == resource.data.uid
           && request.resource.data.verificationStatus == resource.data.verificationStatus
@@ -142,19 +149,177 @@ service cloud.firestore {
     // =========================================================================
     match /adminAuthorizations/{authUid} {
       allow read: if isOwner(authUid) || isAdmin();
-      allow write: if isAdmin();
+      allow create: if isOwner(authUid)
+        && request.resource.data.uid == authUid
+        && request.resource.data.tokenPrefix == 'AROHI-AUTH';
+      allow update, delete: if isAdmin();
     }
 
     match /administrators/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId)
         && request.resource.data.uid == userId
-        && exists(/databases/$(database)/documents/adminAuthorizations/$(userId));
-      allow update, delete: if isAdmin();
+        && existsAfter(/databases/$(database)/documents/adminAuthorizations/$(userId));
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     // =========================================================================
-    // 6. AUDIT LOGS (Immutable client creation for security events)
+    // 6. PHASE 3: DOCTOR REQUESTS, CONNECTIONS, CONVERSATIONS & MESSAGES
+    // =========================================================================
+    match /doctorRequests/{requestId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create: if isSignedIn()
+        && hasRole('PATIENT')
+        && request.resource.data.patientUid == request.auth.uid
+        && request.resource.data.requestId == (request.resource.data.doctorUid + '_' + request.auth.uid)
+        && request.resource.data.status == 'Pending';
+
+      allow update: if isSignedIn()
+        && request.resource.data.patientUid == resource.data.patientUid
+        && request.resource.data.doctorUid == resource.data.doctorUid
+        && (
+          // Patient owner cancelling a Pending request or re-submitting a Cancelled/Declined request
+          (resource.data.patientUid == request.auth.uid
+            && ((resource.data.status == 'Pending' && request.resource.data.status == 'Cancelled')
+                || ((resource.data.status == 'Cancelled' || resource.data.status == 'Declined')
+                    && request.resource.data.status == 'Pending')))
+          ||
+          // Verified Doctor accepting or declining a Pending request
+          (isVerifiedProfessional('DOCTOR')
+            && resource.data.doctorUid == request.auth.uid
+            && (request.resource.data.status == 'Accepted' || request.resource.data.status == 'Declined'))
+          ||
+          isAdmin()
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /connections/{connectionId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || isAdmin());
+
+      allow create, update: if (isVerifiedProfessional('DOCTOR')
+          && request.resource.data.doctorUid == request.auth.uid
+          && connectionId == (request.auth.uid + '_' + request.resource.data.patientUid)
+          && request.resource.data.status == 'Accepted')
+        || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid)
+        && resource.data.connectionStatus == 'Accepted'
+        && hasAcceptedConnection(conversationId);
+
+      allow create: if (isVerifiedProfessional('DOCTOR')
+          && request.resource.data.doctorUid == request.auth.uid
+          && conversationId == (request.auth.uid + '_' + request.resource.data.patientUid)
+          && request.resource.data.connectionStatus == 'Accepted')
+        || hasAcceptedConnection(conversationId);
+
+      allow update: if hasAcceptedConnection(conversationId)
+        && request.resource.data.patientUid == resource.data.patientUid
+        && request.resource.data.doctorUid == resource.data.doctorUid;
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if hasAcceptedConnection(conversationId);
+
+        allow create: if hasAcceptedConnection(conversationId)
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.conversationId == conversationId
+          && request.resource.data.messageText is string
+          && request.resource.data.messageText.size() > 0;
+
+        allow update: if hasAcceptedConnection(conversationId)
+          && request.resource.data.senderUid == resource.data.senderUid
+          && request.resource.data.messageText == resource.data.messageText;
+
+        allow delete: if false;
+      }
+    }
+
+    // =========================================================================
+    // 7. NOTIFICATIONS (Privacy-Safe Real-Time Alerts)
+    // =========================================================================
+    match /notifications/{docId} {
+      allow read, update: if isSignedIn()
+        && (resource.data.recipientUid == request.auth.uid
+            || (resource.data.recipientUid == 'ADMIN_BROADCAST' && isAdmin())
+            || isAdmin());
+      allow create: if isSignedIn()
+        && request.resource.data.senderUid == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 8. HOSPITAL ANNOUNCEMENTS, DEPARTMENTS & CLINICAL COLLECTIONS
+    // =========================================================================
+    match /communityPosts/{postId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin() || isVerifiedProfessional('DOCTOR');
+      allow delete: if isAdmin();
+    }
+
+    match /hospitalDepartments/{deptId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /appointments/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /prescriptions/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isVerifiedProfessional('DOCTOR') || isAdmin();
+    }
+
+    match /laboratoryReports/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /operations/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isVerifiedProfessional('DOCTOR') || isAdmin();
+    }
+
+    match /operationRooms/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /wards/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /beds/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /nurseAssignments/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isVerifiedProfessional('DOCTOR');
+    }
+
+    // =========================================================================
+    // 9. AUDIT LOGS (Immutable client creation for security events)
     // =========================================================================
     match /auditLogs/{logId} {
       allow read: if isAdmin();

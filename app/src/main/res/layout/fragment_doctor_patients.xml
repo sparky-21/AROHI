@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/arohi_soft_ivory"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Verification Gate Warning Banner for Unverified Doctors -->
+    <LinearLayout
+        android:id="@+id/bannerDocPatientsVerification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_status_badge_amber"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:text="BMDC VERIFICATION REQUIRED FOR CLINICAL ACTIONS"
+            android:textColor="@color/arohi_amber_warning"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="sans-serif"
+            android:text="Your account is awaiting Hospital Administrator approval. Accepting/declining consultation requests and viewing patient clinical profiles unlock once VERIFIED."
+            android:textColor="@color/arohi_charcoal_text"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Mode Toggle: Incoming Requests vs Accepted Patients -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_card_elevated"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDocTabIncomingRequests"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="Incoming Requests"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            app:cornerRadius="10dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDocTabAcceptedPatients"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="Accepted Patients"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            app:cornerRadius="10dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvDocPatientsSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Review incoming patient consultation requests"
+        android:textColor="@color/arohi_slate_muted"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tvEmptyDocPatients"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/bg_card_elevated"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:padding="24dp"
+        android:text="No consultation requests found."
+        android:textColor="@color/arohi_slate_muted"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvDoctorRequestsAndPatients"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

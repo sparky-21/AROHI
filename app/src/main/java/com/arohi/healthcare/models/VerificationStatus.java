@@ -26,6 +26,10 @@ public enum VerificationStatus {
         return description;
     }
 
+    public String getDisplayLabel() {
+        return description;
+    }
+
     public static VerificationStatus fromKey(String key) {
         if (key == null) {
             return PENDING;

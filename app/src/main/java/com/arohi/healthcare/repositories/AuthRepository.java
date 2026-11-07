@@ -3,6 +3,7 @@ package com.arohi.healthcare.repositories;
 import android.content.Context;
 import com.arohi.healthcare.database.FirestoreCollections;
 import com.arohi.healthcare.models.AdminProfile;
+import com.arohi.healthcare.models.AppNotification;
 import com.arohi.healthcare.models.DoctorProfile;
 import com.arohi.healthcare.models.NurseProfile;
 import com.arohi.healthcare.models.PatientProfile;
@@ -71,9 +72,16 @@ public class AuthRepository {
             // Patients start as PENDING until approved by Hospital Admin
             UserAccount account = new UserAccount(
                     uid, patientId, normalizedEmail, fullName.trim(), phone.trim(),
-                    UserRole.PATIENT, VerificationStatus.PENDING, true, false
+                    UserRole.PATIENT, VerificationStatus.PENDING, false, false
+            );
+            PatientProfile patientProfile = new PatientProfile(
+                    uid, patientId, fullName.trim(), normalizedEmail, phone.trim(),
+                    dob.trim(), gender.trim(), bloodGroup.trim().toUpperCase(Locale.US),
+                    emergencyName.trim(), emergencyPhone.trim(), allergies.trim()
             );
             sessionManager.saveUserSession(account);
+            sessionManager.savePatientProfileLocal(patientProfile);
+            dispatchAdminRegistrationNotification(null, uid, fullName.trim(), patientId, "PATIENT", "Blood Group: " + bloodGroup.trim().toUpperCase(Locale.US));
             callback.onSuccess(account);
             return;
         }
@@ -92,21 +100,23 @@ public class AuthRepository {
                     UserAccount userAccount = new UserAccount(
                             uid, patientId, normalizedEmail, fullName.trim(), phone.trim(),
                             UserRole.PATIENT, VerificationStatus.PENDING,
-                            true, false
+                            firebaseUser.isEmailVerified(), false
                     );
 
                     PatientProfile patientProfile = new PatientProfile(
                             uid, patientId, fullName.trim(), normalizedEmail, phone.trim(),
-                            dob.trim(), gender.trim(), bloodGroup.trim().toUpperCase(),
+                            dob.trim(), gender.trim(), bloodGroup.trim().toUpperCase(Locale.US),
                             emergencyName.trim(), emergencyPhone.trim(), allergies.trim()
                     );
 
-                    // Save session immediately so user is never blocked even if Firestore rules aren't published yet
+                    firebaseUser.sendEmailVerification();
                     sessionManager.saveUserSession(userAccount);
+                    sessionManager.savePatientProfileLocal(patientProfile);
 
                     WriteBatch batch = db.batch();
                     batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
                     batch.set(db.collection(FirestoreCollections.PATIENTS).document(uid), patientProfile.toMap());
+                    dispatchAdminRegistrationNotification(batch, uid, fullName.trim(), patientId, "PATIENT", "Blood Group: " + bloodGroup.trim().toUpperCase(Locale.US));
 
                     batch.commit()
                             .addOnSuccessListener(unused -> callback.onSuccess(userAccount))
@@ -137,9 +147,16 @@ public class AuthRepository {
             // Doctors MUST remain PENDING until verified by Hospital Authority
             UserAccount account = new UserAccount(
                     uid, doctorId, normalizedEmail, fullName.trim(), phone.trim(),
-                    UserRole.DOCTOR, VerificationStatus.PENDING, true, false
+                    UserRole.DOCTOR, VerificationStatus.PENDING, false, false
+            );
+            DoctorProfile doctorProfile = new DoctorProfile(
+                    uid, doctorId, fullName.trim(), normalizedEmail, phone.trim(),
+                    licenseNumber.trim(), specialty.trim(), qualifications.trim(),
+                    department.trim(), experienceYears, consultationFee
             );
             sessionManager.saveUserSession(account);
+            sessionManager.saveDoctorProfileLocal(doctorProfile);
+            dispatchAdminRegistrationNotification(null, uid, fullName.trim(), doctorId, "DOCTOR", "BMDC: " + licenseNumber.trim() + " • " + specialty.trim());
             callback.onSuccess(account);
             return;
         }
@@ -158,7 +175,7 @@ public class AuthRepository {
                     UserAccount userAccount = new UserAccount(
                             uid, doctorId, normalizedEmail, fullName.trim(), phone.trim(),
                             UserRole.DOCTOR, VerificationStatus.PENDING,
-                            true, false
+                            firebaseUser.isEmailVerified(), false
                     );
 
                     DoctorProfile doctorProfile = new DoctorProfile(
@@ -167,11 +184,14 @@ public class AuthRepository {
                             department.trim(), experienceYears, consultationFee
                     );
 
+                    firebaseUser.sendEmailVerification();
                     sessionManager.saveUserSession(userAccount);
+                    sessionManager.saveDoctorProfileLocal(doctorProfile);
 
                     WriteBatch batch = db.batch();
                     batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
                     batch.set(db.collection(FirestoreCollections.DOCTORS).document(uid), doctorProfile.toMap());
+                    dispatchAdminRegistrationNotification(batch, uid, fullName.trim(), doctorId, "DOCTOR", "BMDC: " + licenseNumber.trim() + " • " + specialty.trim());
 
                     batch.commit()
                             .addOnSuccessListener(unused -> callback.onSuccess(userAccount))
@@ -199,9 +219,16 @@ public class AuthRepository {
             // Nurses MUST remain PENDING until verified by Hospital Authority
             UserAccount account = new UserAccount(
                     uid, nurseId, normalizedEmail, fullName.trim(), phone.trim(),
-                    UserRole.NURSE, VerificationStatus.PENDING, true, false
+                    UserRole.NURSE, VerificationStatus.PENDING, false, false
+            );
+            NurseProfile nurseProfile = new NurseProfile(
+                    uid, nurseId, fullName.trim(), normalizedEmail, phone.trim(),
+                    nursingLicense.trim(), qualification.trim(),
+                    preferredWard.trim(), shiftPreference.trim()
             );
             sessionManager.saveUserSession(account);
+            sessionManager.saveNurseProfileLocal(nurseProfile);
+            dispatchAdminRegistrationNotification(null, uid, fullName.trim(), nurseId, "NURSE", "BNMC: " + nursingLicense.trim() + " • " + preferredWard.trim());
             callback.onSuccess(account);
             return;
         }
@@ -219,7 +246,7 @@ public class AuthRepository {
                     UserAccount userAccount = new UserAccount(
                             uid, nurseId, normalizedEmail, fullName.trim(), phone.trim(),
                             UserRole.NURSE, VerificationStatus.PENDING,
-                            true, false
+                            firebaseUser.isEmailVerified(), false
                     );
 
                     NurseProfile nurseProfile = new NurseProfile(
@@ -228,11 +255,14 @@ public class AuthRepository {
                             preferredWard.trim(), shiftPreference.trim()
                     );
 
+                    firebaseUser.sendEmailVerification();
                     sessionManager.saveUserSession(userAccount);
+                    sessionManager.saveNurseProfileLocal(nurseProfile);
 
                     WriteBatch batch = db.batch();
                     batch.set(db.collection(FirestoreCollections.USERS).document(uid), userAccount.toMap());
                     batch.set(db.collection(FirestoreCollections.NURSES).document(uid), nurseProfile.toMap());
+                    dispatchAdminRegistrationNotification(batch, uid, fullName.trim(), nurseId, "NURSE", "BNMC: " + nursingLicense.trim() + " • " + preferredWard.trim());
 
                     batch.commit()
                             .addOnSuccessListener(unused -> callback.onSuccess(userAccount))
@@ -267,9 +297,14 @@ public class AuthRepository {
             // Validated via Institutional Authorization Token -> Immediately VERIFIED
             UserAccount account = new UserAccount(
                     uid, adminId, normalizedEmail, fullName.trim(), phone.trim(),
-                    UserRole.ADMIN, VerificationStatus.VERIFIED, true, false
+                    UserRole.ADMIN, VerificationStatus.VERIFIED, false, false
+            );
+            AdminProfile adminProfile = new AdminProfile(
+                    uid, adminId, fullName.trim(), normalizedEmail, phone.trim(),
+                    employeeId.trim(), designation.trim(), VerificationStatus.VERIFIED
             );
             sessionManager.saveUserSession(account);
+            sessionManager.saveAdminProfileLocal(adminProfile);
             callback.onSuccess(account);
             return;
         }
@@ -287,7 +322,7 @@ public class AuthRepository {
                     UserAccount userAccount = new UserAccount(
                             uid, adminId, normalizedEmail, fullName.trim(), phone.trim(),
                             UserRole.ADMIN, VerificationStatus.VERIFIED,
-                            true, false
+                            firebaseUser.isEmailVerified(), false
                     );
 
                     AdminProfile adminProfile = new AdminProfile(
@@ -295,7 +330,9 @@ public class AuthRepository {
                             employeeId.trim(), designation.trim(), VerificationStatus.VERIFIED
                     );
 
+                    firebaseUser.sendEmailVerification();
                     sessionManager.saveUserSession(userAccount);
+                    sessionManager.saveAdminProfileLocal(adminProfile);
 
                     Map<String, Object> authRecord = new HashMap<>();
                     authRecord.put("uid", uid);
@@ -314,6 +351,27 @@ public class AuthRepository {
                             .addOnFailureListener(e -> callback.onSuccess(userAccount));
                 })
                 .addOnFailureListener(e -> callback.onError(e.getMessage() != null ? e.getMessage() : "Admin setup failed."));
+    }
+
+    private void dispatchAdminRegistrationNotification(WriteBatch batch, String senderUid,
+                                                       String fullName, String arohiId,
+                                                       String roleName, String detail) {
+        String notifId = "notif_reg_" + UUID.randomUUID().toString().substring(0, 10);
+        AppNotification adminNotif = new AppNotification(
+                notifId,
+                "ADMIN_BROADCAST",
+                senderUid,
+                fullName,
+                "NEW_ACCOUNT_REGISTRATION",
+                "New " + roleName + " Registration Pending Approval",
+                fullName + " (" + arohiId + " • " + detail + ") registered and is awaiting Hospital Admin verification.",
+                senderUid
+        );
+        sessionManager.saveNotificationLocal(adminNotif);
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+        if (batch != null && db != null) {
+            batch.set(db.collection(FirestoreCollections.NOTIFICATIONS).document(notifId), adminNotif.toMap());
+        }
     }
 
     /**
@@ -376,14 +434,17 @@ public class AuthRepository {
             return;
         }
 
-        db.collection(FirestoreCollections.USERS).document(firebaseUser.getUid()).get()
+        String uid = firebaseUser.getUid();
+        db.collection(FirestoreCollections.USERS).document(uid).get()
                 .addOnSuccessListener((DocumentSnapshot snapshot) -> {
                     if (!snapshot.exists()) {
-                        // Auto-recover from cached account or create default Patient profile in Firestore
+                        // Auto-recover from local registry or cached account
                         String email = firebaseUser.getEmail() != null ? firebaseUser.getEmail().toLowerCase(Locale.US) : "";
-                        UserAccount recovered = sessionManager.getCachedAccountByEmail(email);
+                        UserAccount recovered = sessionManager.getRegisteredAccountByUid(uid);
                         if (recovered == null) {
-                            String uid = firebaseUser.getUid();
+                            recovered = sessionManager.getCachedAccountByEmail(email);
+                        }
+                        if (recovered == null) {
                             String patId = IdGenerator.generateRoleIdentifier(UserRole.PATIENT, uid);
                             recovered = new UserAccount(
                                     uid, patId, email,
@@ -395,7 +456,8 @@ public class AuthRepository {
                         }
                         UserAccount finalRecovered = recovered;
                         sessionManager.saveUserSession(finalRecovered);
-                        db.collection(FirestoreCollections.USERS).document(firebaseUser.getUid()).set(finalRecovered.toMap());
+                        db.collection(FirestoreCollections.USERS).document(uid).set(finalRecovered.toMap());
+                        syncLocalRoleProfileToFirestore(db, uid, finalRecovered.getUserRoleEnum());
                         callback.onSuccess(finalRecovered);
                         return;
                     }
@@ -404,14 +466,25 @@ public class AuthRepository {
                         callback.onError("Failed to parse user profile document.");
                         return;
                     }
+                    // If Admin approved this account locally while Firestore write was blocked, preserve local status
+                    UserAccount localRegistry = sessionManager.getRegisteredAccountByUid(uid);
+                    if (localRegistry != null
+                            && localRegistry.getVerificationStatusEnum() == VerificationStatus.VERIFIED
+                            && account.getVerificationStatusEnum() == VerificationStatus.PENDING) {
+                        account.setVerificationStatus(VerificationStatus.VERIFIED.getKey());
+                    }
                     account.setEmailVerified(true);
                     sessionManager.saveUserSession(account);
+                    syncLocalRoleProfileToFirestore(db, uid, account.getUserRoleEnum());
                     callback.onSuccess(account);
                 })
                 .addOnFailureListener(e -> {
-                    // If Firestore read fails (e.g. rules not published yet), fall back to cached session
+                    // If Firestore read fails (e.g. rules not published yet), fall back to local registry or cached session
                     String email = firebaseUser.getEmail() != null ? firebaseUser.getEmail().toLowerCase(Locale.US) : "";
-                    UserAccount cached = sessionManager.getCachedAccountByEmail(email);
+                    UserAccount cached = sessionManager.getRegisteredAccountByUid(uid);
+                    if (cached == null) {
+                        cached = sessionManager.getCachedAccountByEmail(email);
+                    }
                     if (cached != null) {
                         cached.setEmailVerified(true);
                         sessionManager.saveUserSession(cached);
@@ -420,6 +493,41 @@ public class AuthRepository {
                         callback.onError("Failed to load user role from Firestore: " + e.getMessage());
                     }
                 });
+    }
+
+    private void syncLocalRoleProfileToFirestore(FirebaseFirestore db, String uid, UserRole role) {
+        if (db == null || uid == null || role == null) return;
+        switch (role) {
+            case DOCTOR: {
+                DoctorProfile doc = sessionManager.getDoctorProfileLocal(uid);
+                if (doc != null) {
+                    db.collection(FirestoreCollections.DOCTORS).document(uid).set(doc.toMap());
+                }
+                break;
+            }
+            case NURSE: {
+                NurseProfile nurse = sessionManager.getNurseProfileLocal(uid);
+                if (nurse != null) {
+                    db.collection(FirestoreCollections.NURSES).document(uid).set(nurse.toMap());
+                }
+                break;
+            }
+            case ADMIN: {
+                AdminProfile adm = sessionManager.getAdminProfileLocal(uid);
+                if (adm != null) {
+                    db.collection(FirestoreCollections.ADMINISTRATORS).document(uid).set(adm.toMap());
+                }
+                break;
+            }
+            case PATIENT:
+            default: {
+                PatientProfile pat = sessionManager.getPatientProfileLocal(uid);
+                if (pat != null) {
+                    db.collection(FirestoreCollections.PATIENTS).document(uid).set(pat.toMap());
+                }
+                break;
+            }
+        }
     }
 
     /**
@@ -506,10 +614,11 @@ public class AuthRepository {
         current.setBioNotes(bioNotes.trim());
         current.setProfileCompleted(true);
         current.setUpdatedAt(System.currentTimeMillis());
+        sessionManager.saveUserSession(current);
+        updateLocalRoleProfileBasicFields(current);
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
-            sessionManager.saveUserSession(current);
             callback.onSuccess(current);
             return;
         }
@@ -522,13 +631,93 @@ public class AuthRepository {
         updates.put("profileCompleted", true);
         updates.put("updatedAt", current.getUpdatedAt());
 
-        db.collection(FirestoreCollections.USERS).document(current.getUid())
-                .update(updates)
-                .addOnSuccessListener(unused -> {
-                    sessionManager.saveUserSession(current);
-                    callback.onSuccess(current);
-                })
-                .addOnFailureListener(e -> callback.onError("Failed to update basic profile: " + e.getMessage()));
+        String roleCollection;
+        switch (current.getUserRoleEnum()) {
+            case DOCTOR:
+                roleCollection = FirestoreCollections.DOCTORS;
+                break;
+            case NURSE:
+                roleCollection = FirestoreCollections.NURSES;
+                break;
+            case ADMIN:
+                roleCollection = FirestoreCollections.ADMINISTRATORS;
+                break;
+            case PATIENT:
+            default:
+                roleCollection = FirestoreCollections.PATIENTS;
+                break;
+        }
+
+        Map<String, Object> roleUpdates = new HashMap<>();
+        roleUpdates.put("fullName", current.getFullName());
+        roleUpdates.put("phone", current.getPhone());
+        roleUpdates.put("address", current.getAddress());
+        roleUpdates.put("bioNotes", current.getBioNotes());
+
+        WriteBatch batch = db.batch();
+        batch.update(db.collection(FirestoreCollections.USERS).document(current.getUid()), updates);
+        batch.update(db.collection(roleCollection).document(current.getUid()), roleUpdates);
+
+        batch.commit()
+                .addOnSuccessListener(unused -> callback.onSuccess(current))
+                .addOnFailureListener(e -> {
+                    // Fallback to updating /users/{uid} alone or succeeding from local persistence
+                    db.collection(FirestoreCollections.USERS).document(current.getUid())
+                            .update(updates)
+                            .addOnSuccessListener(u -> callback.onSuccess(current))
+                            .addOnFailureListener(err -> callback.onSuccess(current));
+                });
+    }
+
+    private void updateLocalRoleProfileBasicFields(UserAccount current) {
+        String uid = current.getUid();
+        switch (current.getUserRoleEnum()) {
+            case DOCTOR: {
+                DoctorProfile d = sessionManager.getDoctorProfileLocal(uid);
+                if (d != null) {
+                    d.setFullName(current.getFullName());
+                    d.setPhone(current.getPhone());
+                    d.setAddress(current.getAddress());
+                    d.setBioNotes(current.getBioNotes());
+                    sessionManager.saveDoctorProfileLocal(d);
+                }
+                break;
+            }
+            case NURSE: {
+                NurseProfile n = sessionManager.getNurseProfileLocal(uid);
+                if (n != null) {
+                    n.setFullName(current.getFullName());
+                    n.setPhone(current.getPhone());
+                    n.setAddress(current.getAddress());
+                    n.setBioNotes(current.getBioNotes());
+                    sessionManager.saveNurseProfileLocal(n);
+                }
+                break;
+            }
+            case ADMIN: {
+                AdminProfile a = sessionManager.getAdminProfileLocal(uid);
+                if (a != null) {
+                    a.setFullName(current.getFullName());
+                    a.setPhone(current.getPhone());
+                    a.setHospitalAddress(current.getAddress());
+                    a.setBioNotes(current.getBioNotes());
+                    sessionManager.saveAdminProfileLocal(a);
+                }
+                break;
+            }
+            case PATIENT:
+            default: {
+                PatientProfile p = sessionManager.getPatientProfileLocal(uid);
+                if (p != null) {
+                    p.setFullName(current.getFullName());
+                    p.setPhone(current.getPhone());
+                    p.setAddress(current.getAddress());
+                    p.setBioNotes(current.getBioNotes());
+                    sessionManager.savePatientProfileLocal(p);
+                }
+                break;
+            }
+        }
     }
 
     /**

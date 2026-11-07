@@ -2,12 +2,35 @@ package com.arohi.healthcare.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.arohi.healthcare.models.AdminProfile;
+import com.arohi.healthcare.models.AppNotification;
+import com.arohi.healthcare.models.ChatMessage;
+import com.arohi.healthcare.models.ConsultationRequest;
+import com.arohi.healthcare.models.ConversationThread;
+import com.arohi.healthcare.models.DoctorPatientConnection;
+import com.arohi.healthcare.models.DoctorProfile;
+import com.arohi.healthcare.models.HospitalAnnouncement;
+import com.arohi.healthcare.models.NurseProfile;
+import com.arohi.healthcare.models.PatientProfile;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
- * Manages persistent session state, onboarding completion, and local account state caching.
+ * Manages persistent session state, onboarding completion, and a full local/hybrid
+ * registry of UserAccounts, Role Profiles (Patient, Doctor, Nurse, Admin),
+ * ConsultationRequests, DoctorPatientConnections, ConversationThreads, ChatMessages,
+ * Notifications, and HospitalAnnouncements so user data is never lost or replaced by
+ * fake fallback defaults even when Firestore rules are not yet deployed.
  */
 public class SessionManager {
 
@@ -25,6 +48,18 @@ public class SessionManager {
     private static final String KEY_PROFILE_COMPLETED = "user_profile_completed";
     private static final String KEY_ADDRESS = "user_address";
     private static final String KEY_BIO_NOTES = "user_bio_notes";
+
+    private static final String KEY_ACCOUNTS_REGISTRY_JSON = "registry_accounts_json";
+    private static final String KEY_PATIENTS_REGISTRY_JSON = "registry_patients_json";
+    private static final String KEY_DOCTORS_REGISTRY_JSON = "registry_doctors_json";
+    private static final String KEY_NURSES_REGISTRY_JSON = "registry_nurses_json";
+    private static final String KEY_ADMINS_REGISTRY_JSON = "registry_admins_json";
+    private static final String KEY_REQUESTS_REGISTRY_JSON = "registry_requests_json";
+    private static final String KEY_CONNECTIONS_REGISTRY_JSON = "registry_connections_json";
+    private static final String KEY_CONVERSATIONS_REGISTRY_JSON = "registry_conversations_json";
+    private static final String KEY_MESSAGES_PREFIX = "registry_messages_";
+    private static final String KEY_NOTIFICATIONS_REGISTRY_JSON = "registry_notifications_json";
+    private static final String KEY_ANNOUNCEMENTS_REGISTRY_JSON = "registry_announcements_json";
 
     private final SharedPreferences prefs;
 
@@ -44,6 +79,16 @@ public class SessionManager {
         if (account == null) {
             return;
         }
+        // Preserve any Admin-updated verificationStatus already stored in the local registry
+        UserAccount existingInRegistry = getRegisteredAccountByUid(account.getUid());
+        if (existingInRegistry != null && existingInRegistry.getVerificationStatus() != null) {
+            // If registry has VERIFIED or REJECTED and incoming account was stale PENDING, keep registry status
+            if (!VerificationStatus.PENDING.getKey().equalsIgnoreCase(existingInRegistry.getVerificationStatus())
+                    && VerificationStatus.PENDING.getKey().equalsIgnoreCase(account.getVerificationStatus())) {
+                account.setVerificationStatus(existingInRegistry.getVerificationStatus());
+            }
+        }
+
         prefs.edit()
                 .putBoolean(KEY_IS_LOGGED_IN, true)
                 .putString(KEY_UID, account.getUid())
@@ -59,7 +104,6 @@ public class SessionManager {
                 .putString(KEY_BIO_NOTES, account.getBioNotes() != null ? account.getBioNotes() : "")
                 .apply();
 
-        // Also cache by email key so local sandbox login can restore exact role & verification status
         if (account.getEmail() != null) {
             String emailKey = normalizeEmailKey(account.getEmail());
             prefs.edit()
@@ -75,6 +119,8 @@ public class SessionManager {
                     .putString("acct_" + emailKey + "_bio", account.getBioNotes() != null ? account.getBioNotes() : "")
                     .apply();
         }
+
+        upsertAccountInRegistry(account);
     }
 
     public void saveLocalSandboxPasswordHash(String email, String password) {
@@ -98,13 +144,19 @@ public class SessionManager {
         if (email == null) {
             return null;
         }
+        // First check the full accounts registry
+        for (UserAccount acc : getAllRegisteredAccounts()) {
+            if (acc.getEmail() != null && acc.getEmail().equalsIgnoreCase(email.trim())) {
+                return acc;
+            }
+        }
         String emailKey = normalizeEmailKey(email);
         String uid = prefs.getString("acct_" + emailKey + "_uid", null);
         if (uid == null) {
             return null;
         }
         UserRole role = UserRole.fromKey(prefs.getString("acct_" + emailKey + "_role", "PATIENT"));
-        VerificationStatus status = VerificationStatus.fromKey(prefs.getString("acct_" + emailKey + "_status", "VERIFIED"));
+        VerificationStatus status = VerificationStatus.fromKey(prefs.getString("acct_" + emailKey + "_status", "PENDING"));
         UserAccount account = new UserAccount(
                 uid,
                 prefs.getString("acct_" + emailKey + "_arohi_id", ""),
@@ -129,12 +181,17 @@ public class SessionManager {
         if (!isLoggedIn()) {
             return null;
         }
+        String uid = prefs.getString(KEY_UID, "");
+        UserAccount fromRegistry = getRegisteredAccountByUid(uid);
+        if (fromRegistry != null) {
+            return fromRegistry;
+        }
         UserRole role = UserRole.fromKey(prefs.getString(KEY_ROLE, UserRole.PATIENT.getKey()));
         VerificationStatus status = VerificationStatus.fromKey(
                 prefs.getString(KEY_VERIFICATION_STATUS, VerificationStatus.PENDING.getKey())
         );
         UserAccount account = new UserAccount(
-                prefs.getString(KEY_UID, ""),
+                uid,
                 prefs.getString(KEY_AROHI_ID, ""),
                 prefs.getString(KEY_EMAIL, ""),
                 prefs.getString(KEY_FULL_NAME, ""),
@@ -164,6 +221,827 @@ public class SessionManager {
                 .remove(KEY_ADDRESS)
                 .remove(KEY_BIO_NOTES)
                 .apply();
+    }
+
+    // =========================================================================
+    // 1. LOCAL & HYBRID ACCOUNTS REGISTRY (/users)
+    // =========================================================================
+    public void upsertAccountInRegistry(UserAccount account) {
+        if (account == null || account.getUid() == null || account.getUid().isEmpty()) {
+            return;
+        }
+        try {
+            JSONObject root = getJsonObject(KEY_ACCOUNTS_REGISTRY_JSON);
+            JSONObject obj = new JSONObject();
+            obj.put("uid", account.getUid());
+            obj.put("arohiId", nonNull(account.getArohiId()));
+            obj.put("email", nonNull(account.getEmail()));
+            obj.put("fullName", nonNull(account.getFullName()));
+            obj.put("phone", nonNull(account.getPhone()));
+            obj.put("role", nonNull(account.getRole()));
+            obj.put("verificationStatus", nonNull(account.getVerificationStatus()));
+            obj.put("emailVerified", account.isEmailVerified());
+            obj.put("profileCompleted", account.isProfileCompleted());
+            obj.put("address", nonNull(account.getAddress()));
+            obj.put("bioNotes", nonNull(account.getBioNotes()));
+            obj.put("createdAt", account.getCreatedAt());
+            obj.put("updatedAt", account.getUpdatedAt());
+            root.put(account.getUid(), obj);
+            prefs.edit().putString(KEY_ACCOUNTS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public UserAccount getRegisteredAccountByUid(String uid) {
+        if (uid == null || uid.isEmpty()) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_ACCOUNTS_REGISTRY_JSON);
+            if (!root.has(uid)) return null;
+            return parseUserAccount(root.getJSONObject(uid));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<UserAccount> getAllRegisteredAccounts() {
+        List<UserAccount> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_ACCOUNTS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                UserAccount acc = parseUserAccount(root.getJSONObject(k));
+                if (acc != null) {
+                    list.add(acc);
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    public void updateAccountVerificationInRegistry(String uid, VerificationStatus newStatus) {
+        if (uid == null || newStatus == null) return;
+        UserAccount acc = getRegisteredAccountByUid(uid);
+        if (acc != null) {
+            acc.setVerificationStatus(newStatus.getKey());
+            acc.setUpdatedAt(System.currentTimeMillis());
+            upsertAccountInRegistry(acc);
+
+            if (acc.getEmail() != null) {
+                String emailKey = normalizeEmailKey(acc.getEmail());
+                prefs.edit().putString("acct_" + emailKey + "_status", newStatus.getKey()).apply();
+            }
+            if (uid.equals(prefs.getString(KEY_UID, ""))) {
+                prefs.edit().putString(KEY_VERIFICATION_STATUS, newStatus.getKey()).apply();
+            }
+        }
+        PatientProfile pat = getPatientProfileLocal(uid);
+        if (pat != null) {
+            pat.setVerificationStatus(newStatus.getKey());
+            savePatientProfileLocal(pat);
+        }
+        DoctorProfile doc = getDoctorProfileLocal(uid);
+        if (doc != null) {
+            doc.setVerificationStatus(newStatus.getKey());
+            saveDoctorProfileLocal(doc);
+        }
+        NurseProfile nrs = getNurseProfileLocal(uid);
+        if (nrs != null) {
+            nrs.setVerificationStatus(newStatus.getKey());
+            saveNurseProfileLocal(nrs);
+        }
+    }
+
+    private UserAccount parseUserAccount(JSONObject o) throws JSONException {
+        UserAccount acc = new UserAccount();
+        acc.setUid(o.optString("uid", ""));
+        acc.setArohiId(o.optString("arohiId", ""));
+        acc.setEmail(o.optString("email", ""));
+        acc.setFullName(o.optString("fullName", ""));
+        acc.setPhone(o.optString("phone", ""));
+        acc.setRole(o.optString("role", "PATIENT"));
+        acc.setVerificationStatus(o.optString("verificationStatus", "PENDING"));
+        acc.setEmailVerified(o.optBoolean("emailVerified", false));
+        acc.setProfileCompleted(o.optBoolean("profileCompleted", false));
+        acc.setAddress(o.optString("address", ""));
+        acc.setBioNotes(o.optString("bioNotes", ""));
+        acc.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        acc.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        return acc;
+    }
+
+    // =========================================================================
+    // 2. PATIENT PROFILE LOCAL PERSISTENCE (/patients)
+    // =========================================================================
+    public void savePatientProfileLocal(PatientProfile p) {
+        if (p == null || p.getUid() == null || p.getUid().isEmpty()) return;
+        try {
+            JSONObject root = getJsonObject(KEY_PATIENTS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("uid", p.getUid());
+            o.put("patientId", nonNull(p.getPatientId()));
+            o.put("fullName", nonNull(p.getFullName()));
+            o.put("email", nonNull(p.getEmail()));
+            o.put("phone", nonNull(p.getPhone()));
+            o.put("dateOfBirth", nonNull(p.getDateOfBirth()));
+            o.put("gender", nonNull(p.getGender()));
+            o.put("bloodGroup", nonNull(p.getBloodGroup()));
+            o.put("emergencyContactName", nonNull(p.getEmergencyContactName()));
+            o.put("emergencyContactPhone", nonNull(p.getEmergencyContactPhone()));
+            o.put("allergies", nonNull(p.getAllergies()));
+            o.put("chronicConditions", nonNull(p.getChronicConditions()));
+            o.put("verificationStatus", nonNull(p.getVerificationStatus()));
+            o.put("address", nonNull(p.getAddress()));
+            o.put("bioNotes", nonNull(p.getBioNotes()));
+            o.put("createdAt", p.getCreatedAt());
+            root.put(p.getUid(), o);
+            prefs.edit().putString(KEY_PATIENTS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public PatientProfile getPatientProfileLocal(String uid) {
+        if (uid == null || uid.isEmpty()) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_PATIENTS_REGISTRY_JSON);
+            if (!root.has(uid)) return null;
+            JSONObject o = root.getJSONObject(uid);
+            PatientProfile p = new PatientProfile(
+                    o.optString("uid", uid),
+                    o.optString("patientId", ""),
+                    o.optString("fullName", ""),
+                    o.optString("email", ""),
+                    o.optString("phone", ""),
+                    o.optString("dateOfBirth", ""),
+                    o.optString("gender", ""),
+                    o.optString("bloodGroup", ""),
+                    o.optString("emergencyContactName", ""),
+                    o.optString("emergencyContactPhone", ""),
+                    o.optString("allergies", "None")
+            );
+            p.setChronicConditions(o.optString("chronicConditions", "None"));
+            p.setVerificationStatus(o.optString("verificationStatus", "PENDING"));
+            p.setAddress(o.optString("address", ""));
+            p.setBioNotes(o.optString("bioNotes", ""));
+            p.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+            return p;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    // =========================================================================
+    // 3. DOCTOR PROFILE LOCAL PERSISTENCE (/doctors)
+    // =========================================================================
+    public void saveDoctorProfileLocal(DoctorProfile d) {
+        if (d == null || d.getUid() == null || d.getUid().isEmpty()) return;
+        try {
+            JSONObject root = getJsonObject(KEY_DOCTORS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("uid", d.getUid());
+            o.put("doctorId", nonNull(d.getDoctorId()));
+            o.put("fullName", nonNull(d.getFullName()));
+            o.put("email", nonNull(d.getEmail()));
+            o.put("phone", nonNull(d.getPhone()));
+            o.put("medicalLicenseNumber", nonNull(d.getMedicalLicenseNumber()));
+            o.put("specialty", nonNull(d.getSpecialty()));
+            o.put("qualifications", nonNull(d.getQualifications()));
+            o.put("department", nonNull(d.getDepartment()));
+            o.put("experienceYears", d.getExperienceYears());
+            o.put("consultationFee", d.getConsultationFee());
+            o.put("availabilitySchedule", nonNull(d.getAvailabilitySchedule()));
+            o.put("verificationStatus", nonNull(d.getVerificationStatus()));
+            o.put("address", nonNull(d.getAddress()));
+            o.put("bioNotes", nonNull(d.getBioNotes()));
+            o.put("createdAt", d.getCreatedAt());
+            root.put(d.getUid(), o);
+            prefs.edit().putString(KEY_DOCTORS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public DoctorProfile getDoctorProfileLocal(String uid) {
+        if (uid == null || uid.isEmpty()) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_DOCTORS_REGISTRY_JSON);
+            if (!root.has(uid)) return null;
+            return parseDoctorProfile(root.getJSONObject(uid));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<DoctorProfile> getAllDoctorProfilesLocal() {
+        List<DoctorProfile> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_DOCTORS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                DoctorProfile d = parseDoctorProfile(root.getJSONObject(k));
+                if (d != null) {
+                    list.add(d);
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private DoctorProfile parseDoctorProfile(JSONObject o) {
+        DoctorProfile d = new DoctorProfile(
+                o.optString("uid", ""),
+                o.optString("doctorId", ""),
+                o.optString("fullName", ""),
+                o.optString("email", ""),
+                o.optString("phone", ""),
+                o.optString("medicalLicenseNumber", ""),
+                o.optString("specialty", "General Medicine"),
+                o.optString("qualifications", "MBBS"),
+                o.optString("department", "Medicine"),
+                o.optInt("experienceYears", 1),
+                o.optDouble("consultationFee", 500.0)
+        );
+        d.setAvailabilitySchedule(o.optString("availabilitySchedule", "Sun - Thu, 5:00 PM - 9:00 PM"));
+        d.setVerificationStatus(o.optString("verificationStatus", "PENDING"));
+        d.setAddress(o.optString("address", ""));
+        d.setBioNotes(o.optString("bioNotes", ""));
+        d.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        return d;
+    }
+
+    // =========================================================================
+    // 4. NURSE PROFILE LOCAL PERSISTENCE (/nurses)
+    // =========================================================================
+    public void saveNurseProfileLocal(NurseProfile n) {
+        if (n == null || n.getUid() == null || n.getUid().isEmpty()) return;
+        try {
+            JSONObject root = getJsonObject(KEY_NURSES_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("uid", n.getUid());
+            o.put("nurseId", nonNull(n.getNurseId()));
+            o.put("fullName", nonNull(n.getFullName()));
+            o.put("email", nonNull(n.getEmail()));
+            o.put("phone", nonNull(n.getPhone()));
+            o.put("nursingLicenseNumber", nonNull(n.getNursingLicenseNumber()));
+            o.put("qualification", nonNull(n.getQualification()));
+            o.put("preferredWard", nonNull(n.getPreferredWard()));
+            o.put("shiftPreference", nonNull(n.getShiftPreference()));
+            o.put("assignedWardId", nonNull(n.getAssignedWardId()));
+            o.put("verificationStatus", nonNull(n.getVerificationStatus()));
+            o.put("address", nonNull(n.getAddress()));
+            o.put("bioNotes", nonNull(n.getBioNotes()));
+            o.put("createdAt", n.getCreatedAt());
+            root.put(n.getUid(), o);
+            prefs.edit().putString(KEY_NURSES_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public NurseProfile getNurseProfileLocal(String uid) {
+        if (uid == null || uid.isEmpty()) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_NURSES_REGISTRY_JSON);
+            if (!root.has(uid)) return null;
+            JSONObject o = root.getJSONObject(uid);
+            NurseProfile n = new NurseProfile(
+                    o.optString("uid", uid),
+                    o.optString("nurseId", ""),
+                    o.optString("fullName", ""),
+                    o.optString("email", ""),
+                    o.optString("phone", ""),
+                    o.optString("nursingLicenseNumber", ""),
+                    o.optString("qualification", ""),
+                    o.optString("preferredWard", ""),
+                    o.optString("shiftPreference", "")
+            );
+            n.setAssignedWardId(o.optString("assignedWardId", "UNASSIGNED"));
+            n.setVerificationStatus(o.optString("verificationStatus", "PENDING"));
+            n.setAddress(o.optString("address", ""));
+            n.setBioNotes(o.optString("bioNotes", ""));
+            n.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+            return n;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    // =========================================================================
+    // 5. ADMIN PROFILE LOCAL PERSISTENCE (/administrators)
+    // =========================================================================
+    public void saveAdminProfileLocal(AdminProfile a) {
+        if (a == null || a.getUid() == null || a.getUid().isEmpty()) return;
+        try {
+            JSONObject root = getJsonObject(KEY_ADMINS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("uid", a.getUid());
+            o.put("adminId", nonNull(a.getAdminId()));
+            o.put("fullName", nonNull(a.getFullName()));
+            o.put("email", nonNull(a.getEmail()));
+            o.put("phone", nonNull(a.getPhone()));
+            o.put("employeeId", nonNull(a.getEmployeeId()));
+            o.put("designation", nonNull(a.getDesignation()));
+            o.put("hospitalName", nonNull(a.getHospitalName()));
+            o.put("hospitalAddress", nonNull(a.getHospitalAddress()));
+            o.put("emergencyHotline", nonNull(a.getEmergencyHotline()));
+            o.put("bioNotes", nonNull(a.getBioNotes()));
+            o.put("verificationStatus", nonNull(a.getVerificationStatus()));
+            o.put("createdAt", a.getCreatedAt());
+            root.put(a.getUid(), o);
+            prefs.edit().putString(KEY_ADMINS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public AdminProfile getAdminProfileLocal(String uid) {
+        if (uid == null || uid.isEmpty()) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_ADMINS_REGISTRY_JSON);
+            if (!root.has(uid)) return null;
+            JSONObject o = root.getJSONObject(uid);
+            AdminProfile a = new AdminProfile(
+                    o.optString("uid", uid),
+                    o.optString("adminId", ""),
+                    o.optString("fullName", ""),
+                    o.optString("email", ""),
+                    o.optString("phone", ""),
+                    o.optString("employeeId", ""),
+                    o.optString("designation", ""),
+                    VerificationStatus.fromKey(o.optString("verificationStatus", "VERIFIED"))
+            );
+            a.setHospitalName(o.optString("hospitalName", "AROHI Central Specialized Hospital"));
+            a.setHospitalAddress(o.optString("hospitalAddress", "Dhaka Medical Hub, Bangladesh"));
+            a.setEmergencyHotline(o.optString("emergencyHotline", "10666"));
+            a.setBioNotes(o.optString("bioNotes", ""));
+            a.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+            return a;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    // =========================================================================
+    // 6. CONSULTATION REQUESTS, CONNECTIONS, CONVERSATIONS, MESSAGES & NOTIFS
+    // =========================================================================
+    public void saveConsultationRequestLocal(ConsultationRequest r) {
+        if (r == null || r.getRequestId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_REQUESTS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("requestId", r.getRequestId());
+            o.put("patientUid", nonNull(r.getPatientUid()));
+            o.put("patientId", nonNull(r.getPatientId()));
+            o.put("patientName", nonNull(r.getPatientName()));
+            o.put("patientPhone", nonNull(r.getPatientPhone()));
+            o.put("patientBloodGroup", nonNull(r.getPatientBloodGroup()));
+            o.put("patientGender", nonNull(r.getPatientGender()));
+            o.put("patientDob", nonNull(r.getPatientDob()));
+            o.put("patientAllergies", nonNull(r.getPatientAllergies()));
+            o.put("doctorUid", nonNull(r.getDoctorUid()));
+            o.put("doctorId", nonNull(r.getDoctorId()));
+            o.put("doctorName", nonNull(r.getDoctorName()));
+            o.put("doctorSpecialty", nonNull(r.getDoctorSpecialty()));
+            o.put("doctorDepartment", nonNull(r.getDoctorDepartment()));
+            o.put("consultationFee", r.getConsultationFee());
+            o.put("consultationReason", nonNull(r.getConsultationReason()));
+            o.put("patientNote", nonNull(r.getPatientNote()));
+            o.put("doctorResponseNote", nonNull(r.getDoctorResponseNote()));
+            o.put("status", nonNull(r.getStatus()));
+            o.put("createdAt", r.getCreatedAt());
+            o.put("updatedAt", r.getUpdatedAt());
+            root.put(r.getRequestId(), o);
+            prefs.edit().putString(KEY_REQUESTS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public ConsultationRequest getConsultationRequestLocal(String requestId) {
+        if (requestId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_REQUESTS_REGISTRY_JSON);
+            if (!root.has(requestId)) return null;
+            return parseConsultationRequest(root.getJSONObject(requestId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<ConsultationRequest> getAllConsultationRequestsLocal() {
+        List<ConsultationRequest> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_REQUESTS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                ConsultationRequest r = parseConsultationRequest(root.getJSONObject(k));
+                if (r != null) {
+                    list.add(r);
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private ConsultationRequest parseConsultationRequest(JSONObject o) {
+        ConsultationRequest r = new ConsultationRequest();
+        r.setRequestId(o.optString("requestId", ""));
+        r.setPatientUid(o.optString("patientUid", ""));
+        r.setPatientId(o.optString("patientId", ""));
+        r.setPatientName(o.optString("patientName", ""));
+        r.setPatientPhone(o.optString("patientPhone", ""));
+        r.setPatientBloodGroup(o.optString("patientBloodGroup", ""));
+        r.setPatientGender(o.optString("patientGender", ""));
+        r.setPatientDob(o.optString("patientDob", ""));
+        r.setPatientAllergies(o.optString("patientAllergies", "None"));
+        r.setDoctorUid(o.optString("doctorUid", ""));
+        r.setDoctorId(o.optString("doctorId", ""));
+        r.setDoctorName(o.optString("doctorName", ""));
+        r.setDoctorSpecialty(o.optString("doctorSpecialty", ""));
+        r.setDoctorDepartment(o.optString("doctorDepartment", ""));
+        r.setConsultationFee(o.optDouble("consultationFee", 0.0));
+        r.setConsultationReason(o.optString("consultationReason", ""));
+        r.setPatientNote(o.optString("patientNote", ""));
+        r.setDoctorResponseNote(o.optString("doctorResponseNote", ""));
+        r.setStatus(o.optString("status", ConsultationRequest.STATUS_PENDING));
+        r.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        r.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        return r;
+    }
+
+    public void saveConnectionLocal(DoctorPatientConnection c) {
+        if (c == null || c.getConnectionId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_CONNECTIONS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("connectionId", c.getConnectionId());
+            o.put("doctorUid", nonNull(c.getDoctorUid()));
+            o.put("doctorId", nonNull(c.getDoctorId()));
+            o.put("doctorName", nonNull(c.getDoctorName()));
+            o.put("doctorSpecialty", nonNull(c.getDoctorSpecialty()));
+            o.put("doctorDepartment", nonNull(c.getDoctorDepartment()));
+            o.put("patientUid", nonNull(c.getPatientUid()));
+            o.put("patientId", nonNull(c.getPatientId()));
+            o.put("patientName", nonNull(c.getPatientName()));
+            o.put("patientPhone", nonNull(c.getPatientPhone()));
+            o.put("patientBloodGroup", nonNull(c.getPatientBloodGroup()));
+            o.put("consultationReason", nonNull(c.getConsultationReason()));
+            o.put("status", nonNull(c.getStatus()));
+            o.put("connectedAt", c.getConnectedAt());
+            o.put("updatedAt", c.getUpdatedAt());
+            root.put(c.getConnectionId(), o);
+            prefs.edit().putString(KEY_CONNECTIONS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public DoctorPatientConnection getConnectionLocal(String connectionId) {
+        if (connectionId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_CONNECTIONS_REGISTRY_JSON);
+            if (!root.has(connectionId)) return null;
+            return parseConnection(root.getJSONObject(connectionId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<DoctorPatientConnection> getAllConnectionsLocal() {
+        List<DoctorPatientConnection> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_CONNECTIONS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                DoctorPatientConnection c = parseConnection(root.getJSONObject(k));
+                if (c != null) list.add(c);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private DoctorPatientConnection parseConnection(JSONObject o) {
+        DoctorPatientConnection c = new DoctorPatientConnection();
+        c.setConnectionId(o.optString("connectionId", ""));
+        c.setDoctorUid(o.optString("doctorUid", ""));
+        c.setDoctorId(o.optString("doctorId", ""));
+        c.setDoctorName(o.optString("doctorName", ""));
+        c.setDoctorSpecialty(o.optString("doctorSpecialty", ""));
+        c.setDoctorDepartment(o.optString("doctorDepartment", ""));
+        c.setPatientUid(o.optString("patientUid", ""));
+        c.setPatientId(o.optString("patientId", ""));
+        c.setPatientName(o.optString("patientName", ""));
+        c.setPatientPhone(o.optString("patientPhone", ""));
+        c.setPatientBloodGroup(o.optString("patientBloodGroup", ""));
+        c.setConsultationReason(o.optString("consultationReason", ""));
+        c.setStatus(o.optString("status", DoctorPatientConnection.STATUS_ACCEPTED));
+        c.setConnectedAt(o.optLong("connectedAt", System.currentTimeMillis()));
+        c.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        return c;
+    }
+
+    public void saveConversationLocal(ConversationThread t) {
+        if (t == null || t.getConversationId() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_CONVERSATIONS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("conversationId", t.getConversationId());
+            o.put("connectionId", nonNull(t.getConnectionId()));
+            o.put("doctorUid", nonNull(t.getDoctorUid()));
+            o.put("doctorName", nonNull(t.getDoctorName()));
+            o.put("doctorSpecialty", nonNull(t.getDoctorSpecialty()));
+            o.put("patientUid", nonNull(t.getPatientUid()));
+            o.put("patientName", nonNull(t.getPatientName()));
+            o.put("patientId", nonNull(t.getPatientId()));
+            o.put("connectionStatus", nonNull(t.getConnectionStatus()));
+            o.put("lastMessagePreview", nonNull(t.getLastMessagePreview()));
+            o.put("lastMessageSenderUid", nonNull(t.getLastMessageSenderUid()));
+            o.put("lastMessageTimestamp", t.getLastMessageTimestamp());
+            o.put("unreadByDoctor", t.isUnreadByDoctor());
+            o.put("unreadByPatient", t.isUnreadByPatient());
+            root.put(t.getConversationId(), o);
+            prefs.edit().putString(KEY_CONVERSATIONS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public ConversationThread getConversationLocal(String conversationId) {
+        if (conversationId == null) return null;
+        try {
+            JSONObject root = getJsonObject(KEY_CONVERSATIONS_REGISTRY_JSON);
+            if (!root.has(conversationId)) return null;
+            return parseConversation(root.getJSONObject(conversationId));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public List<ConversationThread> getAllConversationsLocal() {
+        List<ConversationThread> list = new ArrayList<>();
+        try {
+            JSONObject root = getJsonObject(KEY_CONVERSATIONS_REGISTRY_JSON);
+            Iterator<String> keys = root.keys();
+            while (keys.hasNext()) {
+                String k = keys.next();
+                ConversationThread t = parseConversation(root.getJSONObject(k));
+                if (t != null) list.add(t);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private ConversationThread parseConversation(JSONObject o) {
+        ConversationThread t = new ConversationThread();
+        t.setConversationId(o.optString("conversationId", ""));
+        t.setConnectionId(o.optString("connectionId", ""));
+        t.setDoctorUid(o.optString("doctorUid", ""));
+        t.setDoctorName(o.optString("doctorName", ""));
+        t.setDoctorSpecialty(o.optString("doctorSpecialty", ""));
+        t.setPatientUid(o.optString("patientUid", ""));
+        t.setPatientName(o.optString("patientName", ""));
+        t.setPatientId(o.optString("patientId", ""));
+        t.setConnectionStatus(o.optString("connectionStatus", DoctorPatientConnection.STATUS_ACCEPTED));
+        t.setLastMessagePreview(o.optString("lastMessagePreview", ""));
+        t.setLastMessageSenderUid(o.optString("lastMessageSenderUid", ""));
+        t.setLastMessageTimestamp(o.optLong("lastMessageTimestamp", System.currentTimeMillis()));
+        t.setUnreadByDoctor(o.optBoolean("unreadByDoctor", false));
+        t.setUnreadByPatient(o.optBoolean("unreadByPatient", false));
+        return t;
+    }
+
+    public void appendMessageLocal(String conversationId, ChatMessage m) {
+        if (m == null) return;
+        if (conversationId != null && (m.getConversationId() == null || m.getConversationId().isEmpty())) {
+            m.setConversationId(conversationId);
+        }
+        appendMessageLocal(m);
+    }
+
+    public void appendMessageLocal(ChatMessage m) {
+        if (m == null || m.getConversationId() == null) return;
+        try {
+            String key = KEY_MESSAGES_PREFIX + m.getConversationId();
+            JSONArray arr = getJsonArray(key);
+            JSONObject o = new JSONObject();
+            o.put("messageId", nonNull(m.getMessageId()));
+            o.put("conversationId", nonNull(m.getConversationId()));
+            o.put("senderUid", nonNull(m.getSenderUid()));
+            o.put("senderName", nonNull(m.getSenderName()));
+            o.put("senderRole", nonNull(m.getSenderRole()));
+            o.put("receiverUid", nonNull(m.getReceiverUid()));
+            o.put("messageText", nonNull(m.getMessageText()));
+            o.put("timestamp", m.getTimestamp());
+            o.put("read", m.isRead());
+            o.put("readAt", m.getReadAt());
+
+            boolean updated = false;
+            String msgId = nonNull(m.getMessageId());
+            if (!msgId.isEmpty()) {
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject existing = arr.getJSONObject(i);
+                    if (msgId.equals(existing.optString("messageId", ""))) {
+                        arr.put(i, o);
+                        updated = true;
+                        break;
+                    }
+                }
+            }
+            if (!updated) {
+                arr.put(o);
+            }
+            prefs.edit().putString(key, arr.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public List<ChatMessage> getMessagesLocal(String conversationId) {
+        return getMessagesLocal(conversationId, null);
+    }
+
+    public List<ChatMessage> getMessagesLocal(String conversationId, String currentViewerUid) {
+        List<ChatMessage> list = new ArrayList<>();
+        if (conversationId == null) return list;
+        try {
+            String key = KEY_MESSAGES_PREFIX + conversationId;
+            JSONArray arr = getJsonArray(key);
+            boolean modified = false;
+            long now = System.currentTimeMillis();
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                ChatMessage m = new ChatMessage();
+                m.setMessageId(o.optString("messageId", ""));
+                m.setConversationId(o.optString("conversationId", conversationId));
+                m.setSenderUid(o.optString("senderUid", ""));
+                m.setSenderName(o.optString("senderName", ""));
+                m.setSenderRole(o.optString("senderRole", ""));
+                m.setReceiverUid(o.optString("receiverUid", ""));
+                m.setMessageText(o.optString("messageText", ""));
+                m.setTimestamp(o.optLong("timestamp", now));
+                boolean isRead = o.optBoolean("read", false);
+                if (!isRead && currentViewerUid != null && !currentViewerUid.equals(m.getSenderUid())) {
+                    isRead = true;
+                    o.put("read", true);
+                    o.put("readAt", now);
+                    modified = true;
+                }
+                m.setRead(isRead);
+                m.setReadAt(o.optLong("readAt", 0L));
+                list.add(m);
+            }
+            if (modified) {
+                prefs.edit().putString(key, arr.toString()).apply();
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    public void saveNotificationLocal(AppNotification n) {
+        if (n == null || n.getNotificationId() == null) return;
+        try {
+            JSONArray arr = getJsonArray(KEY_NOTIFICATIONS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("notificationId", n.getNotificationId());
+            o.put("recipientUid", nonNull(n.getRecipientUid()));
+            o.put("senderUid", nonNull(n.getSenderUid()));
+            o.put("senderName", nonNull(n.getSenderName()));
+            o.put("type", nonNull(n.getType()));
+            o.put("title", nonNull(n.getTitle()));
+            o.put("body", nonNull(n.getBody()));
+            o.put("referenceId", nonNull(n.getReferenceId()));
+            o.put("read", n.isRead());
+            o.put("createdAt", n.getCreatedAt());
+            arr.put(o);
+            prefs.edit().putString(KEY_NOTIFICATIONS_REGISTRY_JSON, arr.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public List<AppNotification> getNotificationsForRecipientLocal(String recipientUid) {
+        List<AppNotification> list = new ArrayList<>();
+        if (recipientUid == null) return list;
+        try {
+            JSONArray arr = getJsonArray(KEY_NOTIFICATIONS_REGISTRY_JSON);
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                String rec = o.optString("recipientUid", "");
+                if (recipientUid.equals(rec) || "ADMIN_BROADCAST".equals(rec)) {
+                    AppNotification n = new AppNotification();
+                    n.setNotificationId(o.optString("notificationId", ""));
+                    n.setRecipientUid(rec);
+                    n.setSenderUid(o.optString("senderUid", ""));
+                    n.setSenderName(o.optString("senderName", ""));
+                    n.setType(o.optString("type", ""));
+                    n.setTitle(o.optString("title", ""));
+                    n.setBody(o.optString("body", ""));
+                    n.setReferenceId(o.optString("referenceId", ""));
+                    n.setRead(o.optBoolean("read", false));
+                    n.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+                    list.add(n);
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    public void markNotificationsReadLocal(String recipientUid) {
+        if (recipientUid == null) return;
+        try {
+            JSONArray arr = getJsonArray(KEY_NOTIFICATIONS_REGISTRY_JSON);
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                if (recipientUid.equals(o.optString("recipientUid", ""))) {
+                    o.put("read", true);
+                }
+            }
+            prefs.edit().putString(KEY_NOTIFICATIONS_REGISTRY_JSON, arr.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public void saveAnnouncementLocal(HospitalAnnouncement a) {
+        if (a == null || a.getId() == null) return;
+        try {
+            JSONArray arr = getJsonArray(KEY_ANNOUNCEMENTS_REGISTRY_JSON);
+            JSONObject o = new JSONObject();
+            o.put("postId", a.getId());
+            o.put("title", nonNull(a.getTitle()));
+            o.put("content", nonNull(a.getContent()));
+            o.put("category", nonNull(a.getCategory()));
+            o.put("authorUid", nonNull(a.getAuthorUid()));
+            o.put("authorName", nonNull(a.getAuthorName()));
+            o.put("authorRole", nonNull(a.getAuthorRole()));
+            o.put("createdAt", a.getCreatedAt());
+
+            boolean exists = false;
+            for (int i = 0; i < arr.length(); i++) {
+                if (a.getId().equals(arr.getJSONObject(i).optString("postId", ""))) {
+                    arr.put(i, o);
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                arr.put(o);
+            }
+            prefs.edit().putString(KEY_ANNOUNCEMENTS_REGISTRY_JSON, arr.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public List<HospitalAnnouncement> getAnnouncementsLocal() {
+        List<HospitalAnnouncement> list = new ArrayList<>();
+        try {
+            JSONArray arr = getJsonArray(KEY_ANNOUNCEMENTS_REGISTRY_JSON);
+            for (int i = arr.length() - 1; i >= 0; i--) {
+                JSONObject o = arr.getJSONObject(i);
+                HospitalAnnouncement a = new HospitalAnnouncement(
+                        o.optString("postId", ""),
+                        o.optString("title", ""),
+                        o.optString("content", ""),
+                        o.optString("category", "HOSPITAL_NOTICE"),
+                        o.optString("authorUid", ""),
+                        o.optString("authorName", "Hospital Authority"),
+                        o.optString("authorRole", "ADMIN")
+                );
+                a.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+                list.add(a);
+            }
+        } catch (JSONException ignored) {
+        }
+        return list;
+    }
+
+    private JSONObject getJsonObject(String key) {
+        String raw = prefs.getString(key, null);
+        if (raw == null || raw.isEmpty()) {
+            return new JSONObject();
+        }
+        try {
+            return new JSONObject(raw);
+        } catch (JSONException e) {
+            return new JSONObject();
+        }
+    }
+
+    private JSONArray getJsonArray(String key) {
+        String raw = prefs.getString(key, null);
+        if (raw == null || raw.isEmpty()) {
+            return new JSONArray();
+        }
+        try {
+            return new JSONArray(raw);
+        } catch (JSONException e) {
+            return new JSONArray();
+        }
+    }
+
+    private String nonNull(String s) {
+        return s != null ? s : "";
     }
 
     private String normalizeEmailKey(String email) {

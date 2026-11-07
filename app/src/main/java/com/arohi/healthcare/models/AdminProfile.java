@@ -15,6 +15,10 @@ public class AdminProfile {
     private String phone;
     private String employeeId;
     private String designation;
+    private String hospitalName;
+    private String hospitalAddress;
+    private String emergencyHotline;
+    private String bioNotes;
     private String verificationStatus;
     private long createdAt;
 
@@ -31,6 +35,10 @@ public class AdminProfile {
         this.phone = phone;
         this.employeeId = employeeId;
         this.designation = designation;
+        this.hospitalName = "AROHI Central Specialized Hospital";
+        this.hospitalAddress = "Dhaka Medical Hub, Bangladesh";
+        this.emergencyHotline = "+880-9612-AROHI";
+        this.bioNotes = "";
         this.verificationStatus = verificationStatus.getKey();
         this.createdAt = System.currentTimeMillis();
     }
@@ -44,9 +52,45 @@ public class AdminProfile {
         map.put("phone", phone);
         map.put("employeeId", employeeId);
         map.put("designation", designation);
+        map.put("hospitalName", hospitalName != null ? hospitalName : "AROHI Central Specialized Hospital");
+        map.put("hospitalAddress", hospitalAddress != null ? hospitalAddress : "");
+        map.put("emergencyHotline", emergencyHotline != null ? emergencyHotline : "");
+        map.put("bioNotes", bioNotes != null ? bioNotes : "");
         map.put("verificationStatus", verificationStatus);
         map.put("createdAt", createdAt);
         return map;
+    }
+
+    public String getHospitalName() {
+        return hospitalName;
+    }
+
+    public void setHospitalName(String hospitalName) {
+        this.hospitalName = hospitalName;
+    }
+
+    public String getHospitalAddress() {
+        return hospitalAddress;
+    }
+
+    public void setHospitalAddress(String hospitalAddress) {
+        this.hospitalAddress = hospitalAddress;
+    }
+
+    public String getEmergencyHotline() {
+        return emergencyHotline;
+    }
+
+    public void setEmergencyHotline(String emergencyHotline) {
+        this.emergencyHotline = emergencyHotline;
+    }
+
+    public String getBioNotes() {
+        return bioNotes;
+    }
+
+    public void setBioNotes(String bioNotes) {
+        this.bioNotes = bioNotes;
     }
 
     public String getUid() {
@@ -119,5 +163,13 @@ public class AdminProfile {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getArohiId() {
+        return adminId;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        // Optional timestamp setter for profile updates
     }
 }

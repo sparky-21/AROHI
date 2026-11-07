@@ -61,17 +61,22 @@ public class BasicProfileSetupActivity extends AppCompatActivity {
         binding.etAddress.setText(account.getAddress());
         binding.etBioNotes.setText(account.getBioNotes());
 
-        // Enforce unverified Doctor / Nurse / Admin notice vs Verified status
-        if (status == VerificationStatus.PENDING) {
-            binding.bannerRoleVerification.setBackgroundResource(R.drawable.bg_status_pending);
-            binding.ivVerificationIcon.setImageResource(R.drawable.ic_pending_clock);
-            binding.tvVerificationStatusTitle.setText(R.string.status_banner_pending_title);
-            binding.tvVerificationStatusDesc.setText(R.string.status_banner_pending_desc);
-        } else {
+        // Enforce unverified (PENDING), REJECTED/SUSPENDED, vs VERIFIED status
+        if (status == VerificationStatus.VERIFIED) {
             binding.bannerRoleVerification.setBackgroundResource(R.drawable.bg_status_verified);
             binding.ivVerificationIcon.setImageResource(R.drawable.ic_verified_badge);
             binding.tvVerificationStatusTitle.setText(R.string.status_banner_verified_title);
             binding.tvVerificationStatusDesc.setText(R.string.status_banner_verified_desc);
+        } else if (status == VerificationStatus.REJECTED || status == VerificationStatus.SUSPENDED) {
+            binding.bannerRoleVerification.setBackgroundResource(R.drawable.bg_status_error);
+            binding.ivVerificationIcon.setImageResource(R.drawable.ic_warning_alert);
+            binding.tvVerificationStatusTitle.setText("Account " + status.getKey());
+            binding.tvVerificationStatusDesc.setText(status.getDescription() + ". Please contact Hospital Authority.");
+        } else {
+            binding.bannerRoleVerification.setBackgroundResource(R.drawable.bg_status_pending);
+            binding.ivVerificationIcon.setImageResource(R.drawable.ic_pending_clock);
+            binding.tvVerificationStatusTitle.setText(R.string.status_banner_pending_title);
+            binding.tvVerificationStatusDesc.setText(R.string.status_banner_pending_desc);
         }
     }
 
@@ -117,6 +122,8 @@ public class BasicProfileSetupActivity extends AppCompatActivity {
                         "Profile Saved Successfully",
                         "Your AROHI basic profile and session persistence are updated."
                 );
+                startActivity(new Intent(BasicProfileSetupActivity.this, RolePortalActivity.class));
+                finish();
             }
 
             @Override

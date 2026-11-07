@@ -87,4 +87,10 @@ public final class DatePickerHelper {
         textInputLayout.setEndIconOnClickListener(v -> showPicker.run());
         editText.setOnClickListener(v -> showPicker.run());
     }
+
+    public static void attachToField(Context context,
+                                     TextInputLayout textInputLayout,
+                                     TextInputEditText editText) {
+        attachDatePicker(context, textInputLayout, editText, true);
+    }
 }

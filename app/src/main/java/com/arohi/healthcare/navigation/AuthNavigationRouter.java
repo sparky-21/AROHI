@@ -6,6 +6,7 @@ import com.arohi.healthcare.activities.BasicProfileSetupActivity;
 import com.arohi.healthcare.activities.EmailVerificationActivity;
 import com.arohi.healthcare.activities.LoginActivity;
 import com.arohi.healthcare.activities.OnboardingActivity;
+import com.arohi.healthcare.activities.RolePortalActivity;
 import com.arohi.healthcare.activities.RoleSelectionActivity;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.utils.SessionManager;
@@ -57,7 +58,7 @@ public final class AuthNavigationRouter {
         if (!account.isEmailVerified()) {
             intent = new Intent(activity, EmailVerificationActivity.class);
         } else {
-            intent = new Intent(activity, BasicProfileSetupActivity.class);
+            intent = new Intent(activity, RolePortalActivity.class);
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         activity.startActivity(intent);

@@ -19,6 +19,7 @@ public class DoctorProfile {
     private String department;
     private int experienceYears;
     private double consultationFee;
+    private String availabilitySchedule;
     private String verificationStatus;
     private String address;
     private String bioNotes;
@@ -42,6 +43,7 @@ public class DoctorProfile {
         this.department = department;
         this.experienceYears = experienceYears;
         this.consultationFee = consultationFee;
+        this.availabilitySchedule = "Sun - Thu, 5:00 PM - 9:00 PM";
         this.verificationStatus = VerificationStatus.PENDING.getKey();
         this.address = "";
         this.bioNotes = "";
@@ -61,11 +63,20 @@ public class DoctorProfile {
         map.put("department", department);
         map.put("experienceYears", experienceYears);
         map.put("consultationFee", consultationFee);
+        map.put("availabilitySchedule", availabilitySchedule != null ? availabilitySchedule : "");
         map.put("verificationStatus", verificationStatus);
         map.put("address", address != null ? address : "");
         map.put("bioNotes", bioNotes != null ? bioNotes : "");
         map.put("createdAt", createdAt);
         return map;
+    }
+
+    public String getAvailabilitySchedule() {
+        return availabilitySchedule;
+    }
+
+    public void setAvailabilitySchedule(String availabilitySchedule) {
+        this.availabilitySchedule = availabilitySchedule;
     }
 
     public String getUid() {
@@ -186,5 +197,21 @@ public class DoctorProfile {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getArohiId() {
+        return doctorId;
+    }
+
+    public double getConsultationFeeBdt() {
+        return consultationFee;
+    }
+
+    public void setConsultationFeeBdt(double consultationFeeBdt) {
+        this.consultationFee = consultationFeeBdt;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        // Optional timestamp setter for profile updates
     }
 }

@@ -84,6 +84,18 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- 12. Role-Based Portal & Dashboards (Patient, Doctor, Nurse, Admin) -->
+        <activity
+            android:name=".activities.RolePortalActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 13. Secure One-to-One Doctor-Patient Chat Activity -->
+        <activity
+            android:name=".activities.SecureChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

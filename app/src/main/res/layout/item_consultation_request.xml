@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/arohi_pure_white"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/arohi_border_subtle"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header: Counterparty Name + Status Badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvReqCounterpartyName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-black"
+                    android:text="Participant Name"
+                    android:textColor="@color/arohi_charcoal_text"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvReqCounterpartyMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="AROHI ID • Specialty / Blood Group"
+                    android:textColor="@color/arohi_teal_accent"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvReqStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_pill"
+                android:fontFamily="sans-serif-bold"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="Pending"
+                android:textColor="@color/arohi_amber_warning"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Consultation Reason -->
+        <TextView
+            android:id="@+id/tvReqConsultationReason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-bold"
+            android:text="Reason: New Symptom Consultation"
+            android:textColor="@color/arohi_charcoal_text"
+            android:textSize="13sp" />
+
+        <!-- Patient Note / Doctor Response Note -->
+        <TextView
+            android:id="@+id/tvReqNotesAndTimestamp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif"
+            android:lineSpacingExtra="2dp"
+            android:text="Submitted notes and timestamp"
+            android:textColor="@color/arohi_slate_muted"
+            android:textSize="12sp" />
+
+        <!-- Action Buttons Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReqSecondaryAction"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:text="Details"
+                android:textAllCaps="false"
+                android:textColor="@color/arohi_forest_primary"
+                android:textSize="12sp"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/arohi_forest_primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReqDeclineOrCancel"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:text="Decline"
+                android:textAllCaps="false"
+                android:textColor="@color/arohi_crimson_alert"
+                android:textSize="12sp"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/arohi_crimson_alert" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReqPrimaryAction"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="Accept"
+                android:textAllCaps="false"
+                android:textColor="@color/arohi_pure_white"
+                android:textSize="12sp"
+                app:backgroundTint="@color/arohi_forest_primary"
+                app:cornerRadius="10dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

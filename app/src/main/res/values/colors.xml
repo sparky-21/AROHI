@@ -31,4 +31,18 @@
     <color name="border_focused">#557B52</color>
     <color name="divider_color">#E2E8DD</color>
     <color name="scrim_overlay">#66263D2B</color>
+
+    <!-- Phase 2 Dashboard & Profile Semantic Color Aliases -->
+    <color name="arohi_forest_primary">#263D2B</color>
+    <color name="arohi_teal_accent">#557B52</color>
+    <color name="arohi_sage_mist">#E8EFE2</color>
+    <color name="arohi_mint_tint">#AFC2A1</color>
+    <color name="arohi_soft_ivory">#F7F8F3</color>
+    <color name="arohi_pure_white">#FFFFFF</color>
+    <color name="arohi_charcoal_text">#26332A</color>
+    <color name="arohi_slate_muted">#778276</color>
+    <color name="arohi_border_subtle">#D5E0CE</color>
+    <color name="arohi_amber_warning">#D99B45</color>
+    <color name="arohi_crimson_alert">#C94B4B</color>
+    <color name="arohi_info_blue">#3B7A57</color>
 </resources>

@@ -90,6 +90,10 @@ public final class ValidationUtils {
         return license != null && LICENSE_PATTERN.matcher(license.trim()).matches();
     }
 
+    public static boolean isValidLicenseNumber(String license) {
+        return isValidProfessionalLicense(license);
+    }
+
     public static boolean isValidExperienceYears(String yearsStr) {
         if (yearsStr == null || yearsStr.trim().isEmpty()) {
             return false;

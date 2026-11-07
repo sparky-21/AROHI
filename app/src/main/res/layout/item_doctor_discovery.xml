@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/arohi_pure_white"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/arohi_border_subtle"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header Row: Name + Specialty Badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvDocCardName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-black"
+                    android:text="Dr. Full Name"
+                    android:textColor="@color/arohi_charcoal_text"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvDocCardIdAndDept"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="AROHI-DOC-0000 • Cardiology"
+                    android:textColor="@color/arohi_teal_accent"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvDocCardSpecialtyBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_pill"
+                android:fontFamily="sans-serif-bold"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="Cardiology"
+                android:textColor="@color/arohi_forest_primary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Qualifications & Experience -->
+        <TextView
+            android:id="@+id/tvDocCardQualifications"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif"
+            android:text="Qualifications: MBBS, FCPS • Experience: 8 Years"
+            android:textColor="@color/arohi_charcoal_text"
+            android:textSize="13sp" />
+
+        <!-- Availability & Consultation Fee -->
+        <TextView
+            android:id="@+id/tvDocCardAvailabilityAndFee"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif"
+            android:text="Schedule: Sun-Thu 5PM-9PM • Fee: 1000 BDT"
+            android:textColor="@color/arohi_slate_muted"
+            android:textSize="12sp" />
+
+        <!-- Existing Request / Connection Status Line -->
+        <TextView
+            android:id="@+id/tvDocCardConnectionState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="sans-serif-bold"
+            android:text="Status: Available for Consultation"
+            android:textColor="@color/arohi_info_blue"
+            android:textSize="12sp" />
+
+        <!-- Action Buttons Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewDoctorProfile"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:text="View Profile"
+                android:textAllCaps="false"
+                android:textColor="@color/arohi_forest_primary"
+                android:textSize="12sp"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/arohi_forest_primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRequestOrChatDoctor"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Send Request"
+                android:textAllCaps="false"
+                android:textColor="@color/arohi_pure_white"
+                android:textSize="12sp"
+                app:backgroundTint="@color/arohi_forest_primary"
+                app:cornerRadius="10dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

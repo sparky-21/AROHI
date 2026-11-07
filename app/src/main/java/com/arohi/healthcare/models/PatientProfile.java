@@ -18,6 +18,7 @@ public class PatientProfile {
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String allergies;
+    private String chronicConditions;
     private String verificationStatus;
     private String address;
     private String bioNotes;
@@ -41,6 +42,7 @@ public class PatientProfile {
         this.emergencyContactName = emergencyContactName;
         this.emergencyContactPhone = emergencyContactPhone;
         this.allergies = allergies != null ? allergies : "";
+        this.chronicConditions = "";
         this.verificationStatus = VerificationStatus.PENDING.getKey();
         this.address = "";
         this.bioNotes = "";
@@ -59,12 +61,21 @@ public class PatientProfile {
         map.put("bloodGroup", bloodGroup);
         map.put("emergencyContactName", emergencyContactName);
         map.put("emergencyContactPhone", emergencyContactPhone);
-        map.put("allergies", allergies);
+        map.put("allergies", allergies != null ? allergies : "");
+        map.put("chronicConditions", chronicConditions != null ? chronicConditions : "");
         map.put("verificationStatus", verificationStatus);
         map.put("address", address != null ? address : "");
         map.put("bioNotes", bioNotes != null ? bioNotes : "");
         map.put("createdAt", createdAt);
         return map;
+    }
+
+    public String getChronicConditions() {
+        return chronicConditions;
+    }
+
+    public void setChronicConditions(String chronicConditions) {
+        this.chronicConditions = chronicConditions;
     }
 
     public String getVerificationStatus() {
@@ -185,5 +196,21 @@ public class PatientProfile {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getArohiId() {
+        return patientId;
+    }
+
+    public String getKnownAllergies() {
+        return allergies;
+    }
+
+    public void setKnownAllergies(String knownAllergies) {
+        this.allergies = knownAllergies;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        // Optional timestamp setter for profile updates
     }
 }
