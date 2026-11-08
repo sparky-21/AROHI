@@ -176,7 +176,9 @@ public class FamilyProfilesFragment extends Fragment {
                 return;
             }
 
-            String rel = dBinding.spinnerRelationship.getSelectedItem().toString();
+            String rel = dBinding.spinnerRelationship.getSelectedItem() != null
+                    ? dBinding.spinnerRelationship.getSelectedItem().toString()
+                    : FamilyMember.RELATION_OTHER;
             String dob = dBinding.etFamilyDob.getText() != null ? dBinding.etFamilyDob.getText().toString().trim() : "";
             String gender = dBinding.etFamilyGender.getText() != null ? dBinding.etFamilyGender.getText().toString().trim() : "";
             String blood = dBinding.etFamilyBloodGroup.getText() != null ? dBinding.etFamilyBloodGroup.getText().toString().trim() : "";
@@ -221,7 +223,7 @@ public class FamilyProfilesFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden && isAdded()) {
+        if (!hidden && binding != null && isAdded()) {
             loadFamilyMembers();
         }
     }
@@ -229,7 +231,7 @@ public class FamilyProfilesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (isAdded()) {
+        if (binding != null && isAdded()) {
             loadFamilyMembers();
         }
     }

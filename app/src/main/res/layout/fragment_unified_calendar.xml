@@ -23,47 +23,44 @@
             android:paddingTop="12dp"
             android:paddingBottom="10dp">
 
-            <!-- Title & Book Appointment Shortcut -->
+            <!-- Title Row -->
+            <TextView
+                android:id="@+id/tvCalendarHeaderTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Synchronized Medical Calendar"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <!-- Subtitle Row -->
+            <TextView
+                android:id="@+id/tvCalendarHeaderSub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Appointments, Lab Tests, Reminders &amp; Procedures"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <!-- Action Buttons Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
+                android:layout_marginTop="10dp"
+                android:gravity="start|center_vertical"
                 android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvCalendarHeaderTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Synchronized Medical Calendar"
-                        android:textColor="@color/text_primary"
-                        android:textSize="17sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvCalendarHeaderSub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Appointments, Lab Tests, Reminders &amp; Procedures"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnOpenGoogleCalendarTheme"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginEnd="8dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
-                    android:paddingHorizontal="8dp"
+                    android:paddingHorizontal="10dp"
                     android:text="📅 See Google Calendar"
                     android:textColor="@color/deep_forest_green"
                     android:textSize="11sp"
@@ -79,7 +76,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
-                    android:paddingHorizontal="10dp"
+                    android:paddingHorizontal="12dp"
                     android:text="+ Book Slot"
                     android:textColor="@color/white"
                     android:textSize="11sp" />

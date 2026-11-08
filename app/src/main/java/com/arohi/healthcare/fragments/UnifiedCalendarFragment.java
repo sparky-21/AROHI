@@ -23,6 +23,7 @@ import com.arohi.healthcare.databinding.DialogBookAppointmentBinding;
 import com.arohi.healthcare.databinding.FragmentUnifiedCalendarBinding;
 import com.arohi.healthcare.models.Appointment;
 import com.arohi.healthcare.models.CalendarEvent;
+import com.arohi.healthcare.models.ConsultationRequest;
 import com.arohi.healthcare.models.DoctorProfile;
 import com.arohi.healthcare.models.PatientProfile;
 import com.arohi.healthcare.models.UserAccount;
@@ -206,6 +207,7 @@ public class UnifiedCalendarFragment extends Fragment {
     }
 
     private void applyFilterSelection() {
+        if (binding == null || !isAdded()) return;
         com.google.android.material.button.MaterialButton selectedBtn =
                 CalendarEvent.TYPE_APPOINTMENT.equals(selectedFilterType) ? binding.btnFilterAppointments
                 : (CalendarEvent.TYPE_LAB_TEST.equals(selectedFilterType) ? binding.btnFilterLabTests
@@ -305,6 +307,194 @@ public class UnifiedCalendarFragment extends Fragment {
     // APPOINTMENT BOOKING DIALOG WITH CONFLICT DETECTION
     // =========================================================================
     private void showBookAppointmentDialog() {
+        if (isDoctorMode) {
+            showDoctorScheduleDialog();
+        } else {
+            showPatientBookingDialog();
+        }
+    }
+
+    /**
+     * Doctor mode: Schedule an appointment with one of their accepted patients.
+     * Hides "Select Doctor" and shows "Select Patient" dropdown instead.
+     */
+    private void showDoctorScheduleDialog() {
+        DialogBookAppointmentBinding dBinding = DialogBookAppointmentBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dBinding.getRoot())
+                .create();
+
+        dBinding.tvBookApptDialogTitle.setText("Schedule Patient Appointment");
+        dBinding.tvBookApptDoctorSummary.setText("Doctor: Dr. " + currentAccount.getFullName());
+
+        // Repurpose the doctor selection dropdown as a patient selector
+        dBinding.tilSelectDoctor.setHint("Select Patient");
+
+        // Time slots
+        String[] timeSlots = new String[]{
+                "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+                "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM",
+                "07:00 PM", "07:30 PM", "08:00 PM"
+        };
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, timeSlots);
+        dBinding.actvAppointmentTime.setAdapter(timeAdapter);
+        dBinding.actvAppointmentTime.setText(timeSlots[2], false);
+
+        // Consultation types
+        String[] types = new String[]{
+                Appointment.TYPE_IN_PERSON,
+                Appointment.TYPE_VIDEO_CALL,
+                Appointment.TYPE_FOLLOW_UP
+        };
+        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, types);
+        dBinding.actvConsultationType.setAdapter(typeAdapter);
+        dBinding.actvConsultationType.setText(types[0], false);
+
+        // Date
+        dBinding.etAppointmentDate.setText(dateFormat.format(currentCalendar.getTime()));
+        dBinding.etAppointmentDate.setOnClickListener(v -> {
+            DatePickerHelper.showDatePicker(requireContext(), (y, m, d) -> {
+                String picked = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d);
+                dBinding.etAppointmentDate.setText(picked);
+            });
+        });
+
+        // Load accepted patients for this doctor
+        final List<ConsultationRequest> acceptedPatients = new ArrayList<>();
+        final List<String> patientNames = new ArrayList<>();
+
+        doctorRepository.loadDoctorRequests(currentAccount.getUid(), new AuthCallback<List<ConsultationRequest>>() {
+            @Override
+            public void onSuccess(List<ConsultationRequest> requests) {
+                if (requests != null) {
+                    for (ConsultationRequest r : requests) {
+                        if (r.isAccepted()) {
+                            acceptedPatients.add(r);
+                            String name = r.getPatientName();
+                            if (name == null || name.isEmpty()) name = "Patient";
+                            String patientId = r.getPatientId();
+                            if (patientId != null && !patientId.isEmpty()) {
+                                name = name + " (" + patientId + ")";
+                            }
+                            patientNames.add(name);
+                        }
+                    }
+                    if (getContext() != null) {
+                        ArrayAdapter<String> patientAdapter = new ArrayAdapter<>(requireContext(),
+                                android.R.layout.simple_dropdown_item_1line, patientNames);
+                        dBinding.actvSelectDoctor.setAdapter(patientAdapter);
+                        if (!patientNames.isEmpty()) {
+                            dBinding.actvSelectDoctor.setText(patientNames.get(0), false);
+                            dBinding.tvBookApptDoctorSummary.setText(
+                                    "Doctor: Dr. " + currentAccount.getFullName() + " • Patient: " + patientNames.get(0));
+                        } else {
+                            dBinding.tvBookApptDoctorSummary.setText(
+                                    "Doctor: Dr. " + currentAccount.getFullName() + " • No accepted patients");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                // Keep default
+            }
+        });
+
+        dBinding.actvSelectDoctor.setOnItemClickListener((parent, view, position, id) -> {
+            if (position < patientNames.size()) {
+                dBinding.tvBookApptDoctorSummary.setText(
+                        "Doctor: Dr. " + currentAccount.getFullName() + " • Patient: " + patientNames.get(position));
+            }
+        });
+
+        dBinding.btnCancelBookAppt.setOnClickListener(v -> dialog.dismiss());
+        dBinding.btnSubmitBookAppt.setText("Confirm");
+
+        dBinding.btnSubmitBookAppt.setOnClickListener(v -> {
+            String date = dBinding.etAppointmentDate.getText() != null
+                    ? dBinding.etAppointmentDate.getText().toString().trim() : "";
+            String time = dBinding.actvAppointmentTime.getText() != null
+                    ? dBinding.actvAppointmentTime.getText().toString().trim() : "";
+            String type = dBinding.actvConsultationType.getText() != null
+                    ? dBinding.actvConsultationType.getText().toString().trim() : Appointment.TYPE_IN_PERSON;
+            String reason = dBinding.etAppointmentReason.getText() != null
+                    ? dBinding.etAppointmentReason.getText().toString().trim() : "";
+            String notes = dBinding.etAppointmentNotes.getText() != null
+                    ? dBinding.etAppointmentNotes.getText().toString().trim() : "";
+
+            if (reason.isEmpty()) {
+                reason = "Scheduled Clinical Consultation";
+            }
+
+            // Find chosen patient
+            ConsultationRequest chosenPatient = null;
+            String patText = dBinding.actvSelectDoctor.getText() != null
+                    ? dBinding.actvSelectDoctor.getText().toString() : "";
+            for (int i = 0; i < patientNames.size(); i++) {
+                if (patientNames.get(i).equals(patText) && i < acceptedPatients.size()) {
+                    chosenPatient = acceptedPatients.get(i);
+                    break;
+                }
+            }
+            if (chosenPatient == null && !acceptedPatients.isEmpty()) {
+                chosenPatient = acceptedPatients.get(0);
+            }
+
+            if (chosenPatient == null) {
+                UiStateHelper.showError(dBinding.getRoot(), "No accepted patients to schedule. Accept patient requests first.");
+                return;
+            }
+
+            // Build appointment: patient info from the chosen patient, doctor info from current account
+            Appointment newAppt = new Appointment(
+                    "",
+                    chosenPatient.getPatientUid(),
+                    chosenPatient.getPatientId() != null ? chosenPatient.getPatientId() : "",
+                    chosenPatient.getPatientName() != null ? chosenPatient.getPatientName() : "Patient",
+                    chosenPatient.getPatientPhone() != null ? chosenPatient.getPatientPhone() : "",
+                    currentAccount.getUid(),
+                    currentAccount.getArohiId(),
+                    currentAccount.getFullName(),
+                    chosenPatient.getDoctorSpecialty() != null ? chosenPatient.getDoctorSpecialty() : "General Medicine",
+                    chosenPatient.getConsultationFee(),
+                    date,
+                    time,
+                    type,
+                    reason,
+                    notes
+            );
+            newAppt.setStatus(Appointment.STATUS_CONFIRMED);
+
+            dBinding.btnSubmitBookAppt.setEnabled(false);
+            clinicalRepository.requestAppointment(newAppt, new AuthCallback<Appointment>() {
+                @Override
+                public void onSuccess(Appointment result) {
+                    dialog.dismiss();
+                    if (binding != null) {
+                        UiStateHelper.showSuccess(binding.getRoot(),
+                                "Appointment scheduled for " + result.getPatientName() + " on " + result.getAppointmentDate() + " at " + result.getAppointmentTime() + "!");
+                        loadEventsForSelectedDate();
+                    }
+                }
+
+                @Override
+                public void onError(String message) {
+                    dBinding.btnSubmitBookAppt.setEnabled(true);
+                    UiStateHelper.showError(dBinding.getRoot(), message);
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    /**
+     * Patient mode: Book a consultation with a verified doctor.
+     */
+    private void showPatientBookingDialog() {
         DialogBookAppointmentBinding dBinding = DialogBookAppointmentBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dBinding.getRoot())
@@ -559,7 +749,7 @@ public class UnifiedCalendarFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             loadEventsForSelectedDate();
         }
     }
@@ -567,7 +757,9 @@ public class UnifiedCalendarFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadEventsForSelectedDate();
+        if (binding != null && isAdded()) {
+            loadEventsForSelectedDate();
+        }
     }
 
     @Override

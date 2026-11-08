@@ -147,6 +147,7 @@ public class PatientRecordsFragment extends Fragment {
     }
 
     private void switchTab(String tab) {
+        if (binding == null || !isAdded()) return;
         this.activeTab = tab;
 
         com.google.android.material.button.MaterialButton selectedBtn =
@@ -491,7 +492,7 @@ public class PatientRecordsFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             switchTab(activeTab);
         }
     }
@@ -499,7 +500,9 @@ public class PatientRecordsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        switchTab(activeTab);
+        if (binding != null && isAdded()) {
+            switchTab(activeTab);
+        }
     }
 
     @Override

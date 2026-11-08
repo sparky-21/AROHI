@@ -53,6 +53,7 @@ public class RolePortalActivity extends AppCompatActivity {
     private AuthRepository authRepository;
     private UserAccount currentAccount;
     private int currentTabId = -1;
+    private int defaultTabId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +78,23 @@ public class RolePortalActivity extends AppCompatActivity {
 
         // Silently sync latest verification status from Firestore on portal launch
         refreshHeaderAndCurrentTab(false);
+
+        // Safe Back Navigation: unwinds subfragments or returns to main dashboard tab
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+                if (fm.getBackStackEntryCount() > 0) {
+                    fm.popBackStack();
+                    return;
+                }
+                if (defaultTabId != -1 && currentTabId != defaultTabId) {
+                    switchToTab(defaultTabId);
+                    return;
+                }
+                finish();
+            }
+        });
     }
 
     public void setupTopHeader(@NonNull UserAccount account) {
@@ -118,7 +136,6 @@ public class RolePortalActivity extends AppCompatActivity {
 
     private void setupBottomNavigationForRole(@NonNull UserRole role) {
         binding.bottomNavigation.getMenu().clear();
-        int defaultTabId;
 
         switch (role) {
             case DOCTOR:
@@ -153,10 +170,16 @@ public class RolePortalActivity extends AppCompatActivity {
     }
 
     private void switchToTabInternal(@IdRes int itemId) {
+        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+
+        // Safely clear any backstack subfragments before switching tabs
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStackImmediate(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+
         String targetTag = "tab_" + itemId;
         String currentTag = currentTabId != -1 ? "tab_" + currentTabId : null;
 
-        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
         androidx.fragment.app.FragmentTransaction ft = fm.beginTransaction();
 
         if (currentTag != null) {
@@ -167,6 +190,12 @@ public class RolePortalActivity extends AppCompatActivity {
         }
 
         Fragment targetFragment = fm.findFragmentByTag(targetTag);
+        // If target fragment exists but view is destroyed, remove so it recreates view cleanly
+        if (targetFragment != null && targetFragment.getView() == null) {
+            ft.remove(targetFragment);
+            targetFragment = null;
+        }
+
         if (targetFragment == null) {
             targetFragment = createFragmentForMenuItem(itemId);
             if (targetFragment != null) {
@@ -291,15 +320,19 @@ public class RolePortalActivity extends AppCompatActivity {
                 if (isFinishing() || isDestroyed()) return;
                 setupTopHeader(result);
                 if (currentTabId != -1) {
+                    androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+                    String tag = "tab_" + currentTabId;
+                    Fragment existing = fm.findFragmentByTag(tag);
+                    androidx.fragment.app.FragmentTransaction ft = fm.beginTransaction();
+                    if (existing != null) {
+                        ft.remove(existing);
+                    }
                     Fragment refreshed = createFragmentForMenuItem(currentTabId);
                     if (refreshed != null) {
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragmentContainer, refreshed)
-                                .commitAllowingStateLoss();
+                        ft.add(R.id.fragmentContainer, refreshed, tag).commitAllowingStateLoss();
                     }
                 }
-                if (showFeedback) {
+                if (showFeedback && binding != null) {
                     UiStateHelper.showSuccess(binding.getRoot(),
                             "Synced with Cloud Firestore • Status: " + result.getVerificationStatusEnum().getKey());
                 }
@@ -308,7 +341,7 @@ public class RolePortalActivity extends AppCompatActivity {
             @Override
             public void onError(String message) {
                 if (isFinishing() || isDestroyed()) return;
-                if (showFeedback) {
+                if (showFeedback && binding != null) {
                     UiStateHelper.showError(binding.getRoot(), message);
                 }
             }

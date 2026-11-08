@@ -74,15 +74,23 @@ public class HospitalRoutePlanner {
         private final int estimatedWalkingSeconds;
         private final List<HospitalNode> pathNodes;
         private final List<String> turnByTurnSteps;
+        private final List<Double> stepDistances;
 
         public RouteResult(String algorithmUsed, double totalDistanceMeters,
                            int estimatedWalkingSeconds, List<HospitalNode> pathNodes,
                            List<String> turnByTurnSteps) {
+            this(algorithmUsed, totalDistanceMeters, estimatedWalkingSeconds, pathNodes, turnByTurnSteps, new ArrayList<>());
+        }
+
+        public RouteResult(String algorithmUsed, double totalDistanceMeters,
+                           int estimatedWalkingSeconds, List<HospitalNode> pathNodes,
+                           List<String> turnByTurnSteps, List<Double> stepDistances) {
             this.algorithmUsed = algorithmUsed;
             this.totalDistanceMeters = totalDistanceMeters;
             this.estimatedWalkingSeconds = estimatedWalkingSeconds;
             this.pathNodes = pathNodes != null ? pathNodes : new ArrayList<>();
             this.turnByTurnSteps = turnByTurnSteps != null ? turnByTurnSteps : new ArrayList<>();
+            this.stepDistances = stepDistances != null ? stepDistances : new ArrayList<>();
         }
 
         public String getAlgorithmUsed() { return algorithmUsed; }
@@ -90,6 +98,7 @@ public class HospitalRoutePlanner {
         public int getEstimatedWalkingSeconds() { return estimatedWalkingSeconds; }
         public List<HospitalNode> getPathNodes() { return pathNodes; }
         public List<String> getTurnByTurnSteps() { return turnByTurnSteps; }
+        public List<Double> getStepDistances() { return stepDistances != null ? stepDistances : Collections.emptyList(); }
 
         public String getDistanceFormatted() {
             return String.format(Locale.ROOT, "%.0f meters", totalDistanceMeters);
@@ -221,6 +230,7 @@ public class HospitalRoutePlanner {
         Map<String, Double> distances = new HashMap<>();
         Map<String, String> predecessors = new HashMap<>();
         Map<String, String> stepInstructions = new HashMap<>();
+        Map<String, Double> stepDistMap = new HashMap<>();
         PriorityQueue<String> pq = new PriorityQueue<>(Comparator.comparingDouble(distances::get));
 
         for (String id : nodes.keySet()) {
@@ -250,6 +260,7 @@ public class HospitalRoutePlanner {
                     distances.put(neighbor, newDist);
                     predecessors.put(neighbor, current);
                     stepInstructions.put(neighbor, edge.getTransitInstruction());
+                    stepDistMap.put(neighbor, edge.getDistanceMeters());
                     pq.remove(neighbor);
                     pq.add(neighbor);
                 }
@@ -263,6 +274,7 @@ public class HospitalRoutePlanner {
         // Reconstruct path
         List<HospitalNode> path = new ArrayList<>();
         List<String> instructions = new ArrayList<>();
+        List<Double> stepDists = new ArrayList<>();
 
         String curr = destinationId;
         while (curr != null) {
@@ -270,6 +282,7 @@ public class HospitalRoutePlanner {
             String step = stepInstructions.get(curr);
             if (step != null) {
                 instructions.add(0, step);
+                stepDists.add(0, stepDistMap.getOrDefault(curr, 0.0));
             }
             curr = predecessors.get(curr);
         }
@@ -277,8 +290,8 @@ public class HospitalRoutePlanner {
         double totalDist = distances.get(destinationId);
         int walkSeconds = (int) Math.round(totalDist / 1.2); // avg pedestrian walking pace 1.2 m/s
 
-        return new RouteResult("Dijkstra's Algorithm (Optimal Shortest Path)",
-                totalDist, walkSeconds, path, instructions);
+        return new RouteResult("Fastest walking route",
+                totalDist, walkSeconds, path, instructions, stepDists);
     }
 
     // =========================================================================
@@ -293,6 +306,7 @@ public class HospitalRoutePlanner {
         Map<String, Double> distances = new HashMap<>();
         Map<String, String> predecessors = new HashMap<>();
         Map<String, String> stepInstructions = new HashMap<>();
+        Map<String, Double> stepDistMap = new HashMap<>();
 
         for (String id : nodes.keySet()) {
             distances.put(id, Double.MAX_VALUE);
@@ -321,6 +335,7 @@ public class HospitalRoutePlanner {
                         distances.put(edge.v, uDist + edge.weight);
                         predecessors.put(edge.v, edge.u);
                         stepInstructions.put(edge.v, edge.instruction);
+                        stepDistMap.put(edge.v, edge.weight);
                         anyChange = true;
                     }
                 }
@@ -334,12 +349,14 @@ public class HospitalRoutePlanner {
 
         List<HospitalNode> path = new ArrayList<>();
         List<String> instructions = new ArrayList<>();
+        List<Double> stepDists = new ArrayList<>();
         String curr = destinationId;
         while (curr != null) {
             path.add(0, nodes.get(curr));
             String step = stepInstructions.get(curr);
             if (step != null) {
                 instructions.add(0, step);
+                stepDists.add(0, stepDistMap.getOrDefault(curr, 0.0));
             }
             curr = predecessors.get(curr);
         }
@@ -347,8 +364,8 @@ public class HospitalRoutePlanner {
         double totalDist = distances.get(destinationId);
         int walkSeconds = (int) Math.round(totalDist / 1.2);
 
-        return new RouteResult("Bellman-Ford Algorithm (Optimal Shortest Path)",
-                totalDist, walkSeconds, path, instructions);
+        return new RouteResult("Fastest walking route",
+                totalDist, walkSeconds, path, instructions, stepDists);
     }
 
     private static class AllEdge {

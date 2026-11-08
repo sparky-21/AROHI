@@ -159,7 +159,7 @@ public class ConversationsListFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             loadConversations();
         }
     }
@@ -167,7 +167,9 @@ public class ConversationsListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadConversations();
+        if (binding != null && isAdded()) {
+            loadConversations();
+        }
     }
 
     @Override

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface_card"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="12dp">
+
+    <!-- Dialog Title -->
+    <TextView
+        android:id="@+id/tvPatientActionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Patient: Name"
+        android:textColor="@color/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvPatientActionSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="Clinical Actions"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="14dp"
+        android:background="@color/divider_color" />
+
+    <!-- Action: Issue Digital Prescription -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionPrescription"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="4dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="Issue Digital Prescription (Rx)"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_check_circle"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="4dp"
+        android:background="@color/divider_color" />
+
+    <!-- Action: Order Diagnostic Lab Test -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionLabTest"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="Order Diagnostic Laboratory Test"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_search"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="4dp"
+        android:background="@color/divider_color" />
+
+    <!-- Action: Schedule Consultation Appointment -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionScheduleAppt"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="Schedule Consultation Appointment"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_calendar"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="4dp"
+        android:background="@color/divider_color" />
+
+    <!-- Action: View Patient Medical Record Timeline -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionMedicalRecord"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="View Patient Medical Record Timeline"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_nav_records"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="4dp"
+        android:background="@color/divider_color" />
+
+    <!-- Action: Open Secure Chat -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionSecureChat"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="Open 1-to-1 Secure Chat"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_nav_messages"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="4dp"
+        android:background="@color/divider_color" />
+
+    <!-- Action: Inspect Full Health Demographics -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionDemographics"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="Inspect Full Health Demographics"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_role_patient"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/divider_color" />
+
+    <!-- Close Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClosePatientActions"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="12dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="Close"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        app:strokeColor="@color/border_stroke" />
+
+</LinearLayout>

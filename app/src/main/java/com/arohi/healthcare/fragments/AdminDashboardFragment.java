@@ -261,7 +261,7 @@ public class AdminDashboardFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             refreshDashboardData();
         }
     }
@@ -269,7 +269,9 @@ public class AdminDashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        refreshDashboardData();
+        if (binding != null && isAdded()) {
+            refreshDashboardData();
+        }
     }
 
     @Override

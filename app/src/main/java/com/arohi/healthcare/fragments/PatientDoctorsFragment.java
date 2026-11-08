@@ -630,7 +630,7 @@ public class PatientDoctorsFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             refreshDoctorsAndRequests();
             loadConversations();
         }
@@ -639,8 +639,10 @@ public class PatientDoctorsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        refreshDoctorsAndRequests();
-        loadConversations();
+        if (binding != null && isAdded()) {
+            refreshDoctorsAndRequests();
+            loadConversations();
+        }
     }
 
     @Override

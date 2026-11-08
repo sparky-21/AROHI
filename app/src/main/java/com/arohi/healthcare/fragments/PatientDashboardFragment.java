@@ -61,6 +61,7 @@ public class PatientDashboardFragment extends Fragment {
     }
 
     private void bindAccountHeader(@NonNull UserAccount account) {
+        if (binding == null) return;
         String name = account.getFullName() != null && !account.getFullName().isEmpty()
                 ? account.getFullName()
                 : "Patient";
@@ -213,7 +214,7 @@ public class PatientDashboardFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden && sessionManager != null) {
+        if (!hidden && binding != null && isAdded() && sessionManager != null) {
             UserAccount account = sessionManager.getCurrentSessionAccount();
             if (account != null) {
                 bindAccountHeader(account);
@@ -225,7 +226,7 @@ public class PatientDashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (sessionManager != null) {
+        if (binding != null && isAdded() && sessionManager != null) {
             UserAccount account = sessionManager.getCurrentSessionAccount();
             if (account != null) {
                 bindAccountHeader(account);

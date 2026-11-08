@@ -51,6 +51,9 @@ public class GoogleMapHospitalView extends View {
     private HospitalNode destNode;
     private OnNodeClickListener nodeClickListener;
 
+    private boolean isNavigating = false;
+    private int currentStepIndex = 0;
+
     private final List<HospitalNode> displayedFloorNodes = new ArrayList<>();
 
     public GoogleMapHospitalView(Context context) {
@@ -130,6 +133,31 @@ public class GoogleMapHospitalView extends View {
         this.startNode = start;
         this.destNode = dest;
         invalidate();
+    }
+
+    public void startNavigation() {
+        this.isNavigating = true;
+        this.currentStepIndex = 0;
+        invalidate();
+    }
+
+    public void setNavigationStep(int index) {
+        this.currentStepIndex = Math.max(0, index);
+        invalidate();
+    }
+
+    public void stopNavigation() {
+        this.isNavigating = false;
+        this.currentStepIndex = 0;
+        invalidate();
+    }
+
+    public boolean isNavigating() {
+        return isNavigating;
+    }
+
+    public int getCurrentStepIndex() {
+        return currentStepIndex;
     }
 
     public void setOnNodeClickListener(OnNodeClickListener listener) {
@@ -255,40 +283,87 @@ public class GoogleMapHospitalView extends View {
     }
 
     private void drawRoutePolyline(Canvas canvas, List<HospitalNode> path, int w, int h) {
-        Path polyline = new Path();
-        boolean first = true;
+        if (path == null || path.isEmpty()) return;
 
-        for (HospitalNode node : path) {
-            // Draw route on the canvas. If node is on a different floor, interpolate or show elevator transition
-            float x = node.getX() * w;
-            float y = node.getY() * h;
+        if (!isNavigating) {
+            Path polyline = new Path();
+            boolean first = true;
+            for (HospitalNode node : path) {
+                float x = node.getX() * w;
+                float y = node.getY() * h;
+                if (first) {
+                    polyline.moveTo(x, y);
+                    first = false;
+                } else {
+                    polyline.lineTo(x, y);
+                }
+            }
+            // 1. Draw glowing polyline
+            canvas.drawPath(polyline, routePolylineGlowPaint);
+            // 2. Draw crisp Google Blue route line
+            canvas.drawPath(polyline, routePolylinePaint);
+        } else {
+            // Traversed portion (dim grey)
+            if (currentStepIndex > 0) {
+                Path traversedPath = new Path();
+                boolean first = true;
+                int endIdx = Math.min(currentStepIndex, path.size() - 1);
+                for (int i = 0; i <= endIdx; i++) {
+                    HospitalNode node = path.get(i);
+                    float x = node.getX() * w;
+                    float y = node.getY() * h;
+                    if (first) {
+                        traversedPath.moveTo(x, y);
+                        first = false;
+                    } else {
+                        traversedPath.lineTo(x, y);
+                    }
+                }
+                Paint traversedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                traversedPaint.setColor(Color.parseColor("#BDC1C6"));
+                traversedPaint.setStyle(Paint.Style.STROKE);
+                traversedPaint.setStrokeWidth(8f);
+                canvas.drawPath(traversedPath, traversedPaint);
+            }
 
-            if (first) {
-                polyline.moveTo(x, y);
-                first = false;
-            } else {
-                polyline.lineTo(x, y);
+            // Remaining active portion (glowing Google blue)
+            if (currentStepIndex < path.size()) {
+                Path remainingPath = new Path();
+                boolean first = true;
+                for (int i = currentStepIndex; i < path.size(); i++) {
+                    HospitalNode node = path.get(i);
+                    float x = node.getX() * w;
+                    float y = node.getY() * h;
+                    if (first) {
+                        remainingPath.moveTo(x, y);
+                        first = false;
+                    } else {
+                        remainingPath.lineTo(x, y);
+                    }
+                }
+                canvas.drawPath(remainingPath, routePolylineGlowPaint);
+                canvas.drawPath(remainingPath, routePolylinePaint);
             }
         }
 
-        // 1. Draw glowing polyline
-        canvas.drawPath(polyline, routePolylineGlowPaint);
-        // 2. Draw crisp Google Blue route line
-        canvas.drawPath(polyline, routePolylinePaint);
-
-        // 3. Draw route step waypoints (Google circle dots)
+        // Draw route step waypoints (Google circle dots)
         Paint dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         dotPaint.setColor(Color.WHITE);
         dotPaint.setStyle(Paint.Style.FILL);
 
         Paint dotStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dotStroke.setColor(Color.parseColor("#1A73E8"));
         dotStroke.setStyle(Paint.Style.STROKE);
         dotStroke.setStrokeWidth(3f);
 
-        for (HospitalNode node : path) {
+        for (int i = 0; i < path.size(); i++) {
+            HospitalNode node = path.get(i);
             float x = node.getX() * w;
             float y = node.getY() * h;
+            if (isNavigating && i < currentStepIndex) {
+                dotStroke.setColor(Color.parseColor("#BDC1C6"));
+            } else {
+                dotStroke.setColor(Color.parseColor("#1A73E8"));
+            }
             canvas.drawCircle(x, y, 7f, dotPaint);
             canvas.drawCircle(x, y, 7f, dotStroke);
         }
@@ -337,6 +412,73 @@ public class GoogleMapHospitalView extends View {
             whiteDot.setColor(Color.WHITE);
             canvas.drawCircle(dx, dy - 4f, 7f, whiteDot);
         }
+
+        // Live Navigation Active GPS Location Marker
+        if (isNavigating && currentRoute != null && currentRoute.getPathNodes() != null
+                && currentStepIndex >= 0 && currentStepIndex < currentRoute.getPathNodes().size()) {
+            HospitalNode activeNode = currentRoute.getPathNodes().get(currentStepIndex);
+            if (activeNode.getFloor().equalsIgnoreCase(currentFloor)) {
+                float nx = activeNode.getX() * w;
+                float ny = activeNode.getY() * h;
+
+                // 1. Semi-transparent glowing radar aura
+                Paint auraPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                auraPaint.setColor(Color.parseColor("#331A73E8"));
+                canvas.drawCircle(nx, ny, 32f, auraPaint);
+
+                // 2. White outer border ring
+                Paint whiteRing = new Paint(Paint.ANTI_ALIAS_FLAG);
+                whiteRing.setColor(Color.WHITE);
+                whiteRing.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(nx, ny, 16f, whiteRing);
+
+                // 3. Vibrant Google Blue center dot
+                Paint blueCenter = new Paint(Paint.ANTI_ALIAS_FLAG);
+                blueCenter.setColor(Color.parseColor("#1A73E8"));
+                blueCenter.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(nx, ny, 11f, blueCenter);
+
+                // 4. Directional heading cone if there is a next node
+                if (currentStepIndex + 1 < currentRoute.getPathNodes().size()) {
+                    HospitalNode nextNode = currentRoute.getPathNodes().get(currentStepIndex + 1);
+                    float targetX = nextNode.getX() * w;
+                    float targetY = nextNode.getY() * h;
+                    double angle = Math.atan2(targetY - ny, targetX - nx);
+
+                    float tipX = nx + (float) Math.cos(angle) * 26f;
+                    float tipY = ny + (float) Math.sin(angle) * 26f;
+                    float leftX = nx + (float) Math.cos(angle + Math.toRadians(140)) * 14f;
+                    float leftY = ny + (float) Math.sin(angle + Math.toRadians(140)) * 14f;
+                    float rightX = nx + (float) Math.cos(angle - Math.toRadians(140)) * 14f;
+                    float rightY = ny + (float) Math.sin(angle - Math.toRadians(140)) * 14f;
+
+                    Path arrowPath = new Path();
+                    arrowPath.moveTo(tipX, tipY);
+                    arrowPath.lineTo(leftX, leftY);
+                    arrowPath.lineTo(nx, ny);
+                    arrowPath.lineTo(rightX, rightY);
+                    arrowPath.close();
+
+                    Paint arrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                    arrowPaint.setColor(Color.parseColor("#1A73E8"));
+                    arrowPaint.setStyle(Paint.Style.FILL);
+                    canvas.drawPath(arrowPath, arrowPaint);
+                }
+
+                // 5. Floating "YOU" badge above marker
+                Paint badgeBg = new Paint(Paint.ANTI_ALIAS_FLAG);
+                badgeBg.setColor(Color.parseColor("#188038"));
+                RectF badgeRect = new RectF(nx - 36f, ny - 48f, nx + 36f, ny - 24f);
+                canvas.drawRoundRect(badgeRect, 10f, 10f, badgeBg);
+
+                Paint badgeText = new Paint(Paint.ANTI_ALIAS_FLAG);
+                badgeText.setColor(Color.WHITE);
+                badgeText.setTextSize(14f);
+                badgeText.setFakeBoldText(true);
+                badgeText.setTextAlign(Paint.Align.CENTER);
+                canvas.drawText("YOU", nx, ny - 31f, badgeText);
+            }
+        }
     }
 
     private void drawGoogleMapsWatermark(Canvas canvas, int w, int h) {
@@ -344,7 +486,7 @@ public class GoogleMapHospitalView extends View {
         wmPaint.setColor(Color.parseColor("#70757A"));
         wmPaint.setTextSize(22f);
         wmPaint.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText("Google Maps Navigation Style • AROHI Dijkstra Engine", 24f, h - 24f, wmPaint);
+        canvas.drawText("Google Maps • Hospital Indoor View", 24f, h - 24f, wmPaint);
 
         // Scale bar
         Paint scalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);

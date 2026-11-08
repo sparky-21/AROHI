@@ -93,9 +93,9 @@ public class AdminStaffFragment extends Fragment {
     }
 
     private void applyFilter(String filterKey) {
+        if (binding == null) return;
         this.currentFilter = filterKey;
-        if (binding != null) {
-            MaterialButton selectedBtn = binding.btnFilterAll;
+        MaterialButton selectedBtn = binding.btnFilterAll;
             if ("PENDING".equals(filterKey)) selectedBtn = binding.btnFilterPending;
             else if ("DOCTOR".equals(filterKey)) selectedBtn = binding.btnFilterDoctors;
             else if ("NURSE".equals(filterKey)) selectedBtn = binding.btnFilterNurses;
@@ -110,7 +110,6 @@ public class AdminStaffFragment extends Fragment {
                     binding.btnFilterNurses,
                     binding.btnFilterPatients
             );
-        }
         List<UserAccount> filtered = new ArrayList<>();
         for (UserAccount account : allAccounts) {
             if ("ALL".equals(filterKey)) {
@@ -176,7 +175,7 @@ public class AdminStaffFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             loadDirectory();
         }
     }
@@ -184,7 +183,9 @@ public class AdminStaffFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadDirectory();
+        if (binding != null && isAdded()) {
+            loadDirectory();
+        }
     }
 
     @Override

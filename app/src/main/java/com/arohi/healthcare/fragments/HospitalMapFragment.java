@@ -69,10 +69,10 @@ public class HospitalMapFragment extends Fragment {
 
     private void setupListeners() {
         binding.btnMapBack.setOnClickListener(v -> {
-            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+            if (isAdded() && getParentFragmentManager().getBackStackEntryCount() > 0) {
                 getParentFragmentManager().popBackStack();
             } else if (getActivity() != null) {
-                getActivity().onBackPressed();
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
             }
         });
 
@@ -207,7 +207,7 @@ public class HospitalMapFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden && isAdded()) {
+        if (!hidden && binding != null && isAdded()) {
             loadLocationsForFloor(currentFloor);
         }
     }
@@ -215,7 +215,7 @@ public class HospitalMapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (isAdded()) {
+        if (binding != null && isAdded()) {
             loadLocationsForFloor(currentFloor);
         }
     }

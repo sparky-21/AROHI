@@ -9,6 +9,7 @@
 
     <!-- Google Maps Top Search & Route Planning Bar -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardRoutePlanner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
@@ -44,7 +45,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Google Maps Hospital Navigation"
+                    android:text="Indoor Hospital Navigation"
                     android:textColor="#202124"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -63,8 +64,9 @@
                     app:strokeColor="#1A73E8" />
             </LinearLayout>
 
-            <!-- Route Inputs: Start & Destination -->
+            <!-- Route Inputs: Start & Destination (Hidden during live navigation) -->
             <LinearLayout
+                android:id="@+id/layoutRoutePlannerInputs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -119,53 +121,11 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Algorithm Selector & Floor Selector Chips -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Algorithm:"
-                    android:textColor="#5F6368"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupAlgorithm"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    app:singleSelection="true">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipDijkstra"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:text="Dijkstra"
-                        android:textSize="11sp" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipBellmanFord"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bellman-Ford"
-                        android:textSize="11sp" />
-                </com.google.android.material.chip.ChipGroup>
-            </LinearLayout>
-
             <!-- Floor Tabs -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:scrollbars="none">
 
                 <com.google.android.material.chip.ChipGroup
@@ -211,6 +171,85 @@
                         android:text="Basement" />
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Google Maps Active Turn-by-Turn Navigation Green Banner -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardActiveNavBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="#188038"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="14dp"
+            android:gravity="center_vertical">
+
+            <!-- Turn Maneuver Icon -->
+            <TextView
+                android:id="@+id/tvNavManeuverIcon"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:gravity="center"
+                android:text="⬆"
+                android:textColor="@color/white"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <!-- Instructions Column -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvNavStepDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="In 20 meters"
+                    android:textColor="#E8F0FE"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvNavCurrentInstruction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Head toward Central Elevator Hub"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvNavNextPrompt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Then take elevator to Floor 3"
+                    android:textColor="#CEEAD6"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnNavCloseBanner"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                app:tint="@color/white"
+                android:contentDescription="Exit Navigation" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -281,7 +320,7 @@
                         android:id="@+id/tvGoogleRouteAlgorithmBanner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Fastest Route via Central Elevator Hub • Dijkstra"
+                        android:text="Fastest walking route • via Central Elevators"
                         android:textColor="#5F6368"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -297,7 +336,7 @@
                     app:strokeColor="#1A73E8" />
             </LinearLayout>
 
-            <!-- Turn-by-Turn Steps Container -->
+            <!-- Turn-by-Turn Steps Container (Expandable in Overview Mode) -->
             <LinearLayout
                 android:id="@+id/layoutTurnByTurnSteps"
                 android:layout_width="match_parent"
@@ -322,11 +361,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:lineSpacingExtra="4dp"
-                    android:text="1. From Main Reception, head 20m East towards Elevator Hub.\n2. Take Elevator Bank A to Floor 3.\n3. Turn North 30m along sterile corridor to ICU Entrance."
+                    android:text="1. Head toward Elevator Hub.\n2. Take Elevator to destination."
                     android:textColor="#3C4043"
                     android:textSize="13sp" />
             </LinearLayout>
 
+            <!-- Overview Mode: Start Navigation Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStartNavigation"
                 style="@style/Widget.Material3.Button"
@@ -337,6 +377,90 @@
                 android:text="🧭 Start Navigation"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
+
+            <!-- Active Navigation Mode Controls Container -->
+            <LinearLayout
+                android:id="@+id/layoutActiveNavControls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Step Counter & Remaining Stats -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvNavStepProgress"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Step 1 of 5"
+                        android:textColor="#202124"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvNavRemainingStats"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="85m • 2 min"
+                        android:textColor="#188038"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Navigation Progress Bar -->
+                <ProgressBar
+                    android:id="@+id/navProgressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="6dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="#1A73E8" />
+
+                <!-- Navigation Action Buttons (Exit / Next Step) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNavExit"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="✕ Exit"
+                        android:textColor="#D93025"
+                        android:textSize="13sp"
+                        app:strokeColor="#D93025" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNavNextStep"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="2"
+                        android:backgroundTint="#1A73E8"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Next Step ➔"
+                        android:textColor="@color/white"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

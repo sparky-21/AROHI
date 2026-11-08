@@ -172,7 +172,7 @@ public class NurseDashboardFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden && sessionManager != null) {
+        if (!hidden && binding != null && isAdded() && sessionManager != null) {
             UserAccount account = sessionManager.getCurrentSessionAccount();
             if (account != null) {
                 loadNurseProfileAndMetrics(account.getUid());
@@ -183,7 +183,7 @@ public class NurseDashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (sessionManager != null) {
+        if (binding != null && isAdded() && sessionManager != null) {
             UserAccount account = sessionManager.getCurrentSessionAccount();
             if (account != null) {
                 loadNurseProfileAndMetrics(account.getUid());

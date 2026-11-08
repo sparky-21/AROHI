@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="10:30 AM"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
 
@@ -34,7 +34,7 @@
             android:textSize="10sp" />
     </LinearLayout>
 
-    <!-- Google Calendar Styled Event Card -->
+    <!-- Google Calendar Styled Event Card (Moss Green theme) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardGoogleEvent"
         android:layout_width="0dp"
@@ -43,19 +43,20 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="12dp"
         app:cardElevation="2dp"
-        app:strokeWidth="0dp">
+        app:strokeColor="#D5E0CE"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!-- Left Color Accent Bar (Google Blue/Green/Amber/Purple/Red) -->
+            <!-- Left Color Accent Bar -->
             <View
                 android:id="@+id/viewGoogleAccentBar"
                 android:layout_width="6dp"
                 android:layout_height="match_parent"
-                android:background="#1A73E8" />
+                android:background="@color/primary_moss_green" />
 
             <LinearLayout
                 android:layout_width="match_parent"

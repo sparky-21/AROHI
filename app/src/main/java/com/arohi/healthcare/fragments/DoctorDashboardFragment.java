@@ -64,6 +64,7 @@ public class DoctorDashboardFragment extends Fragment {
     }
 
     private void bindVerificationBanner(@NonNull UserAccount account) {
+        if (binding == null) return;
         String name = account.getFullName() != null && !account.getFullName().isEmpty()
                 ? account.getFullName()
                 : "Dr. Specialist";
@@ -147,7 +148,7 @@ public class DoctorDashboardFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden && sessionManager != null) {
+        if (!hidden && binding != null && isAdded() && sessionManager != null) {
             UserAccount account = sessionManager.getCurrentSessionAccount();
             if (account != null) {
                 loadDoctorProfileAndMetrics(account.getUid());
@@ -158,7 +159,7 @@ public class DoctorDashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (sessionManager != null) {
+        if (binding != null && isAdded() && sessionManager != null) {
             UserAccount account = sessionManager.getCurrentSessionAccount();
             if (account != null) {
                 loadDoctorProfileAndMetrics(account.getUid());

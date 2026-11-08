@@ -194,14 +194,16 @@ public class PharmacyFragment extends Fragment {
 
     private void switchTab(boolean toOrders) {
         isOrdersTab = toOrders;
-        if (binding == null) return;
+        if (binding == null || getContext() == null || !isAdded()) return;
+
+        int forestColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.deep_forest_green);
+        int whiteColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.white);
 
         if (isOrdersTab) {
             binding.btnTabCatalogue.setBackgroundTintList(null);
-            binding.btnTabCatalogue.setTextColor(requireContext().getColor(R.color.deep_forest_green));
-            binding.btnTabOrders.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                    requireContext().getColor(R.color.deep_forest_green)));
-            binding.btnTabOrders.setTextColor(requireContext().getColor(R.color.white));
+            binding.btnTabCatalogue.setTextColor(forestColor);
+            binding.btnTabOrders.setBackgroundTintList(android.content.res.ColorStateList.valueOf(forestColor));
+            binding.btnTabOrders.setTextColor(whiteColor);
 
             binding.layoutSearch.setVisibility(View.GONE);
             binding.scrollCategories.setVisibility(View.GONE);
@@ -210,10 +212,9 @@ public class PharmacyFragment extends Fragment {
             loadOrders();
         } else {
             binding.btnTabOrders.setBackgroundTintList(null);
-            binding.btnTabOrders.setTextColor(requireContext().getColor(R.color.deep_forest_green));
-            binding.btnTabCatalogue.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                    requireContext().getColor(R.color.deep_forest_green)));
-            binding.btnTabCatalogue.setTextColor(requireContext().getColor(R.color.white));
+            binding.btnTabOrders.setTextColor(forestColor);
+            binding.btnTabCatalogue.setBackgroundTintList(android.content.res.ColorStateList.valueOf(forestColor));
+            binding.btnTabCatalogue.setTextColor(whiteColor);
 
             binding.layoutSearch.setVisibility(View.VISIBLE);
             binding.scrollCategories.setVisibility(View.VISIBLE);
@@ -224,6 +225,7 @@ public class PharmacyFragment extends Fragment {
     }
 
     private void loadCurrentTab() {
+        if (binding == null || !isAdded()) return;
         if (isOrdersTab) {
             loadOrders();
         } else {
@@ -620,7 +622,7 @@ public class PharmacyFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden && isAdded()) {
+        if (!hidden && binding != null && isAdded()) {
             loadPrescriptionsCache();
             loadCurrentTab();
         }
@@ -629,7 +631,7 @@ public class PharmacyFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (isAdded()) {
+        if (binding != null && isAdded()) {
             loadPrescriptionsCache();
             loadCurrentTab();
         }

@@ -237,42 +237,7 @@ public class DoctorPatientsFragment extends Fragment {
                     @Override
                     public void onSuccess(PatientProfile p) {
                         if (binding == null) return;
-                        String[] clinicalActions = new String[]{
-                                "✍  Issue Digital Prescription (Rx)",
-                                "🔬  Order Diagnostic Laboratory Test",
-                                "📅  Schedule Consultation Appointment",
-                                "📋  View Patient Medical Record Timeline",
-                                "💬  Open 1-to-1 Secure Chat",
-                                "👤  Inspect Full Health Demographics"
-                        };
-
-                        new AlertDialog.Builder(requireContext())
-                                .setTitle("Patient: " + notEmpty(p.getFullName(), req.getPatientName()))
-                                .setItems(clinicalActions, (dialog, which) -> {
-                                    switch (which) {
-                                        case 0: // Issue Prescription
-                                            showCreatePrescriptionDialog(req, p);
-                                            break;
-                                        case 1: // Order Lab Test
-                                            showCreateLabRequestDialog(req, p);
-                                            break;
-                                        case 2: // Schedule Appointment
-                                            showScheduleAppointmentDialog(req, p);
-                                            break;
-                                        case 3: // View Medical Record
-                                            showPatientMedicalRecordDialog(req, p);
-                                            break;
-                                        case 4: // Secure Chat
-                                            openSecureChatWithPatient(req);
-                                            break;
-                                        case 5: // Full Demographics
-                                        default:
-                                            showFullDemographicsDialog(req, p);
-                                            break;
-                                    }
-                                })
-                                .setNegativeButton("Close", null)
-                                .show();
+                        showStyledPatientActionDialog(req, p);
                     }
 
                     @Override
@@ -282,6 +247,56 @@ public class DoctorPatientsFragment extends Fragment {
                     }
                 }
         );
+    }
+
+    private void showStyledPatientActionDialog(@NonNull ConsultationRequest req, @NonNull PatientProfile p) {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(
+                R.layout.dialog_doctor_patient_actions, null);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .create();
+
+        String patientName = notEmpty(p.getFullName(), req.getPatientName());
+
+        TextView tvTitle = dialogView.findViewById(R.id.tvPatientActionTitle);
+        TextView tvSubtitle = dialogView.findViewById(R.id.tvPatientActionSubtitle);
+        tvTitle.setText("Patient: " + patientName);
+        tvSubtitle.setText("AROHI ID: " + notEmpty(p.getArohiId(), req.getPatientId()));
+        tvSubtitle.setVisibility(View.VISIBLE);
+
+        dialogView.findViewById(R.id.btnActionPrescription).setOnClickListener(v -> {
+            dialog.dismiss();
+            showCreatePrescriptionDialog(req, p);
+        });
+
+        dialogView.findViewById(R.id.btnActionLabTest).setOnClickListener(v -> {
+            dialog.dismiss();
+            showCreateLabRequestDialog(req, p);
+        });
+
+        dialogView.findViewById(R.id.btnActionScheduleAppt).setOnClickListener(v -> {
+            dialog.dismiss();
+            showScheduleAppointmentDialog(req, p);
+        });
+
+        dialogView.findViewById(R.id.btnActionMedicalRecord).setOnClickListener(v -> {
+            dialog.dismiss();
+            showPatientMedicalRecordDialog(req, p);
+        });
+
+        dialogView.findViewById(R.id.btnActionSecureChat).setOnClickListener(v -> {
+            dialog.dismiss();
+            openSecureChatWithPatient(req);
+        });
+
+        dialogView.findViewById(R.id.btnActionDemographics).setOnClickListener(v -> {
+            dialog.dismiss();
+            showFullDemographicsDialog(req, p);
+        });
+
+        dialogView.findViewById(R.id.btnClosePatientActions).setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void showFullDemographicsDialog(@NonNull ConsultationRequest req, @NonNull PatientProfile p) {
@@ -760,7 +775,7 @@ public class DoctorPatientsFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (!hidden && binding != null && isAdded()) {
             loadRequests();
         }
     }
@@ -768,7 +783,9 @@ public class DoctorPatientsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadRequests();
+        if (binding != null && isAdded()) {
+            loadRequests();
+        }
     }
 
     @Override

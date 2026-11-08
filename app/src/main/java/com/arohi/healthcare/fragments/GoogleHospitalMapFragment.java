@@ -20,12 +20,13 @@ import com.arohi.healthcare.utils.UiStateHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * Fragment rendering Google Maps styled indoor hospital navigation.
- * Features Dijkstra's & Bellman-Ford optimal shortest path calculation,
- * vector floor plan rendering, Google pins, and turn-by-turn pedestrian routing.
+ * Features optimal shortest path indoor routing, vector floor plan rendering,
+ * Google Maps pins, and interactive turn-by-turn live navigation simulation.
  */
 public class GoogleHospitalMapFragment extends Fragment {
 
@@ -35,9 +36,12 @@ public class GoogleHospitalMapFragment extends Fragment {
     private final List<String> nodeNames = new ArrayList<>();
 
     private String currentFloor = "Ground Floor";
-    private boolean useDijkstra = true;
-    private int selectedStartIndex = 1; // RECEPTION
-    private int selectedDestIndex = 17; // ICU
+    private int selectedStartIndex = 1; // Default to Reception
+    private int selectedDestIndex = 17; // Default to ICU
+
+    private RouteResult currentRouteResult;
+    private boolean isNavigating = false;
+    private int currentNavStep = 0;
 
     public static GoogleHospitalMapFragment newInstance() {
         return new GoogleHospitalMapFragment();
@@ -93,8 +97,11 @@ public class GoogleHospitalMapFragment extends Fragment {
         binding.spinnerStartLocation.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedStartIndex = position;
-                calculateAndDisplayRoute();
+                if (selectedStartIndex != position) {
+                    selectedStartIndex = position;
+                    if (isNavigating) stopLiveNavigation();
+                    calculateAndDisplayRoute();
+                }
             }
 
             @Override
@@ -104,8 +111,11 @@ public class GoogleHospitalMapFragment extends Fragment {
         binding.spinnerDestinationLocation.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedDestIndex = position;
-                calculateAndDisplayRoute();
+                if (selectedDestIndex != position) {
+                    selectedDestIndex = position;
+                    if (isNavigating) stopLiveNavigation();
+                    calculateAndDisplayRoute();
+                }
             }
 
             @Override
@@ -114,6 +124,9 @@ public class GoogleHospitalMapFragment extends Fragment {
 
         // Tap on vector map to pick destination
         binding.googleHospitalMapView.setOnNodeClickListener(node -> {
+            if (isNavigating) {
+                stopLiveNavigation();
+            }
             for (int i = 0; i < allNodeList.size(); i++) {
                 if (allNodeList.get(i).getId().equals(node.getId())) {
                     binding.spinnerDestinationLocation.setSelection(i);
@@ -126,27 +139,19 @@ public class GoogleHospitalMapFragment extends Fragment {
 
     private void setupControls() {
         binding.btnGoogleMapBack.setOnClickListener(v -> {
-            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+            if (isAdded() && getParentFragmentManager().getBackStackEntryCount() > 0) {
                 getParentFragmentManager().popBackStack();
             } else if (getActivity() != null) {
-                getActivity().onBackPressed();
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
             }
         });
 
         binding.btnSwitchToStandardMap.setOnClickListener(v -> {
-            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+            if (isAdded() && getParentFragmentManager().getBackStackEntryCount() > 0) {
                 getParentFragmentManager().popBackStack();
             } else if (getActivity() != null) {
-                getActivity().onBackPressed();
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
             }
-        });
-
-        // Algorithm Switch
-        binding.chipGroupAlgorithm.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.isEmpty()) return;
-            int id = checkedIds.get(0);
-            useDijkstra = (id == R.id.chipDijkstra);
-            calculateAndDisplayRoute();
         });
 
         // Floor selector chips
@@ -162,58 +167,214 @@ public class GoogleHospitalMapFragment extends Fragment {
             binding.googleHospitalMapView.setCurrentFloor(currentFloor);
         });
 
-        // Toggle turn-by-turn steps
+        // Toggle turn-by-turn steps expandable list in overview mode
         binding.btnToggleStepDetails.setOnClickListener(v -> {
             boolean isVisible = binding.layoutTurnByTurnSteps.getVisibility() == View.VISIBLE;
             binding.layoutTurnByTurnSteps.setVisibility(isVisible ? View.GONE : View.VISIBLE);
             binding.btnToggleStepDetails.setText(isVisible ? "Steps" : "Hide");
         });
 
-        // Start Navigation
-        binding.btnStartNavigation.setOnClickListener(v -> {
-            HospitalNode dest = allNodeList.get(selectedDestIndex);
-            UiStateHelper.showSuccess(binding.getRoot(),
-                    "Navigation active: Follow Google Blue route on Floor " + dest.getFloor() + " to " + dest.getName());
-        });
+        // Overview Mode: Start Navigation
+        binding.btnStartNavigation.setOnClickListener(v -> startLiveNavigation());
+
+        // Active Navigation Banner: Close button
+        binding.btnNavCloseBanner.setOnClickListener(v -> stopLiveNavigation());
+
+        // Active Navigation: Exit button
+        binding.btnNavExit.setOnClickListener(v -> stopLiveNavigation());
+
+        // Active Navigation: Next Step button
+        binding.btnNavNextStep.setOnClickListener(v -> advanceNavStep());
     }
 
     private void calculateAndDisplayRoute() {
-        if (allNodeList.isEmpty() || selectedStartIndex >= allNodeList.size() || selectedDestIndex >= allNodeList.size()) {
+        if (allNodeList.isEmpty() || selectedStartIndex < 0 || selectedStartIndex >= allNodeList.size()
+                || selectedDestIndex < 0 || selectedDestIndex >= allNodeList.size()) {
             return;
         }
 
         HospitalNode start = allNodeList.get(selectedStartIndex);
         HospitalNode dest = allNodeList.get(selectedDestIndex);
 
-        RouteResult result;
-        if (useDijkstra) {
-            result = routePlanner.findShortestPathDijkstra(start.getId(), dest.getId());
-        } else {
-            result = routePlanner.findShortestPathBellmanFord(start.getId(), dest.getId());
-        }
+        // Optimal shortest path calculation
+        currentRouteResult = routePlanner.findShortestPathDijkstra(start.getId(), dest.getId());
 
-        if (result != null) {
-            binding.tvGoogleRouteTimeEstimate.setText(result.getTimeFormatted() + " (" + result.getDistanceFormatted() + ")");
-            binding.tvGoogleRouteAlgorithmBanner.setText(result.getAlgorithmUsed());
+        if (currentRouteResult != null) {
+            binding.tvGoogleRouteTimeEstimate.setText(
+                    currentRouteResult.getTimeFormatted() + " (" + currentRouteResult.getDistanceFormatted() + ")");
+            binding.tvGoogleRouteAlgorithmBanner.setText(
+                    "Fastest walking route • " + currentRouteResult.getPathNodes().size() + " waypoints");
 
-            // Build turn-by-turn steps
+            // Build turn-by-turn steps summary
             StringBuilder sb = new StringBuilder();
-            List<String> steps = result.getTurnByTurnSteps();
+            List<String> steps = currentRouteResult.getTurnByTurnSteps();
             for (int i = 0; i < steps.size(); i++) {
                 sb.append(i + 1).append(". ").append(steps.get(i)).append("\n");
             }
             binding.tvTurnByTurnInstructions.setText(sb.toString().trim());
 
-            // Update View
-            binding.googleHospitalMapView.setRoute(result, start, dest);
+            // Update Map View
+            binding.googleHospitalMapView.setRoute(currentRouteResult, start, dest);
 
-            // Automatically switch view to destination floor
+            // Automatically switch view to destination floor if starting floor is different
             if (!dest.getFloor().equalsIgnoreCase(currentFloor)) {
                 currentFloor = dest.getFloor();
                 syncFloorChipSelection(currentFloor);
                 binding.googleHospitalMapView.setCurrentFloor(currentFloor);
             }
         }
+    }
+
+    private void startLiveNavigation() {
+        if (currentRouteResult == null || currentRouteResult.getPathNodes().isEmpty()) {
+            UiStateHelper.showWarning(binding.getRoot(), "Please select a valid route first.");
+            return;
+        }
+
+        isNavigating = true;
+        currentNavStep = 0;
+
+        // Toggle UI Visibility for active navigation
+        binding.layoutRoutePlannerInputs.setVisibility(View.GONE);
+        binding.cardActiveNavBanner.setVisibility(View.VISIBLE);
+        binding.btnStartNavigation.setVisibility(View.GONE);
+        binding.layoutTurnByTurnSteps.setVisibility(View.GONE);
+        binding.btnToggleStepDetails.setVisibility(View.GONE);
+        binding.layoutActiveNavControls.setVisibility(View.VISIBLE);
+
+        // Start View live navigation mode
+        binding.googleHospitalMapView.startNavigation();
+
+        // Update step UI
+        updateNavStepUi();
+
+        HospitalNode dest = allNodeList.get(selectedDestIndex);
+        UiStateHelper.showSuccess(binding.getRoot(),
+                "Navigation started to " + dest.getName() + " (" + dest.getFloor() + ")");
+    }
+
+    private void updateNavStepUi() {
+        if (currentRouteResult == null) return;
+
+        List<HospitalNode> pathNodes = currentRouteResult.getPathNodes();
+        List<String> instructions = currentRouteResult.getTurnByTurnSteps();
+        List<Double> stepDists = currentRouteResult.getStepDistances();
+        int totalNodes = pathNodes.size();
+
+        if (currentNavStep >= totalNodes) {
+            completeNavigation();
+            return;
+        }
+
+        // Update Map view active step
+        binding.googleHospitalMapView.setNavigationStep(currentNavStep);
+
+        // Floor Sync: auto-switch floor tab when step moves across floors
+        HospitalNode currentNode = pathNodes.get(currentNavStep);
+        if (!currentNode.getFloor().equalsIgnoreCase(currentFloor)) {
+            currentFloor = currentNode.getFloor();
+            syncFloorChipSelection(currentFloor);
+            binding.googleHospitalMapView.setCurrentFloor(currentFloor);
+        }
+
+        // Check if reached destination
+        boolean isArrival = (currentNavStep == totalNodes - 1);
+
+        if (isArrival) {
+            HospitalNode destNode = pathNodes.get(totalNodes - 1);
+            binding.tvNavManeuverIcon.setText("🎉");
+            binding.tvNavStepDistance.setText("Arrived");
+            binding.tvNavCurrentInstruction.setText("You have arrived at " + destNode.getName());
+            binding.tvNavNextPrompt.setText("Floor: " + destNode.getFloor() + " • Navigation complete");
+
+            binding.tvNavStepProgress.setText("Arrival (" + totalNodes + "/" + totalNodes + ")");
+            binding.tvNavRemainingStats.setText("0m remaining");
+            binding.navProgressBar.setProgress(100);
+            binding.btnNavNextStep.setText("Finish 🎉");
+        } else {
+            String instruction = (currentNavStep < instructions.size())
+                    ? instructions.get(currentNavStep)
+                    : "Proceed along indoor path to destination";
+
+            double distMeters = (currentNavStep < stepDists.size())
+                    ? stepDists.get(currentNavStep)
+                    : 20.0;
+
+            // Determine maneuver icon from instruction context
+            String icon = "⬆";
+            String lower = instruction.toLowerCase(Locale.ROOT);
+            if (lower.contains("elevator")) {
+                icon = "🛗";
+            } else if (lower.contains("stairs")) {
+                icon = "🪜";
+            } else if (lower.contains("left")) {
+                icon = "↰";
+            } else if (lower.contains("right")) {
+                icon = "↱";
+            } else {
+                icon = "⬆";
+            }
+
+            binding.tvNavManeuverIcon.setText(icon);
+            binding.tvNavStepDistance.setText(String.format(Locale.ROOT, "In %.0f meters", distMeters));
+            binding.tvNavCurrentInstruction.setText(instruction);
+
+            // Next step preview
+            if (currentNavStep + 1 < instructions.size()) {
+                binding.tvNavNextPrompt.setText("Then: " + instructions.get(currentNavStep + 1));
+            } else {
+                HospitalNode dest = pathNodes.get(totalNodes - 1);
+                binding.tvNavNextPrompt.setText("Destination: " + dest.getName() + " (" + dest.getFloor() + ")");
+            }
+
+            // Bottom card progress indicators
+            int stepNumber = currentNavStep + 1;
+            binding.tvNavStepProgress.setText("Step " + stepNumber + " of " + (totalNodes - 1));
+
+            // Remaining distance and time calculation
+            double remainingDist = 0;
+            for (int k = currentNavStep; k < stepDists.size(); k++) {
+                remainingDist += stepDists.get(k);
+            }
+            int remainingMins = Math.max(1, (int) Math.ceil((remainingDist / 1.2) / 60.0));
+            binding.tvNavRemainingStats.setText(String.format(Locale.ROOT, "%.0fm • %d min", remainingDist, remainingMins));
+
+            int totalLegs = Math.max(1, totalNodes - 1);
+            int progressPercent = (int) Math.round(((double) currentNavStep / totalLegs) * 100);
+            binding.navProgressBar.setProgress(progressPercent);
+
+            binding.btnNavNextStep.setText(currentNavStep + 1 == totalNodes - 1 ? "Arrive ➔" : "Next Step ➔");
+        }
+    }
+
+    private void advanceNavStep() {
+        if (currentRouteResult == null) return;
+        int totalNodes = currentRouteResult.getPathNodes().size();
+        if (currentNavStep >= totalNodes - 1) {
+            completeNavigation();
+            return;
+        }
+        currentNavStep++;
+        updateNavStepUi();
+    }
+
+    private void completeNavigation() {
+        HospitalNode dest = allNodeList.get(selectedDestIndex);
+        UiStateHelper.showSuccess(binding.getRoot(), "🎉 You have reached " + dest.getName() + "!");
+        stopLiveNavigation();
+    }
+
+    private void stopLiveNavigation() {
+        isNavigating = false;
+        currentNavStep = 0;
+
+        binding.layoutRoutePlannerInputs.setVisibility(View.VISIBLE);
+        binding.cardActiveNavBanner.setVisibility(View.GONE);
+        binding.btnStartNavigation.setVisibility(View.VISIBLE);
+        binding.btnToggleStepDetails.setVisibility(View.VISIBLE);
+        binding.layoutActiveNavControls.setVisibility(View.GONE);
+
+        binding.googleHospitalMapView.stopNavigation();
     }
 
     private void syncFloorChipSelection(String floor) {
