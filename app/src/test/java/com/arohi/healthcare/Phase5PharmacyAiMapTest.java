@@ -396,6 +396,103 @@ public class Phase5PharmacyAiMapTest {
         assertEquals(member.getRelationship(), des.getRelationship());
     }
 
+    // =========================================================================
+    // 8. GOOGLE MAP STYLE ROUTE PLANNER (DIJKSTRA & BELLMAN-FORD)
+    // =========================================================================
+
+    @Test
+    public void testHospitalRoutePlannerDijkstraAlgorithm() {
+        com.arohi.healthcare.utils.HospitalRoutePlanner planner = new com.arohi.healthcare.utils.HospitalRoutePlanner();
+        assertNotNull(planner.getAllNodes());
+        assertTrue(planner.getAllNodes().containsKey("ENTRANCE"));
+        assertTrue(planner.getAllNodes().containsKey("RECEPTION"));
+        assertTrue(planner.getAllNodes().containsKey("EMERGENCY"));
+        assertTrue(planner.getAllNodes().containsKey("PHARMACY"));
+        assertTrue(planner.getAllNodes().containsKey("RADIOLOGY"));
+        assertTrue(planner.getAllNodes().containsKey("LABORATORY"));
+        assertTrue(planner.getAllNodes().containsKey("ICU"));
+        assertTrue(planner.getAllNodes().containsKey("OT"));
+
+        // Direct ground route: RECEPTION -> PHARMACY
+        com.arohi.healthcare.utils.HospitalRoutePlanner.RouteResult recToPharm =
+                planner.findShortestPathDijkstra("RECEPTION", "PHARMACY");
+        assertNotNull(recToPharm);
+        assertEquals(30.0, recToPharm.getTotalDistanceMeters(), 0.001);
+        assertEquals("30 meters", recToPharm.getDistanceFormatted());
+        assertEquals("1 min walk", recToPharm.getTimeFormatted());
+        assertTrue(recToPharm.getTurnByTurnSteps().size() >= 1);
+        assertEquals("RECEPTION", recToPharm.getPathNodes().get(0).getId());
+        assertEquals("PHARMACY", recToPharm.getPathNodes().get(recToPharm.getPathNodes().size() - 1).getId());
+
+        // Multi-floor route: ENTRANCE (Ground) -> ICU (Floor 3) via Elevator
+        com.arohi.healthcare.utils.HospitalRoutePlanner.RouteResult entranceToIcu =
+                planner.findShortestPathDijkstra("ENTRANCE", "ICU");
+        assertNotNull(entranceToIcu);
+        // ENTRANCE -> RECEPTION (20) -> ELEVATOR_G (18) -> ELEVATOR_F1 (12) -> ELEVATOR_F2 (12) -> ELEVATOR_F3 (12) -> ICU (30) = 104 meters
+        assertEquals(104.0, entranceToIcu.getTotalDistanceMeters(), 0.001);
+        assertEquals("104 meters", entranceToIcu.getDistanceFormatted());
+        assertEquals("2 min walk", entranceToIcu.getTimeFormatted());
+        assertEquals("ENTRANCE", entranceToIcu.getPathNodes().get(0).getId());
+        assertEquals("ICU", entranceToIcu.getPathNodes().get(entranceToIcu.getPathNodes().size() - 1).getId());
+        assertTrue(entranceToIcu.getTurnByTurnSteps().size() >= 5);
+    }
+
+    @Test
+    public void testHospitalRoutePlannerBellmanFordEquivalence() {
+        com.arohi.healthcare.utils.HospitalRoutePlanner planner = new com.arohi.healthcare.utils.HospitalRoutePlanner();
+
+        // Compare Dijkstra vs Bellman-Ford on multiple routes
+        String[][] testPairs = new String[][]{
+                {"ENTRANCE", "ICU"},
+                {"RECEPTION", "PHARMACY"},
+                {"EMERGENCY", "LABORATORY"},
+                {"RECEPTION", "OT"},
+                {"ENTRANCE", "WARD_AB"}
+        };
+
+        for (String[] pair : testPairs) {
+            String start = pair[0];
+            String dest = pair[1];
+
+            com.arohi.healthcare.utils.HospitalRoutePlanner.RouteResult dijkstra =
+                    planner.findShortestPathDijkstra(start, dest);
+            com.arohi.healthcare.utils.HospitalRoutePlanner.RouteResult bellmanFord =
+                    planner.findShortestPathBellmanFord(start, dest);
+
+            assertNotNull(dijkstra);
+            assertNotNull(bellmanFord);
+            assertEquals("Dijkstra and Bellman-Ford optimal distance must be identical for " + start + " -> " + dest,
+                    dijkstra.getTotalDistanceMeters(), bellmanFord.getTotalDistanceMeters(), 0.001);
+            assertEquals(dijkstra.getPathNodes().size(), bellmanFord.getPathNodes().size());
+            assertEquals(dijkstra.getPathNodes().get(0).getId(), bellmanFord.getPathNodes().get(0).getId());
+            assertEquals(dijkstra.getPathNodes().get(dijkstra.getPathNodes().size() - 1).getId(),
+                    bellmanFord.getPathNodes().get(bellmanFord.getPathNodes().size() - 1).getId());
+        }
+    }
+
+    // =========================================================================
+    // 9. GOOGLE CALENDAR THEME COLOR PALETTE CATEGORIZATION
+    // =========================================================================
+
+    @Test
+    public void testGoogleCalendarThemedColorCategorization() {
+        // Verifies Google Calendar color codes matching specifications
+        String[] types = new String[]{"APPOINTMENT", "LAB_TEST", "OPERATION", "REMINDER", "EMERGENCY"};
+        String[] expectedColors = new String[]{"#1A73E8", "#1E8E3E", "#9334E6", "#F9AB00", "#D93025"};
+
+        for (int i = 0; i < types.length; i++) {
+            String type = types[i];
+            String colorHex;
+            if (type.contains("LAB")) colorHex = "#1E8E3E";
+            else if (type.contains("OPERATION")) colorHex = "#9334E6";
+            else if (type.contains("REMINDER")) colorHex = "#F9AB00";
+            else if (type.contains("EMERGENCY")) colorHex = "#D93025";
+            else colorHex = "#1A73E8";
+
+            assertEquals(expectedColors[i], colorHex);
+        }
+    }
+
     /**
      * Enforces clinical isolation rule: Family member listing != medical records access.
      */

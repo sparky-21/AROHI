@@ -53,6 +53,21 @@
                     android:textColor="@color/soft_sage"
                     android:textSize="12sp" />
             </LinearLayout>
+
+            <!-- Option to switch to Google Maps Style Navigation -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenGoogleMapStyle"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:backgroundTint="@color/pale_mint"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="🗺️ See Google Map"
+                android:textColor="@color/deep_forest_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Simulation Notice Banner -->

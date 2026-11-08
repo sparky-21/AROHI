@@ -107,6 +107,18 @@ public class UnifiedCalendarFragment extends Fragment {
 
         binding.btnBookAppointmentAction.setOnClickListener(v -> showBookAppointmentDialog());
 
+        binding.btnOpenGoogleCalendarTheme.setOnClickListener(v -> {
+            if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
+                ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).openSubFragment(
+                        GoogleCalendarFragment.newInstance(isDoctorMode), "google_calendar_theme");
+            } else {
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainer, GoogleCalendarFragment.newInstance(isDoctorMode))
+                        .addToBackStack("google_calendar_theme")
+                        .commit();
+            }
+        });
+
         loadEventsForSelectedDate();
     }
 

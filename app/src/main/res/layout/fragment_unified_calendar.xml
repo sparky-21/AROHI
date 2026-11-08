@@ -55,6 +55,22 @@
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenGoogleCalendarTheme"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="8dp"
+                    android:text="📅 See Google Calendar"
+                    android:textColor="@color/deep_forest_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    app:strokeColor="@color/border_focused" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBookAppointmentAction"
                     style="@style/Widget.Material3.Button"
                     android:layout_width="wrap_content"

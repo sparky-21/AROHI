@@ -76,6 +76,18 @@ public class HospitalMapFragment extends Fragment {
             }
         });
 
+        binding.btnOpenGoogleMapStyle.setOnClickListener(v -> {
+            if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
+                ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).openSubFragment(
+                        GoogleHospitalMapFragment.newInstance(), "google_hospital_map");
+            } else {
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainer, GoogleHospitalMapFragment.newInstance())
+                        .addToBackStack("google_hospital_map")
+                        .commit();
+            }
+        });
+
         // Floor Chips
         binding.chipGroupFloors.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.isEmpty()) return;

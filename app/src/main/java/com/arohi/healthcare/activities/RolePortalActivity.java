@@ -20,6 +20,8 @@ import com.arohi.healthcare.fragments.DoctorDashboardFragment;
 import com.arohi.healthcare.fragments.DoctorPatientsFragment;
 import com.arohi.healthcare.fragments.DoctorProfileFragment;
 import com.arohi.healthcare.fragments.FamilyProfilesFragment;
+import com.arohi.healthcare.fragments.GoogleCalendarFragment;
+import com.arohi.healthcare.fragments.GoogleHospitalMapFragment;
 import com.arohi.healthcare.fragments.HospitalMapFragment;
 import com.arohi.healthcare.fragments.NurseDashboardFragment;
 import com.arohi.healthcare.fragments.NurseProfileFragment;

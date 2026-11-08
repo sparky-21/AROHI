@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- Google Calendar Styled Top App Bar -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/btnGoogleCalendarBack"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="#5F6368"
+                    android:contentDescription="Back" />
+
+                <!-- Google Calendar colored header icon & month text -->
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="#1A73E8" />
+
+                <TextView
+                    android:id="@+id/tvGoogleMonthTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="November 2026"
+                    android:textColor="#202124"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Option to switch back to standard list calendar -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSwitchToStandardCalendar"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="Standard View"
+                    android:textColor="#1A73E8"
+                    android:textSize="11sp"
+                    app:strokeColor="#1A73E8" />
+            </LinearLayout>
+
+            <!-- 7-Day Day Selector Ribbon (Google Calendar Week Bar) -->
+            <LinearLayout
+                android:id="@+id/layoutGoogleWeekRibbon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- 7 days dynamically bound in fragment -->
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Schedule Header Bar: Selected Date Display & Quick Category Chips -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:background="#F8F9FA">
+
+        <TextView
+            android:id="@+id/tvGoogleSelectedDayFull"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sunday, Nov 8"
+            android:textColor="#202124"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <!-- Google Calendar Color Legend Pills -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_status_badge_verified"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="● Appt"
+            android:textColor="#1A73E8"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/bg_status_badge_verified"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="● Lab"
+            android:textColor="#1E8E3E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/bg_status_badge_warning"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="● Remind"
+            android:textColor="#F9AB00"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/layoutGoogleCalendarEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_calendar"
+            app:tint="#BDC1C6" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="No Scheduled Events"
+            android:textColor="#202124"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Tap + below to book a consultation slot or lab test."
+            android:textColor="#5F6368"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Google Calendar Events Recycler -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerGoogleCalendar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="12dp" />
+
+    <!-- Google Calendar Floating Action Button Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:padding="16dp"
+        android:background="@color/white">
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fabGoogleBookEvent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#1A73E8"
+            android:text="Create Event"
+            android:textColor="@color/white"
+            app:icon="@drawable/ic_calendar"
+            app:iconTint="@color/white" />
+    </LinearLayout>
+
+</LinearLayout>
