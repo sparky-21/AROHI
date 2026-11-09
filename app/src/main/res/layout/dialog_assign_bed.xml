@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface_card"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvAssignBedTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Inpatient Admission &amp; Bed Assignment"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvAssignBedSub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Bed 103 • Ward A - Male Surgical (Floor 2)"
+            android:textColor="@color/primary_moss_green"
+            android:textSize="12sp" />
+
+        <!-- Patient Selection -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectPatient"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Select Inpatient to Admit *"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectPatient"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Attending Doctor Selection -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectDoctor"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Assign Attending Doctor *"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectDoctor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Assigned Nurse Selection -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectNurse"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Assign Primary Ward Nurse *"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectNurse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Clinical Notes / Admission Diagnosis -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilAdmissionNotes"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Admission Diagnosis &amp; Orders *"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAdmissionNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:lines="2"
+                android:text="Admitted for pre-operative observation &amp; intravenous fluid therapy."
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Availability Safety Notice -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_white_pill"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="6dp"
+            android:text="System validates bed occupancy in real time and prevents double assignment."
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
+
+        <!-- Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelAssignBed"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:text="Cancel"
+                android:textColor="@color/text_secondary"
+                app:strokeColor="@color/border_stroke" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmitAssignBed"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1.5"
+                android:backgroundTint="@color/primary_moss_green"
+                android:text="Admit to Bed"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

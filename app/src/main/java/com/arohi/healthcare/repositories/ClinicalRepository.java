@@ -151,6 +151,18 @@ public class ClinicalRepository {
         sessionManager.saveCalendarEventLocal(event);
         sessionManager.saveNotificationLocal(docNotif);
 
+        // Phase 7: Automatically Advance Patient Journey Milestone (Consultation)
+        new EcosystemIntegrationRepository(appContext).advanceJourneyMilestone(
+                patUid,
+                com.arohi.healthcare.models.PatientJourney.STAGE_CONSULTATION,
+                com.arohi.healthcare.models.PatientJourney.STATUS_COMPLETED,
+                appt.getDoctorName(),
+                "DOCTOR",
+                "Consultation scheduled for " + date + " at " + time + " • Reason: " + appt.getReason(),
+                apptId,
+                null
+        );
+
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
             callback.onSuccess(appt);
@@ -459,10 +471,15 @@ public class ClinicalRepository {
             return;
         }
 
-        String queryField = (role == UserRole.DOCTOR) ? "doctorUid" : "patientUid";
-        db.collection(FirestoreCollections.CALENDAR_EVENTS)
-                .whereEqualTo(queryField, userUid)
-                .get()
+        com.google.firebase.firestore.Query baseQuery = db.collection(FirestoreCollections.CALENDAR_EVENTS);
+        if (role == UserRole.DOCTOR) {
+            baseQuery = baseQuery.whereEqualTo("doctorUid", userUid);
+        } else if (role == UserRole.NURSE) {
+            baseQuery = baseQuery.whereEqualTo("nurseUid", userUid);
+        } else if (role == UserRole.PATIENT) {
+            baseQuery = baseQuery.whereEqualTo("patientUid", userUid);
+        }
+        baseQuery.get()
                 .addOnSuccessListener(snap -> {
                     List<CalendarEvent> remote = new ArrayList<>();
                     for (DocumentSnapshot doc : snap.getDocuments()) {
@@ -480,11 +497,22 @@ public class ClinicalRepository {
                                                           List<CalendarEvent> remote) {
         Map<String, CalendarEvent> map = new LinkedHashMap<>();
 
-        // 1. From local calendar registry
+        // 1. From local calendar registry (Enhanced for Phase 6 multi-role synchronization)
         for (CalendarEvent local : sessionManager.getAllCalendarEventsLocal()) {
-            boolean matchesUser = (role == UserRole.DOCTOR)
-                    ? userUid.equals(local.getDoctorUid())
-                    : userUid.equals(local.getPatientUid());
+            boolean matchesUser = false;
+            if (role == UserRole.ADMIN) {
+                matchesUser = true;
+            } else if (role == UserRole.NURSE) {
+                matchesUser = userUid.equals(local.getNurseUid())
+                        || "ALL".equalsIgnoreCase(local.getRoleVisibility())
+                        || "NURSE".equalsIgnoreCase(local.getRoleVisibility());
+            } else if (role == UserRole.DOCTOR) {
+                matchesUser = userUid.equals(local.getDoctorUid())
+                        || "ALL".equalsIgnoreCase(local.getRoleVisibility());
+            } else {
+                matchesUser = userUid.equals(local.getPatientUid())
+                        || "ALL".equalsIgnoreCase(local.getRoleVisibility());
+            }
             if (matchesUser && local.getEventId() != null) {
                 map.put(local.getEventId(), local);
             }
@@ -661,6 +689,41 @@ public class ClinicalRepository {
                 rxId
         );
         sessionManager.saveNotificationLocal(patientNotif);
+
+        // Phase 7: Automatically Advance Patient Journey Milestones (Diagnosis & Treatment)
+        EcosystemIntegrationRepository ecoRepo = new EcosystemIntegrationRepository(appContext);
+        ecoRepo.advanceJourneyMilestone(
+                rx.getPatientUid(),
+                com.arohi.healthcare.models.PatientJourney.STAGE_DIAGNOSIS,
+                com.arohi.healthcare.models.PatientJourney.STATUS_COMPLETED,
+                current.getFullName(),
+                "DOCTOR",
+                "Diagnosis: " + rx.getDiagnosis(),
+                rxId,
+                null
+        );
+        ecoRepo.advanceJourneyMilestone(
+                rx.getPatientUid(),
+                com.arohi.healthcare.models.PatientJourney.STAGE_TREATMENT,
+                com.arohi.healthcare.models.PatientJourney.STATUS_COMPLETED,
+                current.getFullName(),
+                "DOCTOR",
+                "Medicines: " + rx.getDiagnosis() + " course prescribed",
+                rxId,
+                null
+        );
+        if (followUpEvent != null) {
+            ecoRepo.advanceJourneyMilestone(
+                    rx.getPatientUid(),
+                    com.arohi.healthcare.models.PatientJourney.STAGE_FOLLOW_UP,
+                    com.arohi.healthcare.models.PatientJourney.STATUS_IN_PROGRESS,
+                    current.getFullName(),
+                    "DOCTOR",
+                    "Follow-up scheduled: " + rx.getFollowUpDate(),
+                    followUpEvent.getEventId(),
+                    null
+            );
+        }
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
@@ -839,6 +902,18 @@ public class ClinicalRepository {
                 reqId
         );
         sessionManager.saveNotificationLocal(patientNotif);
+
+        // Phase 7: Advance Patient Journey Milestone (Testing)
+        new EcosystemIntegrationRepository(appContext).advanceJourneyMilestone(
+                request.getPatientUid(),
+                com.arohi.healthcare.models.PatientJourney.STAGE_TESTING,
+                com.arohi.healthcare.models.PatientJourney.STATUS_IN_PROGRESS,
+                current.getFullName(),
+                "DOCTOR",
+                "Ordered: " + request.getTestName() + " (" + request.getUrgency() + ")",
+                reqId,
+                null
+        );
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
@@ -1064,6 +1139,18 @@ public class ClinicalRepository {
                 labRequest.getRequestId()
         );
         sessionManager.saveNotificationLocal(patientNotif);
+
+        // Phase 7: Complete Testing Milestone
+        new EcosystemIntegrationRepository(appContext).advanceJourneyMilestone(
+                labRequest.getPatientUid(),
+                com.arohi.healthcare.models.PatientJourney.STAGE_TESTING,
+                com.arohi.healthcare.models.PatientJourney.STATUS_COMPLETED,
+                current.getFullName(),
+                "DOCTOR",
+                "Findings: " + doctorReviewNotes.trim(),
+                labRequest.getRequestId(),
+                null
+        );
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {

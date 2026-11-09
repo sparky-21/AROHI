@@ -22,6 +22,7 @@ import com.arohi.healthcare.adapters.ConsultationRequestAdapter;
 import com.arohi.healthcare.databinding.DialogBookAppointmentBinding;
 import com.arohi.healthcare.databinding.DialogCreateLabRequestBinding;
 import com.arohi.healthcare.databinding.DialogCreatePrescriptionBinding;
+import com.arohi.healthcare.databinding.DialogScheduleOperationBinding;
 import com.arohi.healthcare.databinding.FragmentDoctorPatientsBinding;
 import com.arohi.healthcare.models.Appointment;
 import com.arohi.healthcare.models.ConsultationRequest;
@@ -29,6 +30,7 @@ import com.arohi.healthcare.models.DigitalPrescription;
 import com.arohi.healthcare.models.DoctorProfile;
 import com.arohi.healthcare.models.LaboratoryRequest;
 import com.arohi.healthcare.models.MedicalRecordEntry;
+import com.arohi.healthcare.models.Operation;
 import com.arohi.healthcare.models.PatientProfile;
 import com.arohi.healthcare.models.PrescriptionMedicine;
 import com.arohi.healthcare.models.UserAccount;
@@ -36,6 +38,7 @@ import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.ClinicalRepository;
 import com.arohi.healthcare.repositories.DoctorDiscoveryAndRequestRepository;
+import com.arohi.healthcare.repositories.HospitalOperationsRepository;
 import com.arohi.healthcare.utils.DatePickerHelper;
 import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
@@ -59,6 +62,7 @@ public class DoctorPatientsFragment extends Fragment {
     private FragmentDoctorPatientsBinding binding;
     private DoctorDiscoveryAndRequestRepository discoveryRepository;
     private ClinicalRepository clinicalRepository;
+    private HospitalOperationsRepository operationsRepository;
     private SessionManager sessionManager;
     private ConsultationRequestAdapter adapter;
 
@@ -79,6 +83,7 @@ public class DoctorPatientsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         discoveryRepository = new DoctorDiscoveryAndRequestRepository(requireContext());
         clinicalRepository = new ClinicalRepository(requireContext());
+        operationsRepository = new HospitalOperationsRepository(requireContext());
         sessionManager = new SessionManager(requireContext());
 
         UserAccount account = sessionManager.getCurrentSessionAccount();
@@ -279,6 +284,11 @@ public class DoctorPatientsFragment extends Fragment {
             showScheduleAppointmentDialog(req, p);
         });
 
+        dialogView.findViewById(R.id.btnActionScheduleOperation).setOnClickListener(v -> {
+            dialog.dismiss();
+            showDoctorScheduleOperationDialog(req, p);
+        });
+
         dialogView.findViewById(R.id.btnActionMedicalRecord).setOnClickListener(v -> {
             dialog.dismiss();
             showPatientMedicalRecordDialog(req, p);
@@ -295,6 +305,129 @@ public class DoctorPatientsFragment extends Fragment {
         });
 
         dialogView.findViewById(R.id.btnClosePatientActions).setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void showDoctorScheduleOperationDialog(@NonNull ConsultationRequest req, @NonNull PatientProfile p) {
+        UserAccount currentDoctor = sessionManager.getCurrentSessionAccount();
+        if (currentDoctor == null) return;
+
+        DialogScheduleOperationBinding dBinding = DialogScheduleOperationBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dBinding.getRoot())
+                .create();
+
+        dBinding.tvScheduleOpPatientSubtitle.setText("Patient: " + notEmpty(p.getFullName(), req.getPatientName())
+                + " • Attending Surgeon: Dr. " + currentDoctor.getFullName());
+
+        String[] otRooms = new String[]{
+                "OT Suite 1 - Cardiac Surgery (Floor 3)",
+                "OT Suite 2 - General & Laparoscopic (Floor 3)",
+                "OT Suite 3 - Orthopedic & Trauma (Floor 3)",
+                "OT Suite 4 - Neuro & Micro-Surgery (Floor 3)"
+        };
+        ArrayAdapter<String> otAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, otRooms);
+        dBinding.actvSelectOtRoom.setAdapter(otAdapter);
+        dBinding.actvSelectOtRoom.setText(otRooms[1], false);
+
+        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+        dBinding.etOpDate.setText(df.format(new Date()));
+        dBinding.etOpDate.setOnClickListener(v -> {
+            DatePickerHelper.showDatePicker(requireContext(), (y, m, d) -> {
+                dBinding.etOpDate.setText(String.format(java.util.Locale.US, "%04d-%02d-%02d", y, m + 1, d));
+            });
+        });
+
+        String[] timeSlots = new String[]{
+                "09:00 AM", "10:00 AM", "11:30 AM", "02:00 PM", "04:00 PM", "06:00 PM"
+        };
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, timeSlots);
+        dBinding.actvOpTime.setAdapter(timeAdapter);
+        dBinding.actvOpTime.setText(timeSlots[1], false);
+
+        String[] nurses = new String[]{
+                "Sister Fatima (RN) • Floor 2 & 3 Scrub Specialist",
+                "Sister Nasreen (RN) • OT Certified Scrub Specialist"
+        };
+        ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, nurses);
+        dBinding.actvSelectNurse.setAdapter(nurseAdapter);
+        dBinding.actvSelectNurse.setText(nurses[0], false);
+
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.add(java.util.Calendar.DAY_OF_YEAR, 7);
+        dBinding.etFollowUpDate.setText(df.format(cal.getTime()));
+        dBinding.etFollowUpDate.setOnClickListener(v -> {
+            DatePickerHelper.showDatePicker(requireContext(), (y, m, d) -> {
+                dBinding.etFollowUpDate.setText(String.format(java.util.Locale.US, "%04d-%02d-%02d", y, m + 1, d));
+            });
+        });
+
+        dBinding.btnCancelScheduleOp.setOnClickListener(v -> dialog.dismiss());
+
+        dBinding.btnSubmitScheduleOp.setOnClickListener(v -> {
+            String proc = dBinding.etProcedureName.getText() != null
+                    ? dBinding.etProcedureName.getText().toString().trim() : "";
+            if (proc.isEmpty()) {
+                dBinding.tilProcedureName.setError("Please enter surgical procedure name");
+                return;
+            }
+            dBinding.tilProcedureName.setError(null);
+
+            String otRoom = dBinding.actvSelectOtRoom.getText().toString();
+            String date = dBinding.etOpDate.getText().toString();
+            String time = dBinding.actvOpTime.getText().toString();
+            String nurse = dBinding.actvSelectNurse.getText().toString();
+            String followUp = dBinding.etFollowUpDate.getText() != null
+                    ? dBinding.etFollowUpDate.getText().toString().trim() : "";
+
+            Operation op = new Operation(
+                    "",
+                    proc,
+                    notEmpty(req.getDoctorSpecialty(), "General & Laparoscopic Surgery"),
+                    "ot_02",
+                    otRoom,
+                    date,
+                    time,
+                    90,
+                    req.getPatientUid(),
+                    notEmpty(p.getArohiId(), req.getPatientId()),
+                    notEmpty(p.getFullName(), req.getPatientName()),
+                    currentDoctor.getUid(),
+                    currentDoctor.getArohiId(),
+                    currentDoctor.getFullName(),
+                    notEmpty(req.getDoctorSpecialty(), "General Surgery"),
+                    "nurse_demo_01",
+                    nurse
+            );
+            op.setNpoConfirmed(dBinding.cbNpo.isChecked());
+            op.setAnesthesiaCleared(dBinding.cbAnesthesia.isChecked());
+            op.setConsentSigned(dBinding.cbConsent.isChecked());
+            op.setBloodArranged(dBinding.cbBlood.isChecked());
+            op.setPreOpAntibioticsGiven(dBinding.cbAntibiotics.isChecked());
+            op.setFollowUpDate(followUp);
+
+            dBinding.btnSubmitScheduleOp.setEnabled(false);
+            operationsRepository.scheduleOperation(op, new AuthCallback<Operation>() {
+                @Override
+                public void onSuccess(Operation result) {
+                    dialog.dismiss();
+                    if (binding != null) {
+                        UiStateHelper.showSuccess(binding.getRoot(),
+                                "Operation scheduled: " + result.getProcedureName() + " on " + result.getOperationDate() + " at " + result.getOperationTime() + "!");
+                    }
+                }
+
+                @Override
+                public void onError(String message) {
+                    dBinding.btnSubmitScheduleOp.setEnabled(true);
+                    UiStateHelper.showError(dBinding.getRoot(), message);
+                }
+            });
+        });
 
         dialog.show();
     }

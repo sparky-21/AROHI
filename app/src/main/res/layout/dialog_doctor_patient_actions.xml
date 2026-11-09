@@ -117,6 +117,33 @@
         android:layout_marginHorizontal="4dp"
         android:background="@color/divider_color" />
 
+    <!-- Action: Schedule Operation (OT) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionScheduleOperation"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="start|center_vertical"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingHorizontal="4dp"
+        android:text="Schedule Hospital Operation (OT)"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_emergency_cross"
+        app:iconGravity="start"
+        app:iconPadding="12dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/primary_moss_green"
+        app:rippleColor="@color/pale_mint" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="4dp"
+        android:background="@color/divider_color" />
+
     <!-- Action: View Patient Medical Record Timeline -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnActionMedicalRecord"

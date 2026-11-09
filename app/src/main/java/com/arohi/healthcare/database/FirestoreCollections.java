@@ -42,4 +42,6 @@ public final class FirestoreCollections {
     public static final String FAMILY_MEMBERS = "familyMembers";
     public static final String HOSPITAL_DEPARTMENTS = "hospitalDepartments";
     public static final String COMMUNITY_POSTS = "communityPosts";
+    public static final String POST_COMMENTS = "postComments";
+    public static final String PATIENT_JOURNEYS = "patientJourneys";
 }

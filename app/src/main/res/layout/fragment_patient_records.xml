@@ -40,7 +40,7 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
-            <!-- Vault Tab Switches: 100% visible on all screen sizes with equal weights -->
+            <!-- Vault Tab Switches: 4 equal tabs for Journey, Timeline, Prescriptions, Lab Reports -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,37 +49,54 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnTabTimeline"
+                    android:id="@+id/btnTabJourney"
                     style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
                     android:layout_height="36dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/primary_moss_green"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:maxLines="1"
                     android:minWidth="0dp"
-                    android:paddingHorizontal="4dp"
-                    android:text="Timeline"
+                    android:paddingHorizontal="2dp"
+                    android:text="Journey"
                     android:textColor="@color/white"
-                    android:textSize="11sp" />
+                    android:textSize="10sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabTimeline"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:maxLines="1"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="2dp"
+                    android:text="Timeline"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10sp"
+                    app:strokeColor="@color/border_stroke" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnTabPrescriptions"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
                     android:layout_height="36dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:maxLines="1"
                     android:minWidth="0dp"
-                    android:paddingHorizontal="4dp"
-                    android:text="Prescriptions"
+                    android:paddingHorizontal="2dp"
+                    android:text="Rx Vault"
                     android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     app:strokeColor="@color/border_stroke" />
 
                 <com.google.android.material.button.MaterialButton
@@ -92,10 +109,10 @@
                     android:insetBottom="0dp"
                     android:maxLines="1"
                     android:minWidth="0dp"
-                    android:paddingHorizontal="4dp"
-                    android:text="Lab Reports"
+                    android:paddingHorizontal="2dp"
+                    android:text="Lab Tests"
                     android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     app:strokeColor="@color/border_stroke" />
             </LinearLayout>
         </LinearLayout>

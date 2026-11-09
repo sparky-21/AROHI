@@ -26,6 +26,7 @@ public class VerificationRequestAdapter extends RecyclerView.Adapter<Verificatio
     public interface OnVerificationActionListener {
         void onApprove(@NonNull UserAccount userAccount);
         void onReject(@NonNull UserAccount userAccount);
+        default void onAssignStaff(@NonNull UserAccount userAccount) {}
     }
 
     private final List<UserAccount> items = new ArrayList<>();
@@ -127,6 +128,8 @@ public class VerificationRequestAdapter extends RecyclerView.Adapter<Verificatio
                 binding.btnApproveAccount.setOnClickListener(v -> listener.onApprove(account));
                 binding.btnRejectAccount.setOnClickListener(v -> listener.onReject(account));
             }
+
+            binding.getRoot().setOnClickListener(v -> listener.onAssignStaff(account));
         }
     }
 }

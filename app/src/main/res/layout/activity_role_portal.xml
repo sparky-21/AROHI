@@ -65,6 +65,16 @@
             android:textStyle="bold" />
 
         <ImageButton
+            android:id="@+id/btnHeaderCommunityFeed"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_icon_circle_mint"
+            android:contentDescription="Community Feed"
+            android:padding="7dp"
+            android:src="@drawable/ic_nav_messages" />
+
+        <ImageButton
             android:id="@+id/btnHeaderRefresh"
             android:layout_width="36dp"
             android:layout_height="36dp"

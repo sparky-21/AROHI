@@ -7,17 +7,22 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.arohi.healthcare.R;
 import com.arohi.healthcare.adapters.VerificationRequestAdapter;
 import com.arohi.healthcare.databinding.FragmentAdminStaffBinding;
+import com.arohi.healthcare.models.DoctorProfile;
+import com.arohi.healthcare.models.NurseProfile;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.DashboardRepository;
+import com.arohi.healthcare.repositories.ProfileRepository;
+import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
 import com.google.android.material.button.MaterialButton;
 
@@ -32,6 +37,8 @@ public class AdminStaffFragment extends Fragment {
 
     private FragmentAdminStaffBinding binding;
     private DashboardRepository dashboardRepository;
+    private ProfileRepository profileRepository;
+    private SessionManager sessionManager;
     private VerificationRequestAdapter adapter;
     private final List<UserAccount> allAccounts = new ArrayList<>();
     private String currentFilter = "ALL";
@@ -49,6 +56,8 @@ public class AdminStaffFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         dashboardRepository = new DashboardRepository(requireContext());
+        profileRepository = new ProfileRepository(requireContext());
+        sessionManager = new SessionManager(requireContext());
 
         adapter = new VerificationRequestAdapter(new VerificationRequestAdapter.OnVerificationActionListener() {
             @Override
@@ -59,6 +68,11 @@ public class AdminStaffFragment extends Fragment {
             @Override
             public void onReject(@NonNull UserAccount userAccount) {
                 updateAccountStatus(userAccount, VerificationStatus.REJECTED);
+            }
+
+            @Override
+            public void onAssignStaff(@NonNull UserAccount userAccount) {
+                showStaffAssignmentDialog(userAccount);
             }
         });
 
@@ -144,6 +158,109 @@ public class AdminStaffFragment extends Fragment {
         } else {
             binding.tvEmptyStaffDirectory.setVisibility(View.GONE);
             binding.rvStaffAccounts.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void showStaffAssignmentDialog(@NonNull UserAccount target) {
+        if (target.getUserRoleEnum() == UserRole.DOCTOR) {
+            String[] depts = new String[]{
+                    "Cardiology & Vascular Center",
+                    "General, Laparoscopic & GI Surgery",
+                    "Orthopedics & Joint Reconstruction",
+                    "Critical Care & Anesthesiology",
+                    "Internal Medicine & Diabetology",
+                    "Pediatrics & Neonatology"
+            };
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Assign Department: Dr. " + target.getFullName())
+                    .setItems(depts, (dialog, which) -> {
+                        String chosenDept = depts[which];
+                        profileRepository.loadDoctorProfile(target.getUid(), new AuthCallback<DoctorProfile>() {
+                            @Override
+                            public void onSuccess(DoctorProfile profile) {
+                                if (profile == null) profile = new DoctorProfile();
+                                profile.setDepartment(chosenDept);
+                                profile.setSpecialty(chosenDept);
+                                profile.setUid(target.getUid());
+                                profile.setFullName(target.getFullName());
+                                profile.setDoctorId(target.getArohiId());
+
+                                profileRepository.saveDoctorProfile(profile, new AuthCallback<DoctorProfile>() {
+                                    @Override
+                                    public void onSuccess(DoctorProfile result) {
+                                        if (binding == null) return;
+                                        UiStateHelper.showSuccess(binding.getRoot(),
+                                                "Dr. " + target.getFullName() + " assigned to " + chosenDept + ".");
+                                        loadDirectory();
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        if (binding == null) return;
+                                        UiStateHelper.showError(binding.getRoot(), message);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(String message) {}
+                        });
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } else if (target.getUserRoleEnum() == UserRole.NURSE) {
+            String[] wards = new String[]{
+                    "Ward A - Male Surgical (Floor 2)",
+                    "Ward B - Female Medical (Floor 2)",
+                    "ICU / CCU Critical Care (Floor 3)",
+                    "Pediatric Inpatient Ward (Floor 1)"
+            };
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Assign Ward: Nurse " + target.getFullName())
+                    .setItems(wards, (dialog, which) -> {
+                        String chosenWard = wards[which];
+                        profileRepository.loadNurseProfile(target.getUid(), new AuthCallback<NurseProfile>() {
+                            @Override
+                            public void onSuccess(NurseProfile profile) {
+                                if (profile == null) profile = new NurseProfile();
+                                profile.setAssignedWardId(chosenWard);
+                                profile.setPreferredWard(chosenWard);
+                                profile.setUid(target.getUid());
+                                profile.setFullName(target.getFullName());
+                                profile.setNurseId(target.getArohiId());
+
+                                profileRepository.saveNurseProfile(profile, new AuthCallback<NurseProfile>() {
+                                    @Override
+                                    public void onSuccess(NurseProfile result) {
+                                        if (binding == null) return;
+                                        UiStateHelper.showSuccess(binding.getRoot(),
+                                                "Nurse " + target.getFullName() + " assigned to " + chosenWard + ".");
+                                        loadDirectory();
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        if (binding == null) return;
+                                        UiStateHelper.showError(binding.getRoot(), message);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(String message) {}
+                        });
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } else {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("User Profile: " + target.getFullName())
+                    .setMessage("AROHI ID: " + target.getArohiId() + "\n"
+                            + "Role: " + target.getRole() + "\n"
+                            + "Email: " + target.getEmail() + "\n"
+                            + "Status: " + target.getVerificationStatus())
+                    .setPositiveButton("Close", null)
+                    .show();
         }
     }
 

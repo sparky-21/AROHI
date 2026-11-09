@@ -427,6 +427,19 @@
                 android:textSize="16sp" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewAnalytics"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:text="📊 Analytics"
+                android:textAllCaps="false"
+                android:textColor="@color/arohi_forest_primary"
+                android:textSize="12sp"
+                app:backgroundTint="@color/arohi_sage_mist"
+                app:cornerRadius="10dp" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPublishAnnouncement"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"

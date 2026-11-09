@@ -13,6 +13,10 @@ public class MedicalRecordEntry implements Serializable, Comparable<MedicalRecor
     public static final String CATEGORY_PRESCRIPTION = "PRESCRIPTION";
     public static final String CATEGORY_LAB_REPORT = "LAB_REPORT";
     public static final String CATEGORY_APPOINTMENT = "APPOINTMENT";
+    public static final String CATEGORY_OPERATION = "OPERATION";
+    public static final String CATEGORY_FOLLOW_UP = "FOLLOW_UP";
+    public static final String CATEGORY_VITALS = "VITALS";
+    public static final String CATEGORY_ADMISSION = "ADMISSION";
 
     private String entryId;
     private String patientUid;

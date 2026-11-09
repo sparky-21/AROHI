@@ -463,10 +463,13 @@
 
         <!-- Smart Patient Journey Preview -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPatientSmartJourney"
             style="@style/Widget.AROHI.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_md"
+            android:clickable="true"
+            android:focusable="true"
             app:cardBackgroundColor="@color/pale_mint">
 
             <LinearLayout
@@ -475,19 +478,38 @@
                 android:orientation="vertical"
                 android:padding="@dimen/spacing_md">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Smart Health Journey Preview"
-                    android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
-                    android:textColor="@color/deep_forest_green" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Smart Patient Journey"
+                        android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
+                        android:textColor="@color/deep_forest_green" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_white_pill"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="View Details →"
+                        android:textColor="@color/primary_moss_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvPatientJourneyStages"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="1. Identity Registered → 2. Consultation → 3. Diagnosis → 4. Lab Testing → 5. Treatment → 6. Operation → 7. Follow-up &amp; Recovery"
+                    android:text="1. Consultation → 2. Diagnosis → 3. Testing → 4. Treatment → 5. Operation → 6. Recovery → 7. Follow-up"
                     android:textAppearance="@style/TextAppearance.AROHI.BodyMedium"
                     android:textColor="@color/text_primary"
                     android:textSize="12sp" />
@@ -497,7 +519,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Current Stage: Identity Created (Milestones update automatically from authorized clinical actions)"
+                    android:text="Current Stage: 1. Clinical Consultation (Milestones update automatically from authorized clinical actions)"
                     android:textColor="@color/primary_moss_green"
                     android:textSize="11sp"
                     android:textStyle="bold" />

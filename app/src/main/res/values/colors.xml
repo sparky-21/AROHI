@@ -20,6 +20,8 @@
     <color name="status_warning_bg">#FDF6EC</color>
     <color name="status_emergency">#C94B4B</color>
     <color name="status_emergency_bg">#FDECEC</color>
+    <color name="status_rejected">#C94B4B</color>
+    <color name="status_rejected_bg">#FDECEC</color>
     <color name="status_verified">#3B7A57</color>
     <color name="status_verified_bg">#E6F2EB</color>
 

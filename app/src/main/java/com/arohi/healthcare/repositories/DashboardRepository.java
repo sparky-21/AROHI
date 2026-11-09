@@ -293,6 +293,15 @@ public class DashboardRepository {
             return;
         }
 
+        // Phase 6 Nurse Operational defaults
+        metrics.setAssignedPatientsCount(2);
+        metrics.setTodayTasksCount(3);
+        metrics.setCompletedTasksCount(0);
+        metrics.setMedicationSchedulesCount(1);
+        metrics.setUpcomingProceduresCount(1);
+        metrics.setOperationAssistanceCount(1);
+        metrics.setDutyShift("Morning (08:00 AM - 04:00 PM)");
+
         NurseProfile localNurse = sessionManager.getNurseProfileLocal(nurseUid);
         if (localNurse != null) {
             applyNurseProfileToMetrics(localNurse, metrics);
@@ -365,6 +374,14 @@ public class DashboardRepository {
     // =========================================================================
     public void loadAdminDashboardMetrics(AuthCallback<DashboardMetrics> callback) {
         DashboardMetrics metrics = new DashboardMetrics();
+        // Phase 6 Admin Operations defaults
+        metrics.setDepartmentsCount(5);
+        metrics.setWardsCount(4);
+        metrics.setTotalBedsCount(10);
+        metrics.setAvailableBedsCount(6);
+        metrics.setOtRoomsCount(4);
+        metrics.setScheduledSurgeriesCount(1);
+
         populateUserCountsIntoMetrics(sessionManager.getAllRegisteredAccounts(), metrics);
         applyLocalAnnouncementsToMetrics(metrics);
 

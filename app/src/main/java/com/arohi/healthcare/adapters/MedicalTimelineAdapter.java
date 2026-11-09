@@ -83,9 +83,30 @@ public class MedicalTimelineAdapter extends RecyclerView.Adapter<MedicalTimeline
                             ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_warning));
                     break;
                 case MedicalRecordEntry.CATEGORY_APPOINTMENT:
+                case MedicalRecordEntry.CATEGORY_CONSULTATION:
                     binding.tvTimelineCategoryIcon.setText("App");
                     binding.tvTimelineCategoryIcon.setTextColor(
                             ContextCompat.getColor(binding.getRoot().getContext(), R.color.deep_forest_green));
+                    break;
+                case MedicalRecordEntry.CATEGORY_OPERATION:
+                    binding.tvTimelineCategoryIcon.setText("OT");
+                    binding.tvTimelineCategoryIcon.setTextColor(
+                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_rejected));
+                    break;
+                case MedicalRecordEntry.CATEGORY_ADMISSION:
+                    binding.tvTimelineCategoryIcon.setText("Bed");
+                    binding.tvTimelineCategoryIcon.setTextColor(
+                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.deep_forest_green));
+                    break;
+                case MedicalRecordEntry.CATEGORY_VITALS:
+                    binding.tvTimelineCategoryIcon.setText("Vit");
+                    binding.tvTimelineCategoryIcon.setTextColor(
+                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_warning));
+                    break;
+                case MedicalRecordEntry.CATEGORY_FOLLOW_UP:
+                    binding.tvTimelineCategoryIcon.setText("Fol");
+                    binding.tvTimelineCategoryIcon.setTextColor(
+                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_verified));
                     break;
                 default:
                     binding.tvTimelineCategoryIcon.setText("Med");

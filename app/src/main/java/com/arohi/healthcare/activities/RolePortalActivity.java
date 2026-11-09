@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import com.arohi.healthcare.R;
 import com.arohi.healthcare.databinding.ActivityRolePortalBinding;
 import com.arohi.healthcare.fragments.AdminDashboardFragment;
+import com.arohi.healthcare.fragments.AdminOperationsFragment;
 import com.arohi.healthcare.fragments.AdminProfileFragment;
 import com.arohi.healthcare.fragments.AdminStaffFragment;
 import com.arohi.healthcare.fragments.AiAssistantFragment;
@@ -24,7 +25,10 @@ import com.arohi.healthcare.fragments.GoogleCalendarFragment;
 import com.arohi.healthcare.fragments.GoogleHospitalMapFragment;
 import com.arohi.healthcare.fragments.HospitalMapFragment;
 import com.arohi.healthcare.fragments.NurseDashboardFragment;
+import com.arohi.healthcare.fragments.NursePatientsFragment;
 import com.arohi.healthcare.fragments.NurseProfileFragment;
+import com.arohi.healthcare.fragments.NurseScheduleFragment;
+import com.arohi.healthcare.fragments.NurseTasksFragment;
 import com.arohi.healthcare.fragments.PatientDashboardFragment;
 import com.arohi.healthcare.fragments.PatientDoctorsFragment;
 import com.arohi.healthcare.fragments.PatientProfileFragment;
@@ -75,6 +79,12 @@ public class RolePortalActivity extends AppCompatActivity {
         setupBottomNavigationForRole(currentAccount.getUserRoleEnum());
 
         binding.btnHeaderRefresh.setOnClickListener(v -> refreshHeaderAndCurrentTab(true));
+        binding.btnHeaderCommunityFeed.setOnClickListener(v -> {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, new com.arohi.healthcare.fragments.CommunityFeedFragment())
+                    .addToBackStack("community_feed")
+                    .commit();
+        });
 
         // Silently sync latest verification status from Firestore on portal launch
         refreshHeaderAndCurrentTab(false);
@@ -240,26 +250,11 @@ public class RolePortalActivity extends AppCompatActivity {
         else if (itemId == R.id.nav_nurse_dashboard) {
             return new NurseDashboardFragment();
         } else if (itemId == R.id.nav_nurse_patients) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Assigned Ward Patients",
-                    "Connected to Cloud Firestore /nurseAssignments & /wards.",
-                    "NURSE_PATIENTS",
-                    "Phase 5 Inpatient Ward Care: View patients admitted to your assigned ward and monitor bedside care requirements."
-            );
+            return new NursePatientsFragment();
         } else if (itemId == R.id.nav_nurse_tasks) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Nursing Care & Medication Tasks",
-                    "Connected to Cloud Firestore /nurseAssignments.",
-                    "NURSE_TASKS",
-                    "Phase 5 Nursing Task Execution: Mark scheduled medication doses, vitals checks, and post-operative care tasks as completed."
-            );
+            return new NurseTasksFragment();
         } else if (itemId == R.id.nav_nurse_schedule) {
-            return RoleSectionInfoFragment.newInstance(
-                    "Nursing Shift & OT Assistance Roster",
-                    "Connected to Cloud Firestore /nurses & /operations.",
-                    "NURSE_SCHEDULE",
-                    "Phase 5 Duty Roster & OT Assistance: View your Morning/Evening/Night ward shift assignments and Operation Theatre assistance schedule."
-            );
+            return new NurseScheduleFragment();
         } else if (itemId == R.id.nav_nurse_profile) {
             return new NurseProfileFragment();
         }
@@ -270,7 +265,7 @@ public class RolePortalActivity extends AppCompatActivity {
         } else if (itemId == R.id.nav_admin_departments) {
             return HospitalMapFragment.newInstance();
         } else if (itemId == R.id.nav_admin_operations) {
-            return PharmacyFragment.newInstance(null);
+            return new AdminOperationsFragment();
         } else if (itemId == R.id.nav_admin_staff) {
             return new AdminStaffFragment();
         } else if (itemId == R.id.nav_admin_settings) {

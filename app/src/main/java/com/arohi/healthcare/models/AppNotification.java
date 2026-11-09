@@ -38,6 +38,19 @@ public class AppNotification {
         // Required empty constructor for Firestore
     }
 
+    public AppNotification(String notificationId, String recipientUid, String title, String body, String type) {
+        this.notificationId = notificationId;
+        this.recipientUid = recipientUid;
+        this.title = title;
+        this.body = body;
+        this.type = type;
+        this.senderUid = "";
+        this.senderName = "AROHI Healthcare System";
+        this.referenceId = "";
+        this.read = false;
+        this.createdAt = System.currentTimeMillis();
+    }
+
     public AppNotification(String notificationId, String recipientUid,
                            String senderUid, String senderName,
                            String type, String title, String body, String referenceId) {

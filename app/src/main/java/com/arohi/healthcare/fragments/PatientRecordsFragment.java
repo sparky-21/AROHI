@@ -30,6 +30,7 @@ import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.ClinicalRepository;
+import com.arohi.healthcare.repositories.EcosystemIntegrationRepository;
 import com.arohi.healthcare.utils.PdfGenerator;
 import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
@@ -47,17 +48,20 @@ import java.util.List;
  */
 public class PatientRecordsFragment extends Fragment {
 
+    private static final String TAB_JOURNEY = "JOURNEY";
     private static final String TAB_TIMELINE = "TIMELINE";
     private static final String TAB_PRESCRIPTIONS = "PRESCRIPTIONS";
     private static final String TAB_LAB_REPORTS = "LAB_REPORTS";
 
     private FragmentPatientRecordsBinding binding;
     private ClinicalRepository clinicalRepository;
+    private EcosystemIntegrationRepository ecosystemRepository;
     private SessionManager sessionManager;
     private UserAccount currentAccount;
 
-    private String activeTab = TAB_TIMELINE;
+    private String activeTab = TAB_JOURNEY;
 
+    private com.arohi.healthcare.adapters.PatientJourneyStepAdapter journeyAdapter;
     private MedicalTimelineAdapter timelineAdapter;
     private DigitalPrescriptionAdapter rxAdapter;
     private LaboratoryRequestAdapter labAdapter;
@@ -79,17 +83,21 @@ public class PatientRecordsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         clinicalRepository = new ClinicalRepository(requireContext());
+        ecosystemRepository = new EcosystemIntegrationRepository(requireContext());
         sessionManager = new SessionManager(requireContext());
         currentAccount = sessionManager.getCurrentSessionAccount();
 
         setupAdapters();
         setupTabs();
 
-        switchTab(TAB_TIMELINE);
+        switchTab(TAB_JOURNEY);
     }
 
     private void setupAdapters() {
         binding.rvMedicalRecords.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        // 0. Journey Adapter
+        journeyAdapter = new com.arohi.healthcare.adapters.PatientJourneyStepAdapter();
 
         // 1. Timeline Adapter
         timelineAdapter = new MedicalTimelineAdapter(entry -> {
@@ -141,6 +149,7 @@ public class PatientRecordsFragment extends Fragment {
     }
 
     private void setupTabs() {
+        binding.btnTabJourney.setOnClickListener(v -> switchTab(TAB_JOURNEY));
         binding.btnTabTimeline.setOnClickListener(v -> switchTab(TAB_TIMELINE));
         binding.btnTabPrescriptions.setOnClickListener(v -> switchTab(TAB_PRESCRIPTIONS));
         binding.btnTabLabReports.setOnClickListener(v -> switchTab(TAB_LAB_REPORTS));
@@ -151,18 +160,23 @@ public class PatientRecordsFragment extends Fragment {
         this.activeTab = tab;
 
         com.google.android.material.button.MaterialButton selectedBtn =
-                TAB_PRESCRIPTIONS.equals(tab) ? binding.btnTabPrescriptions
-                : (TAB_LAB_REPORTS.equals(tab) ? binding.btnTabLabReports : binding.btnTabTimeline);
+                TAB_JOURNEY.equals(tab) ? binding.btnTabJourney
+                : (TAB_PRESCRIPTIONS.equals(tab) ? binding.btnTabPrescriptions
+                : (TAB_LAB_REPORTS.equals(tab) ? binding.btnTabLabReports : binding.btnTabTimeline));
 
         UiStateHelper.updateToggleButtons(
                 selectedBtn,
                 R.color.white,
+                binding.btnTabJourney,
                 binding.btnTabTimeline,
                 binding.btnTabPrescriptions,
                 binding.btnTabLabReports
         );
 
-        if (TAB_TIMELINE.equals(tab)) {
+        if (TAB_JOURNEY.equals(tab)) {
+            binding.rvMedicalRecords.setAdapter(journeyAdapter);
+            loadPatientJourney();
+        } else if (TAB_TIMELINE.equals(tab)) {
             binding.rvMedicalRecords.setAdapter(timelineAdapter);
             loadTimeline();
         } else if (TAB_PRESCRIPTIONS.equals(tab)) {
@@ -177,9 +191,39 @@ public class PatientRecordsFragment extends Fragment {
     // =========================================================================
     // DATA LOADERS
     // =========================================================================
+    private void loadPatientJourney() {
+        if (currentAccount == null) return;
+        ecosystemRepository.getOrCreatePatientJourney(
+                currentAccount.getUid(),
+                currentAccount.getArohiId(),
+                currentAccount.getFullName(),
+                "",
+                "",
+                new AuthCallback<com.arohi.healthcare.models.PatientJourney>() {
+                    @Override
+                    public void onSuccess(com.arohi.healthcare.models.PatientJourney result) {
+                        if (binding == null) return;
+                        if (result != null && result.getMilestones() != null) {
+                            journeyAdapter.submitList(result.getMilestones());
+                            updateEmptyState(false, "", "");
+                        } else {
+                            updateEmptyState(true, "No Active Patient Journey",
+                                    "Your clinical journey from Consultation through Treatment, Surgery, and Recovery will be tracked here.");
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (binding == null) return;
+                        UiStateHelper.showError(binding.getRoot(), message);
+                    }
+                }
+        );
+    }
+
     private void loadTimeline() {
         if (currentAccount == null) return;
-        clinicalRepository.loadPatientMedicalRecord(currentAccount.getUid(), new AuthCallback<List<MedicalRecordEntry>>() {
+        ecosystemRepository.fetchChronologicalMedicalTimeline(currentAccount.getUid(), new AuthCallback<List<MedicalRecordEntry>>() {
             @Override
             public void onSuccess(List<MedicalRecordEntry> result) {
                 if (binding == null) return;
@@ -190,7 +234,7 @@ public class PatientRecordsFragment extends Fragment {
                 updateEmptyState(
                         timelineList.isEmpty(),
                         "No Medical Records Recorded",
-                        "Prescriptions, diagnostic test orders, and consultation appointments will form your chronological health history here."
+                        "Consultations, diagnoses, prescriptions, lab reports, operations, and vitals will form your chronological health history here."
                 );
             }
 

@@ -68,13 +68,19 @@ public class AdminDashboardFragment extends Fragment {
             loadAdminHeaderAndMetrics(account.getUid());
         }
 
+        binding.btnViewAnalytics.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, new AdminAnalyticsFragment())
+                    .addToBackStack("admin_analytics")
+                    .commit();
+        });
         binding.btnPublishAnnouncement.setOnClickListener(v -> showPublishAnnouncementDialog());
         binding.tvViewAllStaffLink.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));
         binding.cardAdminDoctorsAndNurses.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));
         binding.cardAdminTotalPatients.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));
         binding.cardAdminPendingVerifications.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));
         binding.cardAdminDepartments.setOnClickListener(v -> switchTab(R.id.nav_admin_departments));
-        binding.cardAdminWardsAndBeds.setOnClickListener(v -> switchTab(R.id.nav_admin_departments));
+        binding.cardAdminWardsAndBeds.setOnClickListener(v -> switchTab(R.id.nav_admin_operations));
         binding.cardAdminOtOverview.setOnClickListener(v -> switchTab(R.id.nav_admin_operations));
     }
 

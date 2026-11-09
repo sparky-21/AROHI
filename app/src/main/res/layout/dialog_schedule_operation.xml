@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface_card"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvScheduleOpDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Schedule Hospital Operation (OT)"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvScheduleOpPatientSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Patient: Karim Ahmed • Surgeon: Dr. Raisa"
+            android:textColor="@color/primary_moss_green"
+            android:textSize="12sp" />
+
+        <!-- Procedure Name -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilProcedureName"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Surgical Procedure Name *"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etProcedureName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- OT Room Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectOtRoom"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Select Operation Theatre (OT Suite)"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectOtRoom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Date & Time Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOpDate"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:hint="Date (YYYY-MM-DD)"
+                app:boxStrokeColor="@color/primary_moss_green"
+                app:endIconDrawable="@drawable/ic_calendar"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etOpDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:inputType="none"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOpTime"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:hint="Start Time"
+                app:boxStrokeColor="@color/primary_moss_green">
+
+                <AutoCompleteTextView
+                    android:id="@+id/actvOpTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- Assisting Nurse Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectNurse"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Assisting Scrub Nurse"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectNurse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Pre-Op Checklist Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Mandatory Pre-Operation Checklist"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbNpo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="NPO Fasting Status Verified (Minimum 6-8 hrs)"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            app:buttonTint="@color/primary_moss_green" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbAnesthesia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Anesthesia Pre-Op Fitness Cleared (ASA Grade)"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            app:buttonTint="@color/primary_moss_green" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbConsent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Informed Surgical &amp; Anesthetic Consent Signed"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            app:buttonTint="@color/primary_moss_green" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbBlood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Blood Cross-matched &amp; Reserved in Blood Bank"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            app:buttonTint="@color/primary_moss_green" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbAntibiotics"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Prophylactic IV Antibiotics Administered"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            app:buttonTint="@color/primary_moss_green" />
+
+        <!-- Follow-up Date -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFollowUpDate"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Post-Op Follow-up Date (YYYY-MM-DD)"
+            app:boxStrokeColor="@color/primary_moss_green"
+            app:endIconDrawable="@drawable/ic_calendar"
+            app:endIconMode="custom">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etFollowUpDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelScheduleOp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:text="Cancel"
+                android:textColor="@color/text_secondary"
+                app:strokeColor="@color/border_stroke" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmitScheduleOp"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1.5"
+                android:backgroundTint="@color/primary_moss_green"
+                android:text="Schedule Operation"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

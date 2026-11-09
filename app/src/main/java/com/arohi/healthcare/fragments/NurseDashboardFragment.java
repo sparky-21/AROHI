@@ -60,7 +60,7 @@ public class NurseDashboardFragment extends Fragment {
         binding.cardNurseAssignedWard.setOnClickListener(v -> switchTab(R.id.nav_nurse_patients));
         binding.cardNurseTodayTasks.setOnClickListener(v -> switchTab(R.id.nav_nurse_tasks));
         binding.cardNurseMedicationSchedules.setOnClickListener(v -> switchTab(R.id.nav_nurse_tasks));
-        binding.cardNurseProcedures.setOnClickListener(v -> switchTab(R.id.nav_nurse_schedule));
+        binding.cardNurseProcedures.setOnClickListener(v -> switchTab(R.id.nav_nurse_tasks));
         binding.cardNurseOperationAssistance.setOnClickListener(v -> switchTab(R.id.nav_nurse_schedule));
     }
 

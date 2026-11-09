@@ -1,6 +1,7 @@
 package com.arohi.healthcare.fragments;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -18,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.arohi.healthcare.R;
+import com.google.android.material.button.MaterialButton;
 import com.arohi.healthcare.databinding.FragmentGoogleCalendarBinding;
 import com.arohi.healthcare.models.CalendarEvent;
 import com.arohi.healthcare.models.UserAccount;
@@ -156,22 +158,83 @@ public class GoogleCalendarFragment extends Fragment {
     }
 
     private void showMonthPickerDialog() {
-        String[] options = new String[]{"Previous Month", "Next Month", "Current Month (Today)"};
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Select Month")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        displayedMonth.add(Calendar.MONTH, -1);
-                    } else if (which == 1) {
-                        displayedMonth.add(Calendar.MONTH, 1);
-                    } else {
-                        displayedMonth = (Calendar) today.clone();
-                        selectedDate = (Calendar) today.clone();
-                    }
-                    updateMonthHeader();
-                    renderMonthGrid();
-                })
-                .show();
+        int dp = (int) (getResources().getDisplayMetrics().density);
+
+        LinearLayout container = new LinearLayout(requireContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        int padH = 20 * dp;
+        int padV = 16 * dp;
+        container.setPadding(padH, padV, padH, 12 * dp);
+        container.setBackgroundColor(0xFFFFFFFF);
+
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText("Select Month");
+        tvTitle.setTextSize(18f);
+        tvTitle.setTextColor(0xFF26332A);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        tvTitle.setPadding(0, 0, 0, 10 * dp);
+        container.addView(tvTitle);
+
+        View divider = new View(requireContext());
+        divider.setBackgroundColor(0xFFD5E0CE);
+        container.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+
+        AlertDialog[] dialogRef = new AlertDialog[1];
+
+        String[] labels = new String[]{"📅 Current Month (Today)", "◀ Previous Month", "▶ Next Month"};
+        for (int i = 0; i < labels.length; i++) {
+            final int index = i;
+            MaterialButton btn = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+            btn.setText(labels[i]);
+            btn.setTextColor(0xFF26332A);
+            btn.setTextSize(13f);
+            btn.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+            btn.setAllCaps(false);
+            btn.setInsetTop(0);
+            btn.setInsetBottom(0);
+            btn.setStrokeColor(ColorStateList.valueOf(0xFFD5E0CE));
+            btn.setBackgroundTintList(ColorStateList.valueOf(0xFFFFFFFF));
+            btn.setRippleColor(ColorStateList.valueOf(0xFFE8EFE2));
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(0, 8 * dp, 0, 0);
+            btn.setLayoutParams(lp);
+
+            btn.setOnClickListener(v -> {
+                if (dialogRef[0] != null) dialogRef[0].dismiss();
+                if (index == 0) {
+                    displayedMonth = (Calendar) today.clone();
+                    selectedDate = (Calendar) today.clone();
+                } else if (index == 1) {
+                    displayedMonth.add(Calendar.MONTH, -1);
+                } else {
+                    displayedMonth.add(Calendar.MONTH, 1);
+                }
+                updateMonthHeader();
+                renderMonthGrid();
+            });
+            container.addView(btn);
+        }
+
+        MaterialButton btnCancel = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+        btnCancel.setText("Cancel");
+        btnCancel.setAllCaps(false);
+        btnCancel.setInsetTop(0);
+        btnCancel.setInsetBottom(0);
+        btnCancel.setTextColor(0xFF778276);
+        btnCancel.setStrokeColor(ColorStateList.valueOf(0xFFD5E0CE));
+        btnCancel.setBackgroundTintList(ColorStateList.valueOf(0xFFFFFFFF));
+        LinearLayout.LayoutParams cancelLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 42 * dp);
+        cancelLp.setMargins(0, 14 * dp, 0, 0);
+        btnCancel.setLayoutParams(cancelLp);
+        btnCancel.setOnClickListener(v -> { if (dialogRef[0] != null) dialogRef[0].dismiss(); });
+        container.addView(btnCancel);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(container)
+                .create();
+        dialogRef[0] = dialog;
+        dialog.show();
     }
 
     private void loadAllCalendarEvents() {

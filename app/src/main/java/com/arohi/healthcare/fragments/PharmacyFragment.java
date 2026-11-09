@@ -1,12 +1,16 @@
 package com.arohi.healthcare.fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Spinner;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.arohi.healthcare.R;
+import com.google.android.material.button.MaterialButton;
 import com.arohi.healthcare.adapters.MedicineAdapter;
 import com.arohi.healthcare.adapters.PharmacyOrderAdapter;
 import com.arohi.healthcare.databinding.DialogCreatePharmacyOrderBinding;
@@ -486,20 +491,97 @@ public class PharmacyFragment extends Fragment {
             return;
         }
 
-        String[] rxTitles = new String[patientPrescriptions.size()];
+        // Build a styled dialog with Material buttons for each prescription
+        int dp = (int) (requireContext().getResources().getDisplayMetrics().density);
+
+        ScrollView scrollView = new ScrollView(requireContext());
+        LinearLayout container = new LinearLayout(requireContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        int padH = 20 * dp;
+        int padV = 8 * dp;
+        container.setPadding(padH, padV, padH, padV);
+
+        // Dialog title
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText("Select Digital Prescription");
+        tvTitle.setTextSize(18f);
+        tvTitle.setTextColor(0xFF26332A);
+        tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvTitle.setPadding(0, 12 * dp, 0, 8 * dp);
+        container.addView(tvTitle);
+
+        // Divider under title
+        View dividerTop = new View(requireContext());
+        dividerTop.setBackgroundColor(0xFFD5E0CE);
+        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1);
+        container.addView(dividerTop, dividerParams);
+
+        AlertDialog[] dialogRef = new AlertDialog[1];
+
         for (int i = 0; i < patientPrescriptions.size(); i++) {
-            DigitalPrescription p = patientPrescriptions.get(i);
-            rxTitles[i] = "Rx #" + p.getPrescriptionId() + " • Dr. " + p.getDoctorName() + " (" + p.getDiagnosis() + ")";
+            final DigitalPrescription rx = patientPrescriptions.get(i);
+            String label = "Rx #" + rx.getPrescriptionId()
+                    + " • Dr. " + rx.getDoctorName()
+                    + " (" + rx.getDiagnosis() + ")";
+
+            MaterialButton btn = new MaterialButton(requireContext(),
+                    null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+            btn.setText(label);
+            btn.setTextColor(0xFF26332A);
+            btn.setTextSize(13f);
+            btn.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+            btn.setAllCaps(false);
+            btn.setInsetTop(0);
+            btn.setInsetBottom(0);
+            btn.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFD5E0CE));
+            btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
+            btn.setRippleColor(android.content.res.ColorStateList.valueOf(0xFFE8EFE2));
+            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            btnParams.setMargins(0, 8 * dp, 0, 0);
+            btn.setLayoutParams(btnParams);
+
+            btn.setOnClickListener(v -> {
+                if (dialogRef[0] != null) dialogRef[0].dismiss();
+                showPrescriptionOrderDirectDialog(rx.getPrescriptionId());
+            });
+            container.addView(btn);
         }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Select Digital Prescription")
-                .setItems(rxTitles, (dialog, which) -> {
-                    DigitalPrescription chosen = patientPrescriptions.get(which);
-                    showPrescriptionOrderDirectDialog(chosen.getPrescriptionId());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        // Divider above cancel
+        View dividerBottom = new View(requireContext());
+        dividerBottom.setBackgroundColor(0xFFD5E0CE);
+        LinearLayout.LayoutParams dividerBottom2 = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1);
+        dividerBottom2.setMargins(0, 12 * dp, 0, 0);
+        container.addView(dividerBottom, dividerBottom2);
+
+        // Cancel button
+        MaterialButton btnCancel = new MaterialButton(requireContext(),
+                null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+        btnCancel.setText("Cancel");
+        btnCancel.setAllCaps(false);
+        btnCancel.setInsetTop(0);
+        btnCancel.setInsetBottom(0);
+        btnCancel.setTextColor(0xFF778276);
+        btnCancel.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFD5E0CE));
+        btnCancel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
+        LinearLayout.LayoutParams cancelParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 44 * dp);
+        cancelParams.setMargins(0, 10 * dp, 0, 8 * dp);
+        btnCancel.setLayoutParams(cancelParams);
+        btnCancel.setOnClickListener(v -> { if (dialogRef[0] != null) dialogRef[0].dismiss(); });
+        container.addView(btnCancel);
+
+        scrollView.addView(container);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(scrollView)
+                .create();
+        dialogRef[0] = dialog;
+        dialog.show();
     }
 
     private void showPrescriptionOrderDirectDialog(String rxId) {
