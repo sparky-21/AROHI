@@ -36,14 +36,20 @@ import com.arohi.healthcare.fragments.PatientRecordsFragment;
 import com.arohi.healthcare.fragments.PharmacyFragment;
 import com.arohi.healthcare.fragments.RoleSectionInfoFragment;
 import com.arohi.healthcare.fragments.UnifiedCalendarFragment;
+import com.arohi.healthcare.models.ConversationThread;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.AuthRepository;
 import com.arohi.healthcare.repositories.ProfileRepository;
+import com.arohi.healthcare.repositories.SecureMessagingRepository;
 import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.firebase.firestore.ListenerRegistration;
+
+import java.util.List;
 
 /**
  * Main Role-Specific Portal Activity hosting the 5-tab BottomNavigationView
@@ -55,6 +61,8 @@ public class RolePortalActivity extends AppCompatActivity {
     private SessionManager sessionManager;
     private ProfileRepository profileRepository;
     private AuthRepository authRepository;
+    private SecureMessagingRepository messagingRepository;
+    private ListenerRegistration unreadConversationsListener;
     private UserAccount currentAccount;
     private int currentTabId = -1;
     private int defaultTabId = -1;
@@ -68,6 +76,7 @@ public class RolePortalActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         profileRepository = new ProfileRepository(this);
         authRepository = new AuthRepository(this);
+        messagingRepository = new SecureMessagingRepository(this);
 
         currentAccount = sessionManager.getCurrentSessionAccount();
         if (currentAccount == null) {
@@ -77,6 +86,7 @@ public class RolePortalActivity extends AppCompatActivity {
 
         setupTopHeader(currentAccount);
         setupBottomNavigationForRole(currentAccount.getUserRoleEnum());
+        attachUnreadMessagesMonitor();
 
         binding.btnHeaderRefresh.setOnClickListener(v -> refreshHeaderAndCurrentTab(true));
         binding.btnHeaderCommunityFeed.setOnClickListener(v -> {
@@ -343,7 +353,74 @@ public class RolePortalActivity extends AppCompatActivity {
         });
     }
 
+    private void attachUnreadMessagesMonitor() {
+        if (currentAccount == null || messagingRepository == null) return;
+        UserRole role = currentAccount.getUserRoleEnum();
+        if (role != UserRole.DOCTOR && role != UserRole.PATIENT) return;
+
+        if (unreadConversationsListener != null) {
+            unreadConversationsListener.remove();
+            unreadConversationsListener = null;
+        }
+        unreadConversationsListener = messagingRepository.attachConversationsListener(new AuthCallback<List<ConversationThread>>() {
+            @Override
+            public void onSuccess(List<ConversationThread> result) {
+                if (isFinishing() || isDestroyed() || binding == null || result == null) return;
+                int unreadCount = messagingRepository.countUnreadConversations(result, role);
+                updateUnreadNavBadge(unreadCount);
+            }
+
+            @Override
+            public void onError(String message) {
+                // Keep existing state gracefully
+            }
+        });
+    }
+
+    public void updateUnreadNavBadge(int unreadCount) {
+        if (binding == null || currentAccount == null) return;
+        UserRole role = currentAccount.getUserRoleEnum();
+        int targetItemId = -1;
+        if (role == UserRole.DOCTOR) {
+            targetItemId = R.id.nav_doctor_messages;
+        } else if (role == UserRole.PATIENT) {
+            targetItemId = R.id.nav_patient_doctors;
+        }
+        if (targetItemId == -1) return;
+
+        if (unreadCount > 0) {
+            BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(targetItemId);
+            badge.setVisible(true);
+            badge.setNumber(unreadCount);
+            badge.setBackgroundColor(ContextCompat.getColor(this, R.color.status_emergency));
+            badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.white));
+        } else {
+            binding.bottomNavigation.removeBadge(targetItemId);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (currentAccount != null && messagingRepository != null) {
+            attachUnreadMessagesMonitor();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (unreadConversationsListener != null) {
+            unreadConversationsListener.remove();
+            unreadConversationsListener = null;
+        }
+        super.onDestroy();
+    }
+
     public void performLogout() {
+        if (unreadConversationsListener != null) {
+            unreadConversationsListener.remove();
+            unreadConversationsListener = null;
+        }
         authRepository.logout();
         navigateToRoleSelection();
     }

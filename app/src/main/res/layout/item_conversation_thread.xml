@@ -86,12 +86,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_badge_pill"
+                    android:background="@drawable/bg_unread_pill"
                     android:fontFamily="sans-serif-bold"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="2dp"
-                    android:text="NEW"
-                    android:textColor="@color/arohi_forest_primary"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="● NEW"
+                    android:textColor="@color/white"
                     android:textSize="10sp"
                     android:visibility="gone" />
             </LinearLayout>

@@ -5,7 +5,11 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // User profile avatars
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.role == 'ADMIN' || request.auth.token.role == 'admin');
+    }
+
+    // User profile avatars (max 5MB, images only)
     match /profiles/{userId}/{fileName} {
       allow read: if isSignedIn();
       allow write: if isSignedIn()
@@ -14,21 +18,23 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
-    // Professional verification documents (Doctor/Nurse credentials)
+    // Professional verification documents (Doctor/Nurse credentials - max 10MB)
     match /verificationDocs/{userId}/{fileName} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow write: if isSignedIn()
         && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024;
     }
 
-    // Diagnostic laboratory reports (PDF / images)
+    // Diagnostic laboratory reports (PDF / images - max 15MB)
     match /laboratory_reports/{patientUid}/{fileName} {
       allow read: if isSignedIn()
         && (request.auth.uid == patientUid
+            || isAdmin()
             || exists(/databases/(default)/documents/connections/$(request.auth.uid + '_' + patientUid))
             || exists(/databases/(default)/documents/connections/$(patientUid + '_' + request.auth.uid)));
       allow write: if isSignedIn()
+        && (request.auth.uid == patientUid || isAdmin() || request.auth.token.role == 'DOCTOR')
         && request.resource.size < 15 * 1024 * 1024;
     }
   }

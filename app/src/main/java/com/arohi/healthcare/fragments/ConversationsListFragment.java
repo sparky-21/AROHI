@@ -24,6 +24,7 @@ import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.SecureMessagingRepository;
 import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,7 @@ public class ConversationsListFragment extends Fragment {
     private SecureMessagingRepository messagingRepository;
     private SessionManager sessionManager;
     private ConversationThreadAdapter adapter;
+    private ListenerRegistration conversationsListener;
     private boolean isDoctorViewer;
 
     @Nullable
@@ -69,7 +71,11 @@ public class ConversationsListFragment extends Fragment {
     }
 
     private void loadConversations() {
-        messagingRepository.loadAuthorizedConversations(new AuthCallback<List<ConversationThread>>() {
+        if (conversationsListener != null) {
+            conversationsListener.remove();
+            conversationsListener = null;
+        }
+        conversationsListener = messagingRepository.attachConversationsListener(new AuthCallback<List<ConversationThread>>() {
             @Override
             public void onSuccess(List<ConversationThread> result) {
                 if (binding == null) return;
@@ -80,6 +86,11 @@ public class ConversationsListFragment extends Fragment {
                 } else {
                     binding.tvEmptyConversations.setVisibility(View.GONE);
                     binding.rvConversations.setVisibility(View.VISIBLE);
+                }
+                if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
+                    int unread = messagingRepository.countUnreadConversations(result,
+                            isDoctorViewer ? UserRole.DOCTOR : UserRole.PATIENT);
+                    ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).updateUnreadNavBadge(unread);
                 }
             }
 
@@ -174,6 +185,10 @@ public class ConversationsListFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (conversationsListener != null) {
+            conversationsListener.remove();
+            conversationsListener = null;
+        }
         super.onDestroyView();
         binding = null;
     }

@@ -889,6 +889,12 @@ public class EcosystemIntegrationRepository {
                         p.setReportedUserUids(reps);
                     }
 
+                    // Counts are always derived from real user actions, never from stored/seeded numbers
+                    p.setLikeCount(p.getLikedUserUids() != null ? p.getLikedUserUids().size() : 0);
+                    p.setSaveCount(p.getSavedUserUids() != null ? p.getSavedUserUids().size() : 0);
+                    p.setReportCount(p.getReportedUserUids() != null ? p.getReportedUserUids().size() : 0);
+                    p.setCommentCount(getLocalPostComments(p.getPostId()).size());
+
                     list.add(p);
                 }
             } catch (Exception ignored) {}
@@ -1000,8 +1006,6 @@ public class EcosystemIntegrationRepository {
                     "Seasonal Influenza & Booster Vaccination Campaign 2026",
                     "AROHI Hospital is launching our annual flu vaccination camp starting Monday at Ground Floor OPD Room 102. Free clinical vitals screening included for all enrolled families. Protect yourself and your loved ones before winter."
             );
-            p1.setLikeCount(24);
-            p1.setCommentCount(5);
 
             CommunityPost p2 = new CommunityPost(
                     "post_health_02",
@@ -1014,8 +1018,6 @@ public class EcosystemIntegrationRepository {
                     "Upgraded Digital Pathology & 24/7 OT Suites Operational",
                     "We are proud to announce that Operation Theatre Suites 1 & 2 have been fully upgraded with state-of-the-art laminar airflow and cardiac monitoring systems. Diagnostic test turnaround time is now reduced to under 3 hours."
             );
-            p2.setLikeCount(38);
-            p2.setCommentCount(8);
 
             CommunityPost p3 = new CommunityPost(
                     "post_awareness_03",
@@ -1028,8 +1030,6 @@ public class EcosystemIntegrationRepository {
                     "Hypertension: The Silent Killer & Daily Prevention",
                     "Over 40% of adult hypertension goes unnoticed until advanced stages. Reduce daily sodium intake to under 2,000 mg, engage in 30 minutes of brisk walking, and log your BP readings regularly in your AROHI Emergency Profile."
             );
-            p3.setLikeCount(45);
-            p3.setCommentCount(12);
 
             seed.add(p1);
             seed.add(p2);

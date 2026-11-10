@@ -53,8 +53,64 @@ public class SecureMessagingRepository {
     }
 
     // =========================================================================
-    // 1. CONVERSATION LIST (ONLY ACCEPTED CONNECTIONS)
+    // 1. CONVERSATION LIST (ONLY ACCEPTED CONNECTIONS) + REAL-TIME UNREAD STREAM
     // =========================================================================
+    public ListenerRegistration attachConversationsListener(@NonNull AuthCallback<List<ConversationThread>> callback) {
+        UserAccount current = sessionManager.getCurrentSessionAccount();
+        if (current == null) {
+            callback.onError("No active authenticated user.");
+            return null;
+        }
+        UserRole role = current.getUserRoleEnum();
+        String membershipField;
+        if (role == UserRole.DOCTOR) {
+            membershipField = "doctorUid";
+        } else if (role == UserRole.PATIENT) {
+            membershipField = "patientUid";
+        } else {
+            callback.onSuccess(new ArrayList<>());
+            return null;
+        }
+
+        // Emit local cache immediately
+        callback.onSuccess(mergeConversationsForUser(current.getUid(), role, null));
+
+        FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
+        if (db == null) {
+            return null;
+        }
+
+        return db.collection(FirestoreCollections.CONVERSATIONS)
+                .whereEqualTo(membershipField, current.getUid())
+                .addSnapshotListener((snap, error) -> {
+                    if (error != null || snap == null) {
+                        callback.onSuccess(mergeConversationsForUser(current.getUid(), role, null));
+                        return;
+                    }
+                    List<ConversationThread> remoteList = new ArrayList<>();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        ConversationThread thread = doc.toObject(ConversationThread.class);
+                        if (thread != null
+                                && DoctorPatientConnection.STATUS_ACCEPTED.equalsIgnoreCase(thread.getConnectionStatus())) {
+                            remoteList.add(thread);
+                        }
+                    }
+                    callback.onSuccess(mergeConversationsForUser(current.getUid(), role, remoteList));
+                });
+    }
+
+    public int countUnreadConversations(@NonNull List<ConversationThread> threads, @NonNull UserRole role) {
+        int count = 0;
+        for (ConversationThread t : threads) {
+            if (role == UserRole.DOCTOR && t.isUnreadByDoctor()) {
+                count++;
+            } else if (role == UserRole.PATIENT && t.isUnreadByPatient()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public void loadAuthorizedConversations(AuthCallback<List<ConversationThread>> callback) {
         UserAccount current = sessionManager.getCurrentSessionAccount();
         if (current == null) {
@@ -154,67 +210,90 @@ public class SecureMessagingRepository {
                         return;
                     }
                     sessionManager.saveConnectionLocal(conn);
-                    String uid = current.getUid();
-
-                    markLocalThreadAndMessagesRead(conversationId, conn, uid);
-                    List<ChatMessage> initialLocal = sessionManager.getMessagesLocal(conversationId);
-                    if (!initialLocal.isEmpty()) {
-                        listener.onMessagesUpdated(initialLocal);
-                    }
-
-                    // Clear unread flag on the Firestore conversation thread for this participant
-                    Map<String, Object> threadReadUpdate = new HashMap<>();
-                    if (uid.equals(conn.getDoctorUid())) {
-                        threadReadUpdate.put("unreadByDoctor", false);
-                    } else {
-                        threadReadUpdate.put("unreadByPatient", false);
-                    }
-                    db.collection(FirestoreCollections.CONVERSATIONS)
-                            .document(conversationId)
-                            .set(threadReadUpdate, SetOptions.merge());
-
-                    // Attach real-time SnapshotListener on /conversations/{conversationId}/messages
-                    ListenerRegistration reg = db.collection(FirestoreCollections.CONVERSATIONS)
-                            .document(conversationId)
-                            .collection(FirestoreCollections.MESSAGES)
-                            .orderBy("timestamp", Query.Direction.ASCENDING)
-                            .addSnapshotListener((querySnapshot, error) -> {
-                                if (error != null) {
-                                    List<ChatMessage> fallback = sessionManager.getMessagesLocal(conversationId);
-                                    listener.onMessagesUpdated(fallback);
-                                    return;
-                                }
-                                if (querySnapshot == null) {
-                                    listener.onMessagesUpdated(sessionManager.getMessagesLocal(conversationId));
-                                    return;
-                                }
-
-                                long now = System.currentTimeMillis();
-                                for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                                    ChatMessage msg = doc.toObject(ChatMessage.class);
-                                    if (msg != null) {
-                                        if (!msg.isRead() && msg.getSenderUid() != null && !msg.getSenderUid().equals(uid)) {
-                                            msg.setRead(true);
-                                            msg.setReadAt(now);
-                                            Map<String, Object> readPatch = new HashMap<>();
-                                            readPatch.put("read", true);
-                                            readPatch.put("readAt", now);
-                                            doc.getReference().update(readPatch);
-                                        }
-                                        sessionManager.appendMessageLocal(conversationId, msg);
-                                    }
-                                }
-                                listener.onMessagesUpdated(sessionManager.getMessagesLocal(conversationId));
-                            });
-
-                    registrationCallback.onSuccess(reg);
+                    attachMessagesSnapshotListener(db, conversationId, conn, current.getUid(), listener, registrationCallback);
                 })
                 .addOnFailureListener(e -> {
                     if (validateConnectionAccess(localConn, current.getUid(), listener)) {
-                        markLocalThreadAndMessagesRead(conversationId, localConn, current.getUid());
-                        listener.onMessagesUpdated(sessionManager.getMessagesLocal(conversationId));
+                        attachMessagesSnapshotListener(db, conversationId, localConn, current.getUid(), listener, registrationCallback);
                     }
                 });
+    }
+
+    private void attachMessagesSnapshotListener(@NonNull FirebaseFirestore db,
+                                                @NonNull String conversationId,
+                                                @NonNull DoctorPatientConnection conn,
+                                                @NonNull String uid,
+                                                @NonNull MessageStreamListener listener,
+                                                @NonNull AuthCallback<ListenerRegistration> registrationCallback) {
+        markLocalThreadAndMessagesRead(conversationId, conn, uid);
+        List<ChatMessage> initialLocal = sessionManager.getMessagesLocal(conversationId, uid);
+        Collections.sort(initialLocal, (a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
+        if (!initialLocal.isEmpty()) {
+            listener.onMessagesUpdated(initialLocal);
+        }
+
+        clearFirestoreThreadUnreadFlag(db, conversationId, conn, uid);
+
+        // Attach real-time SnapshotListener on /conversations/{conversationId}/messages
+        ListenerRegistration reg = db.collection(FirestoreCollections.CONVERSATIONS)
+                .document(conversationId)
+                .collection(FirestoreCollections.MESSAGES)
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .addSnapshotListener((querySnapshot, error) -> {
+                    if (error != null || querySnapshot == null) {
+                        List<ChatMessage> fallback = sessionManager.getMessagesLocal(conversationId, uid);
+                        Collections.sort(fallback, (a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
+                        listener.onMessagesUpdated(fallback);
+                        return;
+                    }
+
+                    long now = System.currentTimeMillis();
+                    boolean markedAnyIncomingRead = false;
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        ChatMessage msg = doc.toObject(ChatMessage.class);
+                        if (msg != null) {
+                            if (msg.getMessageId() == null || msg.getMessageId().isEmpty()) {
+                                msg.setMessageId(doc.getId());
+                            }
+                            if (!msg.isRead() && msg.getSenderUid() != null && !msg.getSenderUid().equals(uid)) {
+                                msg.setRead(true);
+                                msg.setReadAt(now);
+                                markedAnyIncomingRead = true;
+                                Map<String, Object> readPatch = new HashMap<>();
+                                readPatch.put("read", true);
+                                readPatch.put("readAt", now);
+                                doc.getReference().update(readPatch);
+                            }
+                            sessionManager.appendMessageLocal(conversationId, msg);
+                        }
+                    }
+
+                    if (markedAnyIncomingRead) {
+                        clearFirestoreThreadUnreadFlag(db, conversationId, conn, uid);
+                        markLocalThreadAndMessagesRead(conversationId, conn, uid);
+                    }
+
+                    List<ChatMessage> synced = sessionManager.getMessagesLocal(conversationId, uid);
+                    Collections.sort(synced, (a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
+                    listener.onMessagesUpdated(synced);
+                });
+
+        registrationCallback.onSuccess(reg);
+    }
+
+    private void clearFirestoreThreadUnreadFlag(@NonNull FirebaseFirestore db,
+                                              @NonNull String conversationId,
+                                              @NonNull DoctorPatientConnection conn,
+                                              @NonNull String uid) {
+        Map<String, Object> threadReadUpdate = new HashMap<>();
+        if (uid.equals(conn.getDoctorUid())) {
+            threadReadUpdate.put("unreadByDoctor", false);
+        } else {
+            threadReadUpdate.put("unreadByPatient", false);
+        }
+        db.collection(FirestoreCollections.CONVERSATIONS)
+                .document(conversationId)
+                .set(threadReadUpdate, SetOptions.merge());
     }
 
     private boolean validateConnectionAccess(DoctorPatientConnection conn, String uid, MessageStreamListener listener) {

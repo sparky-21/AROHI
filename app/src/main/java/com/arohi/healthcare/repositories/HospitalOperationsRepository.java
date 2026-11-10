@@ -19,6 +19,7 @@ import com.arohi.healthcare.models.Operation;
 import com.arohi.healthcare.models.PatientProfile;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
+import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.models.VitalObservation;
 import com.arohi.healthcare.models.Ward;
 import com.arohi.healthcare.utils.SessionManager;
@@ -663,8 +664,10 @@ public class HospitalOperationsRepository {
                 for (Bed b : allBeds) {
                     if (Bed.STATUS_OCCUPIED.equalsIgnoreCase(b.getStatus())) {
                         boolean isAssignedNurse = (nurseUid != null && nurseUid.equals(b.getAssignedNurseUid()));
-                        boolean isInAssignedWard = (nurseWardName != null && !nurseWardName.isEmpty()
-                                && nurseWardName.equalsIgnoreCase(b.getWardName()));
+                        String bedWard = b.getWardName() != null ? b.getWardName().toLowerCase(Locale.ROOT) : "";
+                        String assignedWard = nurseWardName != null ? nurseWardName.toLowerCase(Locale.ROOT) : "";
+                        boolean isInAssignedWard = !assignedWard.isEmpty() && !bedWard.isEmpty()
+                                && (assignedWard.equals(bedWard) || assignedWard.contains(bedWard) || bedWard.contains(assignedWard));
                         // Authorized if explicitly assigned nurse OR assigned to this ward
                         if (isAssignedNurse || isInAssignedWard || nurseUid == null) {
                             authorizedBeds.add(b);
@@ -1226,5 +1229,118 @@ public class HospitalOperationsRepository {
             arr.put(new JSONObject(d.toMap()));
         }
         prefs.edit().putString(KEY_DEPTS_JSON, arr.toString()).apply();
+    }
+
+    // =========================================================================
+    // 6. COMBINED REGISTERED + SAVED DIRECTORY FOR ASSIGNMENTS (PATIENTS, DOCTORS, NURSES)
+    // =========================================================================
+
+    public static class StaffAndPatientDirectory {
+        public final List<UserAccount> patients = new ArrayList<>();
+        public final List<UserAccount> doctors = new ArrayList<>();
+        public final List<UserAccount> nurses = new ArrayList<>();
+    }
+
+    public void loadStaffAndPatientDirectory(@NonNull AuthCallback<StaffAndPatientDirectory> callback) {
+        // Immediate emission with local registered accounts + saved defaults
+        List<UserAccount> localAccounts = sessionManager.getAllRegisteredAccounts();
+        callback.onSuccess(buildDirectory(localAccounts));
+
+        if (firestore == null) return;
+
+        firestore.collection("users").get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot == null) return;
+                    java.util.LinkedHashMap<String, UserAccount> mergedByUid = new java.util.LinkedHashMap<>();
+                    for (UserAccount acc : sessionManager.getAllRegisteredAccounts()) {
+                        if (acc != null && acc.getUid() != null) {
+                            mergedByUid.put(acc.getUid(), acc);
+                        }
+                    }
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        UserAccount remote = doc.toObject(UserAccount.class);
+                        if (remote != null) {
+                            if (remote.getUid() == null || remote.getUid().isEmpty()) {
+                                remote.setUid(doc.getId());
+                            }
+                            mergedByUid.put(remote.getUid(), remote);
+                            sessionManager.upsertAccountInRegistry(remote);
+                        }
+                    }
+                    callback.onSuccess(buildDirectory(new ArrayList<>(mergedByUid.values())));
+                });
+    }
+
+    private StaffAndPatientDirectory buildDirectory(List<UserAccount> registeredAccounts) {
+        StaffAndPatientDirectory dir = new StaffAndPatientDirectory();
+
+        java.util.Set<String> seenPatientKeys = new java.util.HashSet<>();
+        java.util.Set<String> seenDoctorKeys = new java.util.HashSet<>();
+        java.util.Set<String> seenNurseKeys = new java.util.HashSet<>();
+
+        // 1. Add all real registered users first so newly registered users appear at the top
+        if (registeredAccounts != null) {
+            for (UserAccount acc : registeredAccounts) {
+                if (acc == null || acc.getFullName() == null || acc.getFullName().trim().isEmpty()) continue;
+                String uid = acc.getUid() != null ? acc.getUid() : acc.getFullName();
+                String nameKey = acc.getFullName().trim().toLowerCase(Locale.ROOT);
+                UserRole role = acc.getUserRoleEnum();
+                if (role == UserRole.PATIENT) {
+                    if (seenPatientKeys.add(uid) && seenPatientKeys.add(nameKey)) {
+                        dir.patients.add(acc);
+                    }
+                } else if (role == UserRole.DOCTOR) {
+                    if (seenDoctorKeys.add(uid) && seenDoctorKeys.add(nameKey)) {
+                        dir.doctors.add(acc);
+                    }
+                } else if (role == UserRole.NURSE) {
+                    if (seenNurseKeys.add(uid) && seenNurseKeys.add(nameKey)) {
+                        dir.nurses.add(acc);
+                    }
+                }
+            }
+        }
+
+        // 2. Append saved baseline accounts so saved names are preserved alongside new registrations
+        List<UserAccount> savedPatients = new ArrayList<>();
+        savedPatients.add(new UserAccount("pat_demo_01", "AROHI-PAT-KRM1", "karim@arohi.demo", "Karim Ahmed", "+8801700000101", UserRole.PATIENT, VerificationStatus.VERIFIED, true, true));
+        savedPatients.add(new UserAccount("pat_demo_02", "AROHI-PAT-TNV2", "tanvir@arohi.demo", "Tanvir Hossain", "+8801700000102", UserRole.PATIENT, VerificationStatus.VERIFIED, true, true));
+        savedPatients.add(new UserAccount("pat_demo_03", "AROHI-PAT-SLM3", "salma@arohi.demo", "Salma Begum", "+8801700000103", UserRole.PATIENT, VerificationStatus.VERIFIED, true, true));
+        savedPatients.add(new UserAccount("pat_demo_04", "AROHI-PAT-RFQ4", "rafiqul@arohi.demo", "Rafiqul Islam", "+8801700000104", UserRole.PATIENT, VerificationStatus.VERIFIED, true, true));
+        for (UserAccount acc : savedPatients) {
+            if (seenPatientKeys.add(acc.getUid()) && seenPatientKeys.add(acc.getFullName().toLowerCase(Locale.ROOT))) {
+                dir.patients.add(acc);
+            }
+        }
+
+        List<UserAccount> savedDoctors = new ArrayList<>();
+        savedDoctors.add(new UserAccount("doc_demo_01", "AROHI-DOC-01", "raisa@arohi.demo", "Dr. Raisa", "+8801700000201", UserRole.DOCTOR, VerificationStatus.VERIFIED, true, true));
+        savedDoctors.add(new UserAccount("doc_demo_02", "AROHI-DOC-02", "kamal@arohi.demo", "Dr. Kamal", "+8801700000202", UserRole.DOCTOR, VerificationStatus.VERIFIED, true, true));
+        for (UserAccount acc : savedDoctors) {
+            if (seenDoctorKeys.add(acc.getUid()) && seenDoctorKeys.add(acc.getFullName().toLowerCase(Locale.ROOT))) {
+                dir.doctors.add(acc);
+            }
+        }
+
+        List<UserAccount> savedNurses = new ArrayList<>();
+        savedNurses.add(new UserAccount("nurse_demo_01", "AROHI-NRS-01", "fatima@arohi.demo", "Sister Fatima (RN)", "+8801700000301", UserRole.NURSE, VerificationStatus.VERIFIED, true, true));
+        savedNurses.add(new UserAccount("nurse_demo_02", "AROHI-NRS-02", "nasreen@arohi.demo", "Sister Nasreen (RN)", "+8801700000302", UserRole.NURSE, VerificationStatus.VERIFIED, true, true));
+        for (UserAccount acc : savedNurses) {
+            if (seenNurseKeys.add(acc.getUid()) && seenNurseKeys.add(acc.getFullName().toLowerCase(Locale.ROOT))) {
+                dir.nurses.add(acc);
+            }
+        }
+
+        return dir;
+    }
+
+    public static String formatAccountOptionLabel(@NonNull UserAccount acc) {
+        String name = acc.getFullName() != null ? acc.getFullName().trim() : "Member";
+        if (acc.getUserRoleEnum() == UserRole.DOCTOR && !name.toLowerCase(Locale.ROOT).startsWith("dr.")) {
+            name = "Dr. " + name;
+        }
+        String id = acc.getArohiId() != null && !acc.getArohiId().trim().isEmpty() ? acc.getArohiId().trim() : acc.getUid();
+        String status = acc.getVerificationStatusEnum() == VerificationStatus.PENDING ? " • Pending" : "";
+        return name + " (" + id + status + ")";
     }
 }

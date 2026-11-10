@@ -31,6 +31,27 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     public void submitMessages(@NonNull List<ChatMessage> newMessages) {
         messages.clear();
         messages.addAll(newMessages);
+        java.util.Collections.sort(messages, (a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
+        notifyDataSetChanged();
+    }
+
+    public void addOrUpdateMessage(@NonNull ChatMessage msg) {
+        String id = msg.getMessageId();
+        int existingIndex = -1;
+        if (id != null && !id.isEmpty()) {
+            for (int i = 0; i < messages.size(); i++) {
+                if (id.equals(messages.get(i).getMessageId())) {
+                    existingIndex = i;
+                    break;
+                }
+            }
+        }
+        if (existingIndex >= 0) {
+            messages.set(existingIndex, msg);
+        } else {
+            messages.add(msg);
+        }
+        java.util.Collections.sort(messages, (a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
         notifyDataSetChanged();
     }
 

@@ -119,16 +119,20 @@ public class SecureChatActivity extends AppCompatActivity {
                     @Override
                     public void onMessagesUpdated(@NonNull List<ChatMessage> messages) {
                         if (isFinishing() || isDestroyed()) return;
-                        binding.bannerChatAccessDenied.setVisibility(View.GONE);
-                        binding.layoutChatComposer.setVisibility(View.VISIBLE);
+                        runOnUiThread(() -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            binding.bannerChatAccessDenied.setVisibility(View.GONE);
+                            binding.layoutChatComposer.setVisibility(View.VISIBLE);
+                            binding.rvChatMessages.setVisibility(View.VISIBLE);
 
-                        messageAdapter.submitMessages(messages);
-                        if (messages.isEmpty()) {
-                            binding.tvEmptyChatMessages.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.tvEmptyChatMessages.setVisibility(View.GONE);
-                            binding.rvChatMessages.scrollToPosition(messages.size() - 1);
-                        }
+                            messageAdapter.submitMessages(messages);
+                            if (messages.isEmpty()) {
+                                binding.tvEmptyChatMessages.setVisibility(View.VISIBLE);
+                            } else {
+                                binding.tvEmptyChatMessages.setVisibility(View.GONE);
+                                binding.rvChatMessages.scrollToPosition(messages.size() - 1);
+                            }
+                        });
                     }
 
                     @Override
@@ -178,15 +182,30 @@ public class SecureChatActivity extends AppCompatActivity {
             @Override
             public void onSuccess(ChatMessage result) {
                 if (isFinishing() || isDestroyed()) return;
-                binding.btnSendChatMessage.setEnabled(true);
-                binding.etChatMessageInput.setText("");
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    binding.btnSendChatMessage.setEnabled(true);
+                    binding.etChatMessageInput.setText("");
+                    if (result != null) {
+                        binding.bannerChatAccessDenied.setVisibility(View.GONE);
+                        binding.rvChatMessages.setVisibility(View.VISIBLE);
+                        binding.tvEmptyChatMessages.setVisibility(View.GONE);
+                        messageAdapter.addOrUpdateMessage(result);
+                        if (messageAdapter.getItemCount() > 0) {
+                            binding.rvChatMessages.scrollToPosition(messageAdapter.getItemCount() - 1);
+                        }
+                    }
+                });
             }
 
             @Override
             public void onError(String message) {
                 if (isFinishing() || isDestroyed()) return;
-                binding.btnSendChatMessage.setEnabled(true);
-                UiStateHelper.showError(binding.getRoot(), message);
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    binding.btnSendChatMessage.setEnabled(true);
+                    UiStateHelper.showError(binding.getRoot(), message);
+                });
             }
         });
     }

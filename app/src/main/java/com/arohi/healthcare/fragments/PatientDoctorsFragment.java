@@ -39,6 +39,7 @@ import com.arohi.healthcare.repositories.SecureMessagingRepository;
 import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,6 +77,7 @@ public class PatientDoctorsFragment extends Fragment {
     private DoctorDiscoveryAdapter doctorAdapter;
     private ConsultationRequestAdapter requestAdapter;
     private ConversationThreadAdapter conversationAdapter;
+    private ListenerRegistration conversationsListener;
 
     private final List<DoctorProfile> allVerifiedDoctors = new ArrayList<>();
     private final List<ConsultationRequest> allPatientRequests = new ArrayList<>();
@@ -286,7 +288,11 @@ public class PatientDoctorsFragment extends Fragment {
     }
 
     private void loadConversations() {
-        messagingRepository.loadAuthorizedConversations(new AuthCallback<List<ConversationThread>>() {
+        if (conversationsListener != null) {
+            conversationsListener.remove();
+            conversationsListener = null;
+        }
+        conversationsListener = messagingRepository.attachConversationsListener(new AuthCallback<List<ConversationThread>>() {
             @Override
             public void onSuccess(List<ConversationThread> result) {
                 if (binding == null) return;
@@ -297,6 +303,11 @@ public class PatientDoctorsFragment extends Fragment {
                 } else {
                     binding.tvEmptyPatientConversations.setVisibility(View.GONE);
                     binding.rvPatientConversations.setVisibility(View.VISIBLE);
+                }
+                int unread = messagingRepository.countUnreadConversations(result, com.arohi.healthcare.models.UserRole.PATIENT);
+                binding.btnModeMyMessages.setText(unread > 0 ? "Secure Chat (" + unread + ")" : "Secure Chat");
+                if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
+                    ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).updateUnreadNavBadge(unread);
                 }
             }
 
@@ -647,6 +658,10 @@ public class PatientDoctorsFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (conversationsListener != null) {
+            conversationsListener.remove();
+            conversationsListener = null;
+        }
         super.onDestroyView();
         binding = null;
     }

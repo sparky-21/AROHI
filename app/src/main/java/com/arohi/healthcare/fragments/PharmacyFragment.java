@@ -534,9 +534,12 @@ public class PharmacyFragment extends Fragment {
             btn.setAllCaps(false);
             btn.setInsetTop(0);
             btn.setInsetBottom(0);
-            btn.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFD5E0CE));
-            btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
+            btn.setCornerRadius(12 * dp);
+            btn.setStrokeWidth(1 * dp);
+            btn.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFCAD8C5));
+            btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFF7F8F3));
             btn.setRippleColor(android.content.res.ColorStateList.valueOf(0xFFE8EFE2));
+            btn.setPadding(14 * dp, 12 * dp, 14 * dp, 12 * dp);
             LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -555,22 +558,25 @@ public class PharmacyFragment extends Fragment {
         dividerBottom.setBackgroundColor(0xFFD5E0CE);
         LinearLayout.LayoutParams dividerBottom2 = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 1);
-        dividerBottom2.setMargins(0, 12 * dp, 0, 0);
+        dividerBottom2.setMargins(0, 14 * dp, 0, 0);
         container.addView(dividerBottom, dividerBottom2);
 
-        // Cancel button
+        // Cancel button (prominent pill button, not plain text)
         MaterialButton btnCancel = new MaterialButton(requireContext(),
                 null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
         btnCancel.setText("Cancel");
         btnCancel.setAllCaps(false);
         btnCancel.setInsetTop(0);
         btnCancel.setInsetBottom(0);
-        btnCancel.setTextColor(0xFF778276);
-        btnCancel.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFD5E0CE));
-        btnCancel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
+        btnCancel.setCornerRadius(22 * dp);
+        btnCancel.setStrokeWidth(1 * dp);
+        btnCancel.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFF557B52));
+        btnCancel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFE8EFE2));
+        btnCancel.setTextColor(0xFF263D2B);
+        btnCancel.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams cancelParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 44 * dp);
-        cancelParams.setMargins(0, 10 * dp, 0, 8 * dp);
+                LinearLayout.LayoutParams.MATCH_PARENT, 46 * dp);
+        cancelParams.setMargins(0, 12 * dp, 0, 8 * dp);
         btnCancel.setLayoutParams(cancelParams);
         btnCancel.setOnClickListener(v -> { if (dialogRef[0] != null) dialogRef[0].dismiss(); });
         container.addView(btnCancel);

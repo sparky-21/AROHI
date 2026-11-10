@@ -1,6 +1,5 @@
 package com.arohi.healthcare.fragments;
 
-import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.arohi.healthcare.R;
@@ -64,7 +64,7 @@ public class GoogleCalendarFragment extends Fragment {
     private Calendar selectedDate = Calendar.getInstance();
     private final Calendar today = Calendar.getInstance();
 
-    private final SimpleDateFormat monthYearFormat = new SimpleDateFormat("MMMM yyyy", Locale.US);
+    private final SimpleDateFormat monthYearFormat = new SimpleDateFormat("MMM yyyy", Locale.US);
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
     private final SimpleDateFormat readableDateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.US);
 
@@ -148,13 +148,8 @@ public class GoogleCalendarFragment extends Fragment {
 
     private void updateMonthHeader() {
         if (binding == null) return;
-        String full = monthYearFormat.format(displayedMonth.getTime());
-        // Match Google Calendar truncated header e.g. "Nove...  ▾"
-        if (full.length() > 10) {
-            binding.tvGoogleMonthTitle.setText(full.substring(0, 9) + "…  ▾");
-        } else {
-            binding.tvGoogleMonthTitle.setText(full + "  ▾");
-        }
+        String formatted = monthYearFormat.format(displayedMonth.getTime());
+        binding.tvGoogleMonthTitle.setText(formatted + "  ▾");
     }
 
     private void showMonthPickerDialog() {
@@ -192,8 +187,10 @@ public class GoogleCalendarFragment extends Fragment {
             btn.setAllCaps(false);
             btn.setInsetTop(0);
             btn.setInsetBottom(0);
-            btn.setStrokeColor(ColorStateList.valueOf(0xFFD5E0CE));
-            btn.setBackgroundTintList(ColorStateList.valueOf(0xFFFFFFFF));
+            btn.setCornerRadius(12 * dp);
+            btn.setStrokeWidth(1 * dp);
+            btn.setStrokeColor(ColorStateList.valueOf(0xFFCAD8C5));
+            btn.setBackgroundTintList(ColorStateList.valueOf(0xFFF7F8F3));
             btn.setRippleColor(ColorStateList.valueOf(0xFFE8EFE2));
 
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -221,10 +218,13 @@ public class GoogleCalendarFragment extends Fragment {
         btnCancel.setAllCaps(false);
         btnCancel.setInsetTop(0);
         btnCancel.setInsetBottom(0);
-        btnCancel.setTextColor(0xFF778276);
-        btnCancel.setStrokeColor(ColorStateList.valueOf(0xFFD5E0CE));
-        btnCancel.setBackgroundTintList(ColorStateList.valueOf(0xFFFFFFFF));
-        LinearLayout.LayoutParams cancelLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 42 * dp);
+        btnCancel.setCornerRadius(21 * dp);
+        btnCancel.setStrokeWidth(1 * dp);
+        btnCancel.setStrokeColor(ColorStateList.valueOf(0xFF557B52));
+        btnCancel.setBackgroundTintList(ColorStateList.valueOf(0xFFE8EFE2));
+        btnCancel.setTextColor(0xFF263D2B);
+        btnCancel.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams cancelLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 44 * dp);
         cancelLp.setMargins(0, 14 * dp, 0, 0);
         btnCancel.setLayoutParams(cancelLp);
         btnCancel.setOnClickListener(v -> { if (dialogRef[0] != null) dialogRef[0].dismiss(); });
@@ -378,48 +378,45 @@ public class GoogleCalendarFragment extends Fragment {
         LinearLayout cell = new LinearLayout(requireContext());
         cell.setOrientation(LinearLayout.VERTICAL);
         cell.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-        cell.setPadding(dpToPx(2), dpToPx(6), dpToPx(2), dpToPx(4));
+        cell.setPadding(dpToPx(3), dpToPx(6), dpToPx(3), dpToPx(4));
         cell.setBackgroundResource(R.drawable.bg_calendar_cell_dark);
 
         LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
         cell.setLayoutParams(cellParams);
 
-        // Date Number TextView
+        // Date Number TextView (strictly centered 26x26 circle)
         TextView tvDate = new TextView(requireContext());
         tvDate.setText(String.valueOf(dayNum));
-        tvDate.setTextSize(13f);
+        tvDate.setTextSize(12.5f);
         tvDate.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(dpToPx(26), dpToPx(26));
+        dateParams.gravity = Gravity.CENTER_HORIZONTAL;
+        dateParams.bottomMargin = dpToPx(2);
+        tvDate.setLayoutParams(dateParams);
 
         if (isToday) {
             // Google Calendar Today highlight: Moss Green circle with white bold text
             GradientDrawable circle = new GradientDrawable();
             circle.setShape(GradientDrawable.OVAL);
             circle.setColor(Color.parseColor("#557B52")); // Arohi Primary Moss Green
-            circle.setSize(dpToPx(24), dpToPx(24));
             tvDate.setBackground(circle);
             tvDate.setTextColor(Color.WHITE);
             tvDate.setTypeface(null, Typeface.BOLD);
-            tvDate.setWidth(dpToPx(24));
-            tvDate.setHeight(dpToPx(24));
         } else if (isSelected) {
             // Selected day ring in Moss Green
             GradientDrawable ring = new GradientDrawable();
             ring.setShape(GradientDrawable.OVAL);
             ring.setStroke(dpToPx(1.5f), Color.parseColor("#557B52"));
             ring.setColor(Color.TRANSPARENT);
-            ring.setSize(dpToPx(24), dpToPx(24));
             tvDate.setBackground(ring);
             tvDate.setTextColor(Color.parseColor("#557B52"));
-            tvDate.setWidth(dpToPx(24));
-            tvDate.setHeight(dpToPx(24));
+            tvDate.setTypeface(null, Typeface.BOLD);
         } else {
             tvDate.setBackground(null);
             tvDate.setTextColor(isCurrentMonth
                     ? Color.parseColor("#26332A") // Deep Forest Charcoal
                     : Color.parseColor("#9AA599")); // Muted Sage
-            tvDate.setWidth(dpToPx(24));
-            tvDate.setHeight(dpToPx(24));
         }
 
         cell.addView(tvDate);
@@ -434,9 +431,10 @@ public class GoogleCalendarFragment extends Fragment {
                 CalendarEvent ev = dayEvents.get(i);
 
                 TextView tvPill = new TextView(requireContext());
-                tvPill.setMaxLines(1);
+                tvPill.setSingleLine(true);
                 tvPill.setEllipsize(TextUtils.TruncateAt.END);
-                tvPill.setTextSize(9f);
+                tvPill.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+                tvPill.setTextSize(9.5f);
                 tvPill.setTypeface(null, Typeface.BOLD);
                 tvPill.setTextColor(Color.WHITE);
                 tvPill.setPadding(dpToPx(4), dpToPx(2), dpToPx(4), dpToPx(2));
@@ -445,13 +443,10 @@ public class GoogleCalendarFragment extends Fragment {
                 int pillColor = getEventPillColor(ev.getEventType(), ev.getTitle());
                 GradientDrawable pillBg = new GradientDrawable();
                 pillBg.setColor(pillColor);
-                pillBg.setCornerRadius(dpToPx(3));
+                pillBg.setCornerRadius(dpToPx(4));
                 tvPill.setBackground(pillBg);
 
                 String title = ev.getTitle() != null ? ev.getTitle() : "Event";
-                if (title.length() > 9) {
-                    title = title.substring(0, 8) + "…";
-                }
                 tvPill.setText(title);
 
                 LinearLayout.LayoutParams pillParams = new LinearLayout.LayoutParams(

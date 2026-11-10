@@ -69,22 +69,40 @@ public class ConversationThreadAdapter extends RecyclerView.Adapter<Conversation
         void bind(@NonNull ConversationThread thread,
                   boolean isDoctorViewer,
                   @NonNull OnConversationClickListener listener) {
+            boolean isUnread;
             if (isDoctorViewer) {
                 binding.tvConvParticipantName.setText(notEmpty(thread.getPatientName(), "Patient"));
                 binding.tvConvSubtitle.setText(
                         "Patient ID: " + notEmpty(thread.getPatientId(), "AROHI-PAT")
                                 + " • Connection: " + notEmpty(thread.getConnectionStatus(), "Accepted"));
-                binding.tvConvUnreadBadge.setVisibility(thread.isUnreadByDoctor() ? View.VISIBLE : View.GONE);
+                isUnread = thread.isUnreadByDoctor();
             } else {
                 binding.tvConvParticipantName.setText(notEmpty(thread.getDoctorName(), "Dr. Specialist"));
                 binding.tvConvSubtitle.setText(
                         "Specialty: " + notEmpty(thread.getDoctorSpecialty(), "Medicine")
                                 + " • Connection: " + notEmpty(thread.getConnectionStatus(), "Accepted"));
-                binding.tvConvUnreadBadge.setVisibility(thread.isUnreadByPatient() ? View.VISIBLE : View.GONE);
+                isUnread = thread.isUnreadByPatient();
             }
 
+            binding.tvConvUnreadBadge.setVisibility(isUnread ? View.VISIBLE : View.GONE);
             binding.tvConvLastMessage.setText(
                     notEmpty(thread.getLastMessagePreview(), "Tap to open secure clinical conversation"));
+
+            android.content.Context ctx = binding.getRoot().getContext();
+            int dp = (int) ctx.getResources().getDisplayMetrics().density;
+            if (isUnread) {
+                binding.tvConvLastMessage.setTypeface(null, android.graphics.Typeface.BOLD);
+                binding.tvConvLastMessage.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.text_primary));
+                binding.cardConversationItem.setStrokeColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.primary_moss_green));
+                binding.cardConversationItem.setStrokeWidth(Math.max(2, 2 * dp));
+                binding.cardConversationItem.setCardBackgroundColor(0xFFF3F8EF);
+            } else {
+                binding.tvConvLastMessage.setTypeface(null, android.graphics.Typeface.NORMAL);
+                binding.tvConvLastMessage.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.arohi_slate_muted));
+                binding.cardConversationItem.setStrokeColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.arohi_border_subtle));
+                binding.cardConversationItem.setStrokeWidth(Math.max(1, dp));
+                binding.cardConversationItem.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.arohi_pure_white));
+            }
 
             if (thread.getLastMessageTimestamp() > 0) {
                 binding.tvConvTimestamp.setText(

@@ -15,48 +15,46 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:text="Secure Clinical Conversations"
+            android:textColor="@color/arohi_pure_white"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tvConversationsSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif"
+            android:text="1-to-1 messaging unlocked only for Accepted connections"
+            android:textColor="@color/arohi_mint_tint"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:gravity="start|center_vertical"
             android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-black"
-                    android:text="Secure Clinical Conversations"
-                    android:textColor="@color/arohi_pure_white"
-                    android:textSize="18sp" />
-
-                <TextView
-                    android:id="@+id/tvConversationsSubtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="sans-serif"
-                    android:text="1-to-1 messaging unlocked only for Accepted connections"
-                    android:textColor="@color/arohi_mint_tint"
-                    android:textSize="12sp" />
-            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewNotifications"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:text="Notifications"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="14dp"
+                android:text="View Notifications"
                 android:textAllCaps="false"
                 android:textColor="@color/arohi_forest_primary"
-                android:textSize="11sp"
+                android:textSize="12sp"
+                android:textStyle="bold"
                 app:backgroundTint="@color/arohi_pure_white"
-                app:cornerRadius="10dp" />
+                app:cornerRadius="18dp" />
         </LinearLayout>
     </LinearLayout>
 

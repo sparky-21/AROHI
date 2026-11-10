@@ -29,13 +29,51 @@
             android:textColor="@color/primary_moss_green"
             android:textSize="12sp" />
 
+        <!-- Patient Selection (Visible for Admin / Multi-Patient Scheduling) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectOpPatient"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Select Patient *"
+            android:visibility="gone"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectOpPatient"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Surgeon / Doctor Selection (Visible for Admin Scheduling) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSelectOpDoctor"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="Assign Operating Surgeon (Doctor) *"
+            android:visibility="gone"
+            app:boxStrokeColor="@color/primary_moss_green">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvSelectOpDoctor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Procedure Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilProcedureName"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="10dp"
             android:hint="Surgical Procedure Name *"
             app:boxStrokeColor="@color/primary_moss_green">
 

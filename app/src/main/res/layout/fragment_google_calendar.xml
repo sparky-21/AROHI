@@ -26,25 +26,28 @@
             app:tint="@color/white"
             android:contentDescription="Back" />
 
-        <!-- Month Title with Dropdown Arrow (e.g. "November  ▾") -->
+        <!-- Month Title with Dropdown Arrow (e.g. "Nov 2026 ▾") -->
         <TextView
             android:id="@+id/tvGoogleMonthTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="November  ▾"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:background="?attr/selectableItemBackground"
-            android:paddingVertical="4dp" />
+            android:ellipsize="end"
+            android:paddingVertical="4dp"
+            android:singleLine="true"
+            android:text="Nov 2026 ▾"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <!-- Search Icon -->
         <ImageButton
             android:id="@+id/btnCalendarSearch"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_search"
             app:tint="@color/white"
@@ -53,21 +56,21 @@
         <!-- Today Date Badge Box (e.g. "8") -->
         <TextView
             android:id="@+id/tvCalendarTodayBadge"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_marginStart="4dp"
             android:gravity="center"
             android:text="8"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
             android:background="@drawable/bg_calendar_today_badge" />
 
         <!-- Checkmark / Tasks Icon -->
         <ImageButton
             android:id="@+id/btnCalendarTasks"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_check_circle"
@@ -83,6 +86,8 @@
             android:layout_marginStart="4dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="10dp"
             android:text="Standard"
             android:textColor="@color/white"
             android:textSize="11sp"

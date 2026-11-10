@@ -283,17 +283,46 @@ public class AdminOperationsFragment extends Fragment {
                 .setView(dBinding.getRoot())
                 .create();
 
-        // 1. OT Room dropdown
-        String[] otRooms = new String[]{
-                "OT Suite 1 - Cardiac Surgery (Floor 3)",
-                "OT Suite 2 - General & Laparoscopic (Floor 3)",
-                "OT Suite 3 - Orthopedic & Trauma (Floor 3)",
-                "OT Suite 4 - Neuro & Micro-Surgery (Floor 3)"
-        };
+        // 0. Dynamic Patient, Surgeon & Nurse registries (Newly registered + Saved)
+        final List<UserAccount> patientOptions = new ArrayList<>();
+        final List<UserAccount> doctorOptions = new ArrayList<>();
+        final List<UserAccount> nurseOptions = new ArrayList<>();
+        final UserAccount[] selectedPatient = new UserAccount[1];
+        final UserAccount[] selectedDoctor = new UserAccount[1];
+        final UserAccount[] selectedNurse = new UserAccount[1];
+
+        if (preselectedPatient == null) {
+            dBinding.tilSelectOpPatient.setVisibility(View.VISIBLE);
+        } else {
+            dBinding.tilSelectOpPatient.setVisibility(View.GONE);
+        }
+        dBinding.tilSelectOpDoctor.setVisibility(View.VISIBLE);
+
+        // 1. OT Room dropdown (dynamically loaded OT Suites + defaults)
+        final List<OTRoom> roomOptions = new ArrayList<>();
+        final List<String> otRoomLabels = new ArrayList<>();
+        if (!allOtRooms.isEmpty()) {
+            for (OTRoom r : allOtRooms) {
+                roomOptions.add(r);
+                otRoomLabels.add(r.getRoomName());
+            }
+        } else {
+            String[] defaults = new String[]{
+                    "OT Suite 1 - Cardiac Surgery (Floor 3)",
+                    "OT Suite 2 - General & Laparoscopic (Floor 3)",
+                    "OT Suite 3 - Orthopedic & Trauma (Floor 3)",
+                    "OT Suite 4 - Neuro & Micro-Surgery (Floor 3)"
+            };
+            for (int i = 0; i < defaults.length; i++) {
+                otRoomLabels.add(defaults[i]);
+            }
+        }
         ArrayAdapter<String> otAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, otRooms);
+                android.R.layout.simple_dropdown_item_1line, otRoomLabels);
         dBinding.actvSelectOtRoom.setAdapter(otAdapter);
-        dBinding.actvSelectOtRoom.setText(otRooms[1], false);
+        if (!otRoomLabels.isEmpty()) {
+            dBinding.actvSelectOtRoom.setText(otRoomLabels.get(otRoomLabels.size() > 1 ? 1 : 0), false);
+        }
 
         // 2. Date picker
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
@@ -313,15 +342,78 @@ public class AdminOperationsFragment extends Fragment {
         dBinding.actvOpTime.setAdapter(timeAdapter);
         dBinding.actvOpTime.setText(timeSlots[1], false);
 
-        // 4. Assisting Nurse dropdown
-        String[] nurses = new String[]{
-                "Sister Fatima (RN) • Floor 2 & 3 Scrub Specialist",
-                "Sister Nasreen (RN) • OT Certified Scrub Specialist"
+        // 4. Populate Patient, Doctor, and Assisting Nurse dynamically from registered + saved directory
+        Runnable updateSubtitle = () -> {
+            String pName = preselectedPatient != null ? preselectedPatient.getFullName()
+                    : (selectedPatient[0] != null ? selectedPatient[0].getFullName() : "Select Patient");
+            String dName = selectedDoctor[0] != null ? selectedDoctor[0].getFullName() : "Select Surgeon";
+            dBinding.tvScheduleOpPatientSubtitle.setText("Patient: " + pName + " • Surgeon: " + dName);
         };
-        ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, nurses);
-        dBinding.actvSelectNurse.setAdapter(nurseAdapter);
-        dBinding.actvSelectNurse.setText(nurses[0], false);
+
+        operationsRepository.loadStaffAndPatientDirectory(new AuthCallback<HospitalOperationsRepository.StaffAndPatientDirectory>() {
+            @Override
+            public void onSuccess(HospitalOperationsRepository.StaffAndPatientDirectory dir) {
+                if (getContext() == null) return;
+                patientOptions.clear();
+                patientOptions.addAll(dir.patients);
+                doctorOptions.clear();
+                doctorOptions.addAll(dir.doctors);
+                nurseOptions.clear();
+                nurseOptions.addAll(dir.nurses);
+
+                List<String> patLabels = new ArrayList<>();
+                for (UserAccount acc : patientOptions) patLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                ArrayAdapter<String> patAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, patLabels);
+                dBinding.actvSelectOpPatient.setAdapter(patAdapter);
+                if (!patientOptions.isEmpty() && selectedPatient[0] == null) {
+                    selectedPatient[0] = patientOptions.get(0);
+                    dBinding.actvSelectOpPatient.setText(patLabels.get(0), false);
+                }
+                dBinding.actvSelectOpPatient.setOnItemClickListener((p, v, pos, id) -> {
+                    if (pos < patientOptions.size()) {
+                        selectedPatient[0] = patientOptions.get(pos);
+                        updateSubtitle.run();
+                    }
+                });
+
+                List<String> docLabels = new ArrayList<>();
+                for (UserAccount acc : doctorOptions) docLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                ArrayAdapter<String> docAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, docLabels);
+                dBinding.actvSelectOpDoctor.setAdapter(docAdapter);
+                if (!doctorOptions.isEmpty() && selectedDoctor[0] == null) {
+                    selectedDoctor[0] = doctorOptions.get(0);
+                    dBinding.actvSelectOpDoctor.setText(docLabels.get(0), false);
+                }
+                dBinding.actvSelectOpDoctor.setOnItemClickListener((p, v, pos, id) -> {
+                    if (pos < doctorOptions.size()) {
+                        selectedDoctor[0] = doctorOptions.get(pos);
+                        updateSubtitle.run();
+                    }
+                });
+
+                List<String> nurseLabels = new ArrayList<>();
+                for (UserAccount acc : nurseOptions) nurseLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, nurseLabels);
+                dBinding.actvSelectNurse.setAdapter(nurseAdapter);
+                if (!nurseOptions.isEmpty() && selectedNurse[0] == null) {
+                    selectedNurse[0] = nurseOptions.get(0);
+                    dBinding.actvSelectNurse.setText(nurseLabels.get(0), false);
+                }
+                dBinding.actvSelectNurse.setOnItemClickListener((p, v, pos, id) -> {
+                    if (pos < nurseOptions.size()) {
+                        selectedNurse[0] = nurseOptions.get(pos);
+                    }
+                });
+
+                updateSubtitle.run();
+            }
+
+            @Override
+            public void onError(String message) {}
+        });
 
         // 5. Follow-up Date default
         Calendar cal = Calendar.getInstance();
@@ -345,25 +437,40 @@ public class AdminOperationsFragment extends Fragment {
             dBinding.tilProcedureName.setError(null);
 
             String otRoom = dBinding.actvSelectOtRoom.getText().toString();
+            String otRoomId = "ot_02";
+            for (OTRoom r : roomOptions) {
+                if (otRoom.equals(r.getRoomName())) {
+                    otRoomId = r.getRoomId();
+                    break;
+                }
+            }
             String date = dBinding.etOpDate.getText().toString();
             String time = dBinding.actvOpTime.getText().toString();
-            String nurse = dBinding.actvSelectNurse.getText().toString();
             String followUp = dBinding.etFollowUpDate.getText() != null
                     ? dBinding.etFollowUpDate.getText().toString().trim() : "";
 
-            UserAccount cur = sessionManager.getCurrentSessionAccount();
-            String surgeonName = cur != null ? cur.getFullName() : "Dr. Raisa";
-            String surgeonUid = cur != null ? cur.getUid() : "doc_demo_01";
+            UserAccount patAcc = selectedPatient[0];
+            String patName = preselectedPatient != null ? preselectedPatient.getFullName()
+                    : (patAcc != null ? patAcc.getFullName() : "Karim Ahmed");
+            String patUid = preselectedPatient != null ? preselectedPatient.getUid()
+                    : (patAcc != null ? patAcc.getUid() : "pat_demo_01");
+            String patId = preselectedPatient != null ? preselectedPatient.getArohiId()
+                    : (patAcc != null ? patAcc.getArohiId() : "AROHI-PAT-KRM1");
 
-            String patName = preselectedPatient != null ? preselectedPatient.getFullName() : "Karim Ahmed";
-            String patUid = preselectedPatient != null ? preselectedPatient.getUid() : "pat_demo_01";
-            String patId = preselectedPatient != null ? preselectedPatient.getArohiId() : "AROHI-PAT-KRM1";
+            UserAccount docAcc = selectedDoctor[0];
+            String surgeonName = docAcc != null ? docAcc.getFullName() : "Dr. Raisa";
+            String surgeonUid = docAcc != null ? docAcc.getUid() : "doc_demo_01";
+            String surgeonArohiId = docAcc != null && docAcc.getArohiId() != null ? docAcc.getArohiId() : "AROHI-DOC-01";
+
+            UserAccount nurseAcc = selectedNurse[0];
+            String nurseUid = nurseAcc != null ? nurseAcc.getUid() : "nurse_demo_01";
+            String nurseName = nurseAcc != null ? nurseAcc.getFullName() : dBinding.actvSelectNurse.getText().toString();
 
             Operation op = new Operation(
                     "",
                     proc,
                     "General & Laparoscopic Surgery",
-                    "ot_02",
+                    otRoomId,
                     otRoom,
                     date,
                     time,
@@ -372,11 +479,11 @@ public class AdminOperationsFragment extends Fragment {
                     patId,
                     patName,
                     surgeonUid,
-                    "AROHI-DOC-01",
+                    surgeonArohiId,
                     surgeonName,
                     "General Surgery",
-                    "nurse_demo_01",
-                    nurse
+                    nurseUid,
+                    nurseName
             );
             op.setNpoConfirmed(dBinding.cbNpo.isChecked());
             op.setAnesthesiaCleared(dBinding.cbAnesthesia.isChecked());
@@ -496,57 +603,97 @@ public class AdminOperationsFragment extends Fragment {
 
         dBinding.tvAssignBedSub.setText(bed.getBedNumber() + " • " + bed.getWardName());
 
-        String[] samplePatients = new String[]{
-                "Karim Ahmed (AROHI-PAT-KRM1)",
-                "Tanvir Hossain (AROHI-PAT-TNV2)",
-                "Salma Begum (AROHI-PAT-SLM3)",
-                "Rafiqul Islam (AROHI-PAT-RFQ4)"
-        };
-        ArrayAdapter<String> patAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, samplePatients);
-        dBinding.actvSelectPatient.setAdapter(patAdapter);
-        dBinding.actvSelectPatient.setText(samplePatients[0], false);
+        final List<UserAccount> patientOptions = new ArrayList<>();
+        final List<UserAccount> doctorOptions = new ArrayList<>();
+        final List<UserAccount> nurseOptions = new ArrayList<>();
+        final UserAccount[] selectedPatient = new UserAccount[1];
+        final UserAccount[] selectedDoctor = new UserAccount[1];
+        final UserAccount[] selectedNurse = new UserAccount[1];
 
-        String[] sampleDoctors = new String[]{
-                "Dr. Raisa (General & Laparoscopic Surgery)",
-                "Dr. Kamal (Orthopedics & Joint Replacement)"
-        };
-        ArrayAdapter<String> docAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, sampleDoctors);
-        dBinding.actvSelectDoctor.setAdapter(docAdapter);
-        dBinding.actvSelectDoctor.setText(sampleDoctors[0], false);
+        operationsRepository.loadStaffAndPatientDirectory(new AuthCallback<HospitalOperationsRepository.StaffAndPatientDirectory>() {
+            @Override
+            public void onSuccess(HospitalOperationsRepository.StaffAndPatientDirectory dir) {
+                if (getContext() == null) return;
+                patientOptions.clear();
+                patientOptions.addAll(dir.patients);
+                doctorOptions.clear();
+                doctorOptions.addAll(dir.doctors);
+                nurseOptions.clear();
+                nurseOptions.addAll(dir.nurses);
 
-        String[] sampleNurses = new String[]{
-                "Sister Fatima (RN) • In-charge Nurse",
-                "Sister Nasreen (RN) • Ward Staff Nurse"
-        };
-        ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, sampleNurses);
-        dBinding.actvSelectNurse.setAdapter(nurseAdapter);
-        dBinding.actvSelectNurse.setText(sampleNurses[0], false);
+                List<String> patLabels = new ArrayList<>();
+                for (UserAccount acc : patientOptions) patLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                ArrayAdapter<String> patAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, patLabels);
+                dBinding.actvSelectPatient.setAdapter(patAdapter);
+                if (!patientOptions.isEmpty() && selectedPatient[0] == null) {
+                    selectedPatient[0] = patientOptions.get(0);
+                    dBinding.actvSelectPatient.setText(patLabels.get(0), false);
+                }
+                dBinding.actvSelectPatient.setOnItemClickListener((p, v, pos, id) -> {
+                    if (pos < patientOptions.size()) selectedPatient[0] = patientOptions.get(pos);
+                });
+
+                List<String> docLabels = new ArrayList<>();
+                for (UserAccount acc : doctorOptions) docLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                ArrayAdapter<String> docAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, docLabels);
+                dBinding.actvSelectDoctor.setAdapter(docAdapter);
+                if (!doctorOptions.isEmpty() && selectedDoctor[0] == null) {
+                    selectedDoctor[0] = doctorOptions.get(0);
+                    dBinding.actvSelectDoctor.setText(docLabels.get(0), false);
+                }
+                dBinding.actvSelectDoctor.setOnItemClickListener((p, v, pos, id) -> {
+                    if (pos < doctorOptions.size()) selectedDoctor[0] = doctorOptions.get(pos);
+                });
+
+                List<String> nurseLabels = new ArrayList<>();
+                for (UserAccount acc : nurseOptions) nurseLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, nurseLabels);
+                dBinding.actvSelectNurse.setAdapter(nurseAdapter);
+                if (!nurseOptions.isEmpty() && selectedNurse[0] == null) {
+                    selectedNurse[0] = nurseOptions.get(0);
+                    dBinding.actvSelectNurse.setText(nurseLabels.get(0), false);
+                }
+                dBinding.actvSelectNurse.setOnItemClickListener((p, v, pos, id) -> {
+                    if (pos < nurseOptions.size()) selectedNurse[0] = nurseOptions.get(pos);
+                });
+            }
+
+            @Override
+            public void onError(String message) {}
+        });
 
         dBinding.btnCancelAssignBed.setOnClickListener(v -> dialog.dismiss());
 
         dBinding.btnSubmitAssignBed.setOnClickListener(v -> {
-            String pat = dBinding.actvSelectPatient.getText().toString();
-            String doc = dBinding.actvSelectDoctor.getText().toString();
-            String nurse = dBinding.actvSelectNurse.getText().toString();
             String notes = dBinding.etAdmissionNotes.getText() != null
                     ? dBinding.etAdmissionNotes.getText().toString().trim() : "";
 
-            String patName = pat.contains("(") ? pat.substring(0, pat.indexOf("(")).trim() : pat;
-            String patId = pat.contains("(") ? pat.substring(pat.indexOf("(") + 1, pat.indexOf(")")).trim() : "AROHI-PAT";
+            UserAccount patAcc = selectedPatient[0];
+            String patUid = patAcc != null ? patAcc.getUid() : "pat_demo_01";
+            String patId = patAcc != null && patAcc.getArohiId() != null ? patAcc.getArohiId() : "AROHI-PAT";
+            String patName = patAcc != null ? patAcc.getFullName() : dBinding.actvSelectPatient.getText().toString();
+
+            UserAccount docAcc = selectedDoctor[0];
+            String docUid = docAcc != null ? docAcc.getUid() : "doc_demo_01";
+            String docName = docAcc != null ? docAcc.getFullName() : dBinding.actvSelectDoctor.getText().toString();
+
+            UserAccount nurseAcc = selectedNurse[0];
+            String nurseUid = nurseAcc != null ? nurseAcc.getUid() : "nurse_demo_01";
+            String nurseName = nurseAcc != null ? nurseAcc.getFullName() : dBinding.actvSelectNurse.getText().toString();
 
             dBinding.btnSubmitAssignBed.setEnabled(false);
             operationsRepository.assignPatientToBed(
                     bed.getBedId(),
-                    "pat_assigned_" + System.currentTimeMillis(),
+                    patUid,
                     patId,
                     patName,
-                    "doc_assigned_01",
-                    doc.contains("(") ? doc.substring(0, doc.indexOf("(")).trim() : doc,
-                    "nurse_assigned_01",
-                    nurse.contains("•") ? nurse.substring(0, nurse.indexOf("•")).trim() : nurse,
+                    docUid,
+                    docName,
+                    nurseUid,
+                    nurseName,
                     notes,
                     new AuthCallback<Bed>() {
                         @Override

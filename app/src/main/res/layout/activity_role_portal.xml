@@ -13,74 +13,88 @@
         android:background="@color/deep_forest_green"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/spacing_md"
-        android:paddingVertical="12dp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="34dp"
-            android:layout_height="34dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:contentDescription="@string/app_name"
             android:src="@drawable/ic_arohi_logo" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvPortalHeaderTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:letterSpacing="0.06"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:gravity="center_vertical"
+                android:letterSpacing="0.02"
+                android:maxLines="1"
                 android:text="AROHI PORTAL"
                 android:textColor="@color/white"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:autoSizeMaxTextSize="14sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeStepGranularity="0.5sp"
+                app:autoSizeTextType="uniform" />
 
             <TextView
                 android:id="@+id/tvPortalHeaderSub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:gravity="center_vertical"
+                android:maxLines="1"
                 android:text="ID: AROHI-0000"
                 android:textColor="@color/soft_sage"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                app:autoSizeMaxTextSize="11sp"
+                app:autoSizeMinTextSize="8.5sp"
+                app:autoSizeStepGranularity="0.5sp"
+                app:autoSizeTextType="uniform" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvPortalStatusBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_xs"
+            android:layout_marginEnd="5dp"
             android:background="@drawable/bg_badge_pill"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
+            android:maxLines="1"
+            android:paddingHorizontal="7dp"
+            android:paddingVertical="3dp"
             android:text="VERIFIED"
             android:textColor="@color/deep_forest_green"
-            android:textSize="10sp"
+            android:textSize="9sp"
             android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/btnHeaderCommunityFeed"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginEnd="6dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="5dp"
             android:background="@drawable/bg_icon_circle_mint"
             android:contentDescription="Community Feed"
-            android:padding="7dp"
+            android:padding="6dp"
             android:src="@drawable/ic_nav_messages" />
 
         <ImageButton
             android:id="@+id/btnHeaderRefresh"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:background="@drawable/bg_icon_circle_mint"
             android:contentDescription="@string/action_retry"
-            android:padding="7dp"
+            android:padding="6dp"
             android:src="@drawable/ic_refresh" />
     </LinearLayout>
 

@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =========================================================================
-    // HELPER FUNCTIONS
+    // SECURITY AUDIT & RBAC HELPER FUNCTIONS
     // =========================================================================
     function isSignedIn() {
       return request.auth != null;
@@ -25,20 +25,30 @@ service cloud.firestore {
       return isSignedIn() && userDocExists() && getUserDoc().role == roleName;
     }
 
-    function hasRoleOrAfter(roleName) {
-      return isSignedIn() && (
-        (userDocExists() && getUserDoc().role == roleName)
-        || (existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))
-            && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == roleName)
-      );
-    }
-
     function isAdmin() {
       return isSignedIn() && (
         (userDocExists() && getUserDoc().role == 'ADMIN')
         || exists(/databases/$(database)/documents/administrators/$(request.auth.uid))
         || exists(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid))
         || existsAfter(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid))
+      );
+    }
+
+    function isVerifiedDoctor() {
+      return isSignedIn() && (
+        (userDocExists() && getUserDoc().role == 'DOCTOR' && getUserDoc().verificationStatus == 'VERIFIED')
+        || (exists(/databases/$(database)/documents/doctors/$(request.auth.uid))
+            && get(/databases/$(database)/documents/doctors/$(request.auth.uid)).data.verificationStatus == 'VERIFIED')
+        || isAdmin()
+      );
+    }
+
+    function isVerifiedNurse() {
+      return isSignedIn() && (
+        (userDocExists() && getUserDoc().role == 'NURSE' && getUserDoc().verificationStatus == 'VERIFIED')
+        || (exists(/databases/$(database)/documents/nurses/$(request.auth.uid))
+            && get(/databases/$(database)/documents/nurses/$(request.auth.uid)).data.verificationStatus == 'VERIFIED')
+        || isAdmin()
       );
     }
 
@@ -61,7 +71,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 1. USERS COLLECTION (Global Multi-Phone Identity & Role Directory)
+    // 1. IDENTITY & PROFILES (Users, Patients, Doctors, Nurses, Admins)
     // =========================================================================
     match /users/{userId} {
       allow read: if isSignedIn();
@@ -69,36 +79,24 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // =========================================================================
-    // 2. PATIENTS COLLECTION
-    // =========================================================================
     match /patients/{userId} {
       allow read: if isSignedIn();
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
-    // =========================================================================
-    // 3. DOCTORS COLLECTION (Global Discovery across all phones)
-    // =========================================================================
     match /doctors/{userId} {
       allow read: if isSignedIn();
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
-    // =========================================================================
-    // 4. NURSES COLLECTION
-    // =========================================================================
     match /nurses/{userId} {
       allow read: if isSignedIn();
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
-    // =========================================================================
-    // 5. ADMINISTRATORS & AUTHORIZATION TOKENS
-    // =========================================================================
     match /adminAuthorizations/{authUid} {
       allow read: if isSignedIn();
       allow create, update: if isSignedIn();
@@ -112,7 +110,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 6. PHASE 3: DOCTOR REQUESTS, CONNECTIONS, CONVERSATIONS & MESSAGES
+    // 2. DOCTOR REQUESTS, CONNECTIONS, SECURE CHAT & CONVERSATIONS
     // =========================================================================
     match /doctorRequests/{requestId} {
       allow read: if isSignedIn();
@@ -149,28 +147,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 7. NOTIFICATIONS (Real-Time Cross-Phone Alerts)
-    // =========================================================================
-    match /notifications/{docId} {
-      allow read, create, update: if isSignedIn();
-      allow delete: if isAdmin();
-    }
-
-    // =========================================================================
-    // 8. HOSPITAL ANNOUNCEMENTS, DEPARTMENTS & CLINICAL COLLECTIONS
-    // =========================================================================
-    match /communityPosts/{postId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
-      allow delete: if isAdmin();
-    }
-
-    match /hospitalDepartments/{deptId} {
-      allow read, write: if isSignedIn();
-    }
-
-    // =========================================================================
-    // PHASE 4: APPOINTMENTS, PRESCRIPTIONS, LABORATORY & CALENDAR
+    // 3. CLINICAL RECORDS: APPOINTMENTS, PRESCRIPTIONS, LABS & CALENDAR
     // =========================================================================
     match /appointments/{docId} {
       allow read: if isSignedIn()
@@ -180,7 +157,8 @@ service cloud.firestore {
 
       allow create: if isSignedIn()
         && (request.resource.data.patientUid == request.auth.uid
-            || request.resource.data.doctorUid == request.auth.uid);
+            || request.resource.data.doctorUid == request.auth.uid
+            || isAdmin());
 
       allow update: if isSignedIn()
         && (resource.data.patientUid == request.auth.uid
@@ -194,14 +172,11 @@ service cloud.firestore {
       allow read: if isSignedIn()
         && (resource.data.patientUid == request.auth.uid
             || resource.data.doctorUid == request.auth.uid
-            || isAdmin());
+            || isAdmin()
+            || isVerifiedNurse());
 
-      allow create: if isSignedIn()
-        && request.resource.data.doctorUid == request.auth.uid;
-
-      allow update: if isSignedIn()
-        && (resource.data.doctorUid == request.auth.uid || isAdmin());
-
+      allow create: if isSignedIn() && (isVerifiedDoctor() || isAdmin());
+      allow update: if isSignedIn() && (resource.data.doctorUid == request.auth.uid || isAdmin());
       allow delete: if isAdmin();
     }
 
@@ -211,9 +186,7 @@ service cloud.firestore {
             || resource.data.doctorUid == request.auth.uid
             || isAdmin());
 
-      allow create: if isSignedIn()
-        && request.resource.data.doctorUid == request.auth.uid;
-
+      allow create: if isSignedIn() && (isVerifiedDoctor() || isAdmin());
       allow update: if isSignedIn()
         && (resource.data.patientUid == request.auth.uid
             || resource.data.doctorUid == request.auth.uid
@@ -243,11 +216,7 @@ service cloud.firestore {
             || resource.data.nurseUid == request.auth.uid
             || isAdmin());
 
-      allow create, update: if isSignedIn()
-        && (request.resource.data.patientUid == request.auth.uid
-            || request.resource.data.doctorUid == request.auth.uid
-            || isAdmin());
-
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
@@ -255,6 +224,7 @@ service cloud.firestore {
       allow read: if isSignedIn()
         && (resource.data.patientUid == request.auth.uid
             || resource.data.doctorUid == request.auth.uid
+            || isVerifiedNurse()
             || isAdmin());
 
       allow create, update: if isSignedIn()
@@ -265,28 +235,99 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    match /operations/{docId} {
-      allow read, write: if isSignedIn();
-    }
+    // =========================================================================
+    // 4. SMART PATIENT JOURNEY
+    // =========================================================================
+    match /patientJourneys/{journeyId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.attendingDoctorUid == request.auth.uid
+            || isVerifiedNurse()
+            || isAdmin());
 
-    match /operationRooms/{docId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /wards/{docId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /beds/{docId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /nurseAssignments/{docId} {
-      allow read, write: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
     }
 
     // =========================================================================
-    // 9. PHASE 5: SMART E-PHARMACY, EMERGENCY & FAMILY ACCESS CONTROL
+    // 5. COMMUNITY AND HOSPITAL FEED & COMMENTS
+    // =========================================================================
+    match /communityPosts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (isVerifiedDoctor() || isAdmin());
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    match /postComments/{commentId} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if isSignedIn()
+        && (resource.data.authorUid == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // 6. HOSPITAL OPERATIONS: OT, WARDS, BEDS, NURSING TASKS & VITALS
+    // =========================================================================
+    match /operations/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.doctorUid == request.auth.uid
+            || resource.data.nurseUid == request.auth.uid
+            || isVerifiedNurse()
+            || isAdmin());
+
+      allow create, update: if isSignedIn() && (isVerifiedDoctor() || isVerifiedNurse() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /operationRooms/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (isVerifiedDoctor() || isVerifiedNurse() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /wards/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (isVerifiedDoctor() || isVerifiedNurse() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /beds/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (isVerifiedDoctor() || isVerifiedNurse() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /nurseAssignments/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin() || isVerifiedNurse();
+    }
+
+    match /nursingTasks/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.nurseUid == request.auth.uid
+            || resource.data.patientUid == request.auth.uid
+            || isAdmin()
+            || isVerifiedDoctor());
+
+      allow create, update: if isSignedIn() && (isVerifiedNurse() || isVerifiedDoctor() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /vitals/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientUid == request.auth.uid
+            || resource.data.nurseUid == request.auth.uid
+            || isVerifiedDoctor()
+            || isAdmin());
+
+      allow create: if isSignedIn() && (isVerifiedNurse() || isVerifiedDoctor() || isAdmin());
+      allow update: if isSignedIn() && (resource.data.nurseUid == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 7. E-PHARMACY, EMERGENCY HEALTH CARDS & FAMILY HEALTH PROFILES
     // =========================================================================
     match /pharmacyProducts/{docId} {
       allow read: if isSignedIn();
@@ -329,12 +370,18 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /notifications/{docId} {
+      allow read, create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
     // =========================================================================
-    // 10. AUDIT LOGS
+    // 8. AUDIT LOGS (TAMPER-PROOF & IMMUTABLE)
     // =========================================================================
     match /auditLogs/{logId} {
-      allow read, create: if isSignedIn();
-      allow update, delete: if false;
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // STRICT IMMUTABILITY
     }
   }
 }

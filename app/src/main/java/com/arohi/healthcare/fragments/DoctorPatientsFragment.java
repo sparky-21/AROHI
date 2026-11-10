@@ -321,16 +321,33 @@ public class DoctorPatientsFragment extends Fragment {
         dBinding.tvScheduleOpPatientSubtitle.setText("Patient: " + notEmpty(p.getFullName(), req.getPatientName())
                 + " • Attending Surgeon: Dr. " + currentDoctor.getFullName());
 
-        String[] otRooms = new String[]{
+        final List<com.arohi.healthcare.models.OTRoom> roomOptions = new ArrayList<>();
+        String[] defaultOtRooms = new String[]{
                 "OT Suite 1 - Cardiac Surgery (Floor 3)",
                 "OT Suite 2 - General & Laparoscopic (Floor 3)",
                 "OT Suite 3 - Orthopedic & Trauma (Floor 3)",
                 "OT Suite 4 - Neuro & Micro-Surgery (Floor 3)"
         };
-        ArrayAdapter<String> otAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, otRooms);
-        dBinding.actvSelectOtRoom.setAdapter(otAdapter);
-        dBinding.actvSelectOtRoom.setText(otRooms[1], false);
+        ArrayAdapter<String> defaultOtAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, defaultOtRooms);
+        dBinding.actvSelectOtRoom.setAdapter(defaultOtAdapter);
+        dBinding.actvSelectOtRoom.setText(defaultOtRooms[1], false);
+
+        operationsRepository.loadOTRooms(new AuthCallback<List<com.arohi.healthcare.models.OTRoom>>() {
+            @Override
+            public void onSuccess(List<com.arohi.healthcare.models.OTRoom> rooms) {
+                if (getContext() == null || rooms == null || rooms.isEmpty()) return;
+                roomOptions.clear();
+                roomOptions.addAll(rooms);
+                List<String> names = new ArrayList<>();
+                for (com.arohi.healthcare.models.OTRoom r : rooms) names.add(r.getRoomName());
+                ArrayAdapter<String> otAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, names);
+                dBinding.actvSelectOtRoom.setAdapter(otAdapter);
+                dBinding.actvSelectOtRoom.setText(names.get(names.size() > 1 ? 1 : 0), false);
+            }
+            @Override public void onError(String message) {}
+        });
 
         java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
         dBinding.etOpDate.setText(df.format(new Date()));
@@ -348,14 +365,31 @@ public class DoctorPatientsFragment extends Fragment {
         dBinding.actvOpTime.setAdapter(timeAdapter);
         dBinding.actvOpTime.setText(timeSlots[1], false);
 
-        String[] nurses = new String[]{
-                "Sister Fatima (RN) • Floor 2 & 3 Scrub Specialist",
-                "Sister Nasreen (RN) • OT Certified Scrub Specialist"
-        };
-        ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, nurses);
-        dBinding.actvSelectNurse.setAdapter(nurseAdapter);
-        dBinding.actvSelectNurse.setText(nurses[0], false);
+        final List<UserAccount> nurseOptions = new ArrayList<>();
+        final UserAccount[] selectedNurse = new UserAccount[1];
+        operationsRepository.loadStaffAndPatientDirectory(new AuthCallback<HospitalOperationsRepository.StaffAndPatientDirectory>() {
+            @Override
+            public void onSuccess(HospitalOperationsRepository.StaffAndPatientDirectory dir) {
+                if (getContext() == null) return;
+                nurseOptions.clear();
+                nurseOptions.addAll(dir.nurses);
+                List<String> nurseLabels = new ArrayList<>();
+                for (UserAccount acc : nurseOptions) {
+                    nurseLabels.add(HospitalOperationsRepository.formatAccountOptionLabel(acc));
+                }
+                ArrayAdapter<String> nurseAdapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, nurseLabels);
+                dBinding.actvSelectNurse.setAdapter(nurseAdapter);
+                if (!nurseOptions.isEmpty() && selectedNurse[0] == null) {
+                    selectedNurse[0] = nurseOptions.get(0);
+                    dBinding.actvSelectNurse.setText(nurseLabels.get(0), false);
+                }
+                dBinding.actvSelectNurse.setOnItemClickListener((parent, view, pos, id) -> {
+                    if (pos < nurseOptions.size()) selectedNurse[0] = nurseOptions.get(pos);
+                });
+            }
+            @Override public void onError(String message) {}
+        });
 
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.add(java.util.Calendar.DAY_OF_YEAR, 7);
@@ -378,9 +412,17 @@ public class DoctorPatientsFragment extends Fragment {
             dBinding.tilProcedureName.setError(null);
 
             String otRoom = dBinding.actvSelectOtRoom.getText().toString();
+            String otRoomId = "ot_02";
+            for (com.arohi.healthcare.models.OTRoom r : roomOptions) {
+                if (otRoom.equals(r.getRoomName())) {
+                    otRoomId = r.getRoomId();
+                    break;
+                }
+            }
             String date = dBinding.etOpDate.getText().toString();
             String time = dBinding.actvOpTime.getText().toString();
-            String nurse = dBinding.actvSelectNurse.getText().toString();
+            String nurseUid = selectedNurse[0] != null ? selectedNurse[0].getUid() : "nurse_demo_01";
+            String nurseName = selectedNurse[0] != null ? selectedNurse[0].getFullName() : dBinding.actvSelectNurse.getText().toString();
             String followUp = dBinding.etFollowUpDate.getText() != null
                     ? dBinding.etFollowUpDate.getText().toString().trim() : "";
 
@@ -388,7 +430,7 @@ public class DoctorPatientsFragment extends Fragment {
                     "",
                     proc,
                     notEmpty(req.getDoctorSpecialty(), "General & Laparoscopic Surgery"),
-                    "ot_02",
+                    otRoomId,
                     otRoom,
                     date,
                     time,
@@ -400,8 +442,8 @@ public class DoctorPatientsFragment extends Fragment {
                     currentDoctor.getArohiId(),
                     currentDoctor.getFullName(),
                     notEmpty(req.getDoctorSpecialty(), "General Surgery"),
-                    "nurse_demo_01",
-                    nurse
+                    nurseUid,
+                    nurseName
             );
             op.setNpoConfirmed(dBinding.cbNpo.isChecked());
             op.setAnesthesiaCleared(dBinding.cbAnesthesia.isChecked());
@@ -756,6 +798,7 @@ public class DoctorPatientsFragment extends Fragment {
         });
 
         dBinding.btnCancelBookAppt.setOnClickListener(v -> dialog.dismiss());
+        dBinding.btnSubmitBookAppt.setText("Schedule Consultation");
 
         dBinding.btnSubmitBookAppt.setOnClickListener(v -> {
             String date = dBinding.etAppointmentDate.getText().toString().trim();

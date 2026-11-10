@@ -39,6 +39,8 @@
         <item name="materialButtonStyle">@style/Widget.AROHI.Button.Primary</item>
         <item name="textInputStyle">@style/Widget.AROHI.TextInputLayout</item>
         <item name="materialCardViewStyle">@style/Widget.AROHI.Card</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.AROHI.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.AROHI.MaterialAlertDialog</item>
     </style>
 
     <!-- Splash Theme -->
@@ -149,5 +151,41 @@
         <item name="cardElevation">@dimen/card_elevation</item>
         <item name="strokeColor">@color/border_stroke</item>
         <item name="strokeWidth">@dimen/card_stroke_width</item>
+    </style>
+
+    <!-- Dialog Theming to eliminate plain-text buttons across all AlertDialogs -->
+    <style name="ThemeOverlay.AROHI.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.AROHI.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.AROHI.Dialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.AROHI.Dialog.Button.Negative</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.AROHI.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearance.AROHI.Dialog" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="Widget.AROHI.Dialog.Button.Positive" parent="Widget.Material3.Button">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">38dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">@color/primary_moss_green</item>
+        <item name="cornerRadius">19dp</item>
+    </style>
+
+    <style name="Widget.AROHI.Dialog.Button.Negative" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textColor">@color/deep_forest_green</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">38dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">@color/surface_card</item>
+        <item name="strokeColor">@color/border_stroke</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cornerRadius">19dp</item>
     </style>
 </resources>

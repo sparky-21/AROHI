@@ -78,20 +78,28 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancelStatusDialog"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="42dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:text="Cancel"
-            android:textColor="@color/text_secondary" />
+            android:textColor="@color/deep_forest_green"
+            app:cornerRadius="21dp"
+            app:strokeColor="@color/border_stroke"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnConfirmStatusUpdate"
             style="@style/Widget.Material3.Button"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="42dp"
             android:layout_marginStart="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:backgroundTint="@color/deep_forest_green"
             android:text="Update Status"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            app:cornerRadius="21dp" />
     </LinearLayout>
 </LinearLayout>
