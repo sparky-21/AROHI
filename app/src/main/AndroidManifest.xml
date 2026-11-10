@@ -30,6 +30,12 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- 2.1 Hospital Discovery & Network Selection (Phase 9 Multi-Tenant Gateway) -->
+        <activity
+            android:name=".activities.HospitalDiscoveryActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- 3. Role Selection Screen -->
         <activity
             android:name=".activities.RoleSelectionActivity"

@@ -19,6 +19,8 @@ public class UserAccount {
     private boolean profileCompleted;
     private String address;
     private String bioNotes;
+    private String hospitalId;
+    private String hospitalCode;
     private long createdAt;
     private long updatedAt;
 
@@ -58,6 +60,8 @@ public class UserAccount {
         map.put("profileCompleted", profileCompleted);
         map.put("address", address != null ? address : "");
         map.put("bioNotes", bioNotes != null ? bioNotes : "");
+        map.put("hospitalId", hospitalId != null ? hospitalId : "hosp_arohi_central");
+        map.put("hospitalCode", hospitalCode != null ? hospitalCode : "AROHI-HQ");
         map.put("createdAt", createdAt);
         map.put("updatedAt", updatedAt);
         return map;
@@ -177,5 +181,21 @@ public class UserAccount {
 
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getHospitalId() {
+        return hospitalId != null ? hospitalId : "hosp_arohi_central";
+    }
+
+    public void setHospitalId(String hospitalId) {
+        this.hospitalId = hospitalId;
+    }
+
+    public String getHospitalCode() {
+        return hospitalCode != null ? hospitalCode : "AROHI-HQ";
+    }
+
+    public void setHospitalCode(String hospitalCode) {
+        this.hospitalCode = hospitalCode;
     }
 }

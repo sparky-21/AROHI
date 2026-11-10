@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import com.arohi.healthcare.activities.BasicProfileSetupActivity;
 import com.arohi.healthcare.activities.EmailVerificationActivity;
+import com.arohi.healthcare.activities.HospitalDiscoveryActivity;
 import com.arohi.healthcare.activities.LoginActivity;
 import com.arohi.healthcare.activities.OnboardingActivity;
 import com.arohi.healthcare.activities.RolePortalActivity;
@@ -36,7 +37,7 @@ public final class AuthNavigationRouter {
         if (activeAccount != null) {
             routeAuthenticatedUser(activity, activeAccount);
         } else {
-            Intent intent = new Intent(activity, RoleSelectionActivity.class);
+            Intent intent = new Intent(activity, HospitalDiscoveryActivity.class);
             activity.startActivity(intent);
             activity.finish();
         }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Application Theme for Night/Dark Mode -->
+    <style name="Theme.AROHI" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Brand Color Tokens -->
+        <item name="colorPrimary">@color/primary_moss_green</item>
+        <item name="colorOnPrimary">@color/deep_forest_green</item>
+        <item name="colorPrimaryContainer">@color/pale_mint</item>
+        <item name="colorOnPrimaryContainer">@color/text_primary</item>
+
+        <item name="colorSecondary">@color/secondary_sage</item>
+        <item name="colorOnSecondary">@color/deep_forest_green</item>
+        <item name="colorSecondaryContainer">@color/surface_subtle</item>
+        <item name="colorOnSecondaryContainer">@color/text_primary</item>
+
+        <item name="colorTertiary">@color/soft_sage</item>
+        <item name="colorOnTertiary">@color/deep_forest_green</item>
+
+        <item name="colorError">@color/status_emergency</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/status_emergency_bg</item>
+        <item name="colorOnErrorContainer">@color/status_emergency</item>
+
+        <!-- Background & Surfaces -->
+        <item name="android:windowBackground">@color/surface_background</item>
+        <item name="android:colorBackground">@color/surface_background</item>
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/surface_subtle</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/border_stroke</item>
+
+        <!-- System Bars -->
+        <item name="android:statusBarColor">@color/deep_forest_green</item>
+        <item name="android:navigationBarColor">@color/surface_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Default Component Styles -->
+        <item name="materialButtonStyle">@style/Widget.AROHI.Button.Primary</item>
+        <item name="textInputStyle">@style/Widget.AROHI.TextInputLayout</item>
+        <item name="materialCardViewStyle">@style/Widget.AROHI.Card</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.AROHI.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.AROHI.MaterialAlertDialog</item>
+    </style>
+
+    <!-- Splash Theme in Dark Mode -->
+    <style name="Theme.AROHI.Splash" parent="Theme.AROHI">
+        <item name="android:windowBackground">@color/deep_forest_green</item>
+        <item name="android:statusBarColor">@color/deep_forest_green</item>
+        <item name="android:navigationBarColor">@color/deep_forest_green</item>
+    </style>
+</resources>

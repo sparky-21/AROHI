@@ -26,6 +26,12 @@ service firebase.storage {
         && request.resource.size < 10 * 1024 * 1024;
     }
 
+    // Hospital facility photos, logos & maps (Public read, Super Admin/Admin write)
+    match /hospitals/{hospitalId}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024;
+    }
+
     // Diagnostic laboratory reports (PDF / images - max 15MB)
     match /laboratory_reports/{patientUid}/{fileName} {
       allow read: if isSignedIn()

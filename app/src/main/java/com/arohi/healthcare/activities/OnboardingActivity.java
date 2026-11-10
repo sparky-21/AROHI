@@ -92,7 +92,7 @@ public class OnboardingActivity extends AppCompatActivity {
 
     private void completeOnboardingAndProceed() {
         sessionManager.setOnboardingCompleted(true);
-        Intent intent = new Intent(this, RoleSelectionActivity.class);
+        Intent intent = new Intent(this, HospitalDiscoveryActivity.class);
         startActivity(intent);
         finish();
     }

@@ -25,9 +25,18 @@ service cloud.firestore {
       return isSignedIn() && userDocExists() && getUserDoc().role == roleName;
     }
 
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/superAdmins/$(request.auth.uid))
+        || (userDocExists() && getUserDoc().role == 'SUPER_ADMIN')
+        || (request.auth.token != null && request.auth.token.superAdmin == true)
+      );
+    }
+
     function isAdmin() {
       return isSignedIn() && (
-        (userDocExists() && getUserDoc().role == 'ADMIN')
+        isSuperAdmin()
+        || (userDocExists() && getUserDoc().role == 'ADMIN')
         || exists(/databases/$(database)/documents/administrators/$(request.auth.uid))
         || exists(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid))
         || existsAfter(/databases/$(database)/documents/adminAuthorizations/$(request.auth.uid))
@@ -373,6 +382,30 @@ service cloud.firestore {
     match /notifications/{docId} {
       allow read, create, update: if isSignedIn();
       allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 7.1 GLOBAL HOSPITAL NETWORK & MULTI-TENANT ACCESS (Phase 9)
+    // =========================================================================
+    match /hospitals/{hospitalId} {
+      // Public discovery: anyone (including unauthenticated users) can view accredited hospitals
+      allow read: if true;
+      // Institutions can apply for registration
+      allow create: if isSignedIn();
+      // Super Admin manages approvals, codes, and activations
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /hospitalMemberships/{membershipId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn()
+        && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isSuperAdmin();
+    }
+
+    match /superAdmins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
     }
 
     // =========================================================================

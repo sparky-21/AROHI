@@ -2,6 +2,7 @@ package com.arohi.healthcare.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.arohi.healthcare.models.AdminProfile;
 import com.arohi.healthcare.models.AppNotification;
@@ -21,6 +22,9 @@ import com.arohi.healthcare.models.PrescriptionMedicine;
 import com.arohi.healthcare.models.EmergencyCardProfile;
 import com.arohi.healthcare.models.FamilyMember;
 import com.arohi.healthcare.models.HospitalLocation;
+import com.arohi.healthcare.models.Hospital;
+import com.arohi.healthcare.models.HospitalMembership;
+import com.arohi.healthcare.models.SuperAdminAuthorization;
 import com.arohi.healthcare.models.Medicine;
 import com.arohi.healthcare.models.PharmacyOrder;
 import com.arohi.healthcare.models.PharmacyOrderItem;
@@ -79,6 +83,35 @@ public class SessionManager {
     private static final String KEY_PHARMACY_ORDERS_REGISTRY_JSON = "registry_pharmacy_orders_json";
     private static final String KEY_EMERGENCY_PROFILES_REGISTRY_JSON = "registry_emergency_profiles_json";
     private static final String KEY_FAMILY_MEMBERS_REGISTRY_JSON = "registry_family_members_json";
+    public static final String KEY_SELECTED_HOSPITAL_ID = "selected_hospital_id";
+    public static final String KEY_SELECTED_HOSPITAL_CODE = "selected_hospital_code";
+    public static final String KEY_SELECTED_HOSPITAL_NAME = "selected_hospital_name";
+    public static final String KEY_HOSPITALS_REGISTRY_JSON = "registry_hospitals_json";
+    public static final String KEY_MEMBERSHIPS_REGISTRY_JSON = "registry_memberships_json";
+    public static final String KEY_SUPER_ADMINS_REGISTRY_JSON = "registry_super_admins_json";
+
+    public static final String DEFAULT_HOSPITAL_ID = "hosp_arohi_central";
+    public static final String DEFAULT_HOSPITAL_CODE = "AROHI-HQ";
+    public static final String DEFAULT_HOSPITAL_NAME = "AROHI Central Research & General Hospital";
+
+    // Phase 10: Appearance, Language & Settings Keys
+    public static final String KEY_THEME_MODE = "app_theme_mode";
+    public static final String KEY_APP_LANGUAGE = "app_language";
+
+    public static final int THEME_MODE_SYSTEM = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM; // -1
+    public static final int THEME_MODE_LIGHT = AppCompatDelegate.MODE_NIGHT_NO;             // 1
+    public static final int THEME_MODE_DARK = AppCompatDelegate.MODE_NIGHT_YES;             // 2
+
+    public static final String KEY_NOTIF_APPOINTMENTS = "pref_notif_appointments";
+    public static final String KEY_NOTIF_MESSAGES = "pref_notif_messages";
+    public static final String KEY_NOTIF_PRESCRIPTIONS = "pref_notif_prescriptions";
+    public static final String KEY_NOTIF_LAB_REPORTS = "pref_notif_lab_reports";
+    public static final String KEY_NOTIF_ANNOUNCEMENTS = "pref_notif_announcements";
+    public static final String KEY_NOTIF_EMERGENCY = "pref_notif_emergency";
+
+    public static final String KEY_PRIVACY_SHARE_EMERGENCY = "pref_privacy_share_emergency";
+    public static final String KEY_PRIVACY_PUBLIC_COMMUNITY = "pref_privacy_public_community";
+    public static final String KEY_PRIVACY_RECORD_SHARING = "pref_privacy_record_sharing";
 
     private final SharedPreferences prefs;
 
@@ -263,6 +296,8 @@ public class SessionManager {
             obj.put("profileCompleted", account.isProfileCompleted());
             obj.put("address", nonNull(account.getAddress()));
             obj.put("bioNotes", nonNull(account.getBioNotes()));
+            obj.put("hospitalId", nonNull(account.getHospitalId()));
+            obj.put("hospitalCode", nonNull(account.getHospitalCode()));
             obj.put("createdAt", account.getCreatedAt());
             obj.put("updatedAt", account.getUpdatedAt());
             root.put(account.getUid(), obj);
@@ -353,6 +388,8 @@ public class SessionManager {
         acc.setProfileCompleted(o.optBoolean("profileCompleted", false));
         acc.setAddress(o.optString("address", ""));
         acc.setBioNotes(o.optString("bioNotes", ""));
+        acc.setHospitalId(o.optString("hospitalId", DEFAULT_HOSPITAL_ID));
+        acc.setHospitalCode(o.optString("hospitalCode", DEFAULT_HOSPITAL_CODE));
         acc.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
         acc.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
         return acc;
@@ -1950,6 +1987,461 @@ public class SessionManager {
                 1, 1));
 
         return list;
+    }
+
+    // =========================================================================
+    // PHASE 9: MULTI-TENANT HOSPITAL NETWORK & SUPER ADMIN ARCHITECTURE
+    // =========================================================================
+
+    public void setSelectedHospital(String hospitalId, String hospitalCode, String hospitalName) {
+        prefs.edit()
+                .putString(KEY_SELECTED_HOSPITAL_ID, hospitalId)
+                .putString(KEY_SELECTED_HOSPITAL_CODE, hospitalCode != null ? hospitalCode.toUpperCase().trim() : "")
+                .putString(KEY_SELECTED_HOSPITAL_NAME, hospitalName)
+                .apply();
+    }
+
+    public String getSelectedHospitalId() {
+        return prefs.getString(KEY_SELECTED_HOSPITAL_ID, DEFAULT_HOSPITAL_ID);
+    }
+
+    public String getSelectedHospitalCode() {
+        return prefs.getString(KEY_SELECTED_HOSPITAL_CODE, DEFAULT_HOSPITAL_CODE);
+    }
+
+    public String getSelectedHospitalName() {
+        return prefs.getString(KEY_SELECTED_HOSPITAL_NAME, DEFAULT_HOSPITAL_NAME);
+    }
+
+    public boolean hasSelectedHospital() {
+        return prefs.contains(KEY_SELECTED_HOSPITAL_ID);
+    }
+
+    public void clearSelectedHospital() {
+        prefs.edit()
+                .remove(KEY_SELECTED_HOSPITAL_ID)
+                .remove(KEY_SELECTED_HOSPITAL_CODE)
+                .remove(KEY_SELECTED_HOSPITAL_NAME)
+                .apply();
+    }
+
+    public List<Hospital> getRegisteredHospitals() {
+        List<Hospital> hospitals = new ArrayList<>();
+        String json = prefs.getString(KEY_HOSPITALS_REGISTRY_JSON, null);
+        if (json != null && !json.trim().isEmpty()) {
+            try {
+                JSONObject root = new JSONObject(json);
+                Iterator<String> keys = root.keys();
+                while (keys.hasNext()) {
+                    String k = keys.next();
+                    Hospital h = Hospital.fromJson(root.getJSONObject(k));
+                    if (h != null) {
+                        hospitals.add(h);
+                    }
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+
+        if (hospitals.isEmpty()) {
+            hospitals = seedDefaultVerifiedHospitals();
+            for (Hospital h : hospitals) {
+                saveHospital(h);
+            }
+        }
+        return hospitals;
+    }
+
+    public void saveHospital(Hospital hospital) {
+        if (hospital == null || hospital.getHospitalId() == null || hospital.getHospitalId().trim().isEmpty()) {
+            return;
+        }
+        try {
+            JSONObject root = getJsonObject(KEY_HOSPITALS_REGISTRY_JSON);
+            root.put(hospital.getHospitalId(), hospital.toJson());
+            prefs.edit().putString(KEY_HOSPITALS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public Hospital findHospitalById(String hospitalId) {
+        if (hospitalId == null || hospitalId.trim().isEmpty()) return null;
+        for (Hospital h : getRegisteredHospitals()) {
+            if (hospitalId.equalsIgnoreCase(h.getHospitalId())) {
+                return h;
+            }
+        }
+        return null;
+    }
+
+    public Hospital findHospitalByCode(String code) {
+        if (code == null || code.trim().isEmpty()) return null;
+        String normalized = code.trim().toUpperCase();
+        for (Hospital h : getRegisteredHospitals()) {
+            if (h.getHospitalCode() != null && normalized.equalsIgnoreCase(h.getHospitalCode())) {
+                return h;
+            }
+        }
+        return null;
+    }
+
+    public List<Hospital> searchHospitals(String query, String categoryFilter) {
+        List<Hospital> all = getRegisteredHospitals();
+        List<Hospital> results = new ArrayList<>();
+        String q = query != null ? query.trim().toLowerCase() : "";
+
+        for (Hospital h : all) {
+            if ("VERIFIED".equalsIgnoreCase(categoryFilter) && !h.isVerified()) {
+                continue;
+            }
+            if ("EMERGENCY".equalsIgnoreCase(categoryFilter) && (h.getEmergencyHotline() == null || h.getEmergencyHotline().isEmpty())) {
+                continue;
+            }
+            if ("DHAKA".equalsIgnoreCase(categoryFilter) && (h.getCity() == null || !h.getCity().toLowerCase().contains("dhaka"))) {
+                continue;
+            }
+            if ("CHITTAGONG".equalsIgnoreCase(categoryFilter) && (h.getCity() == null || !h.getCity().toLowerCase().contains("chittagong"))) {
+                continue;
+            }
+
+            if (q.isEmpty()) {
+                results.add(h);
+                continue;
+            }
+
+            boolean matchesName = h.getHospitalName() != null && h.getHospitalName().toLowerCase().contains(q);
+            boolean matchesCode = h.getHospitalCode() != null && h.getHospitalCode().toLowerCase().contains(q);
+            boolean matchesCity = h.getCity() != null && h.getCity().toLowerCase().contains(q);
+            boolean matchesAddress = h.getAddress() != null && h.getAddress().toLowerCase().contains(q);
+            boolean matchesDept = false;
+            if (h.getSupportedDepartments() != null) {
+                for (String d : h.getSupportedDepartments()) {
+                    if (d.toLowerCase().contains(q)) {
+                        matchesDept = true;
+                        break;
+                    }
+                }
+            }
+
+            if (matchesName || matchesCode || matchesCity || matchesAddress || matchesDept) {
+                results.add(h);
+            }
+        }
+        return results;
+    }
+
+    private List<Hospital> seedDefaultVerifiedHospitals() {
+        List<Hospital> list = new ArrayList<>();
+
+        // 1. Central Flagship Hospital
+        List<String> arohiDepts = new ArrayList<>();
+        arohiDepts.add("Cardiology");
+        arohiDepts.add("Neurology");
+        arohiDepts.add("Emergency & Trauma");
+        arohiDepts.add("General Medicine");
+        arohiDepts.add("Pediatrics");
+        arohiDepts.add("Orthopedics");
+        arohiDepts.add("Oncology");
+        arohiDepts.add("ICU / Critical Care");
+        arohiDepts.add("Diagnostic Imaging");
+        list.add(new Hospital(
+                DEFAULT_HOSPITAL_ID,
+                DEFAULT_HOSPITAL_CODE,
+                DEFAULT_HOSPITAL_NAME,
+                "Plot 12, Health Sciences Avenue, Dhaka-1212",
+                "Dhaka",
+                "+880 1800-AROHI (27644)",
+                "central@arohi.health",
+                "+880 1800-27644",
+                Hospital.STATUS_ACTIVE,
+                500,
+                arohiDepts,
+                true,
+                "Premier tertiary multi-specialty research and teaching healthcare facility within the AROHI Global Network."
+        ));
+
+        // 2. Square Hospital Dhaka
+        List<String> squareDepts = new ArrayList<>();
+        squareDepts.add("Cardiology");
+        squareDepts.add("Gastroenterology");
+        squareDepts.add("Critical Care");
+        squareDepts.add("General Surgery");
+        squareDepts.add("Emergency Medicine");
+        list.add(new Hospital(
+                "hosp_square_dhk",
+                "SQUARE-01",
+                "Square Hospital Dhaka",
+                "18/F, West Panthapath, Dhaka-1205",
+                "Dhaka",
+                "+880 2 8159457",
+                "info@squarehospital.com",
+                "+880 1713-377775",
+                Hospital.STATUS_ACTIVE,
+                400,
+                squareDepts,
+                true,
+                "Leading JCI-accredited tertiary care hospital delivering world-class comprehensive clinical solutions."
+        ));
+
+        // 3. Apollo Imperial Hospital Chittagong
+        List<String> apolloDepts = new ArrayList<>();
+        apolloDepts.add("Emergency Medicine");
+        apolloDepts.add("Cardiology");
+        apolloDepts.add("Pediatrics");
+        apolloDepts.add("Oncology");
+        apolloDepts.add("Nephrology");
+        list.add(new Hospital(
+                "hosp_apollo_ctg",
+                "APOLLO-CTG",
+                "Apollo Imperial Hospital Chittagong",
+                "Zakir Hossain Road, Pahartali, Chittagong",
+                "Chittagong",
+                "+880 31 658855",
+                "info@apolloimperial.com",
+                "+880 31 658850",
+                Hospital.STATUS_ACTIVE,
+                375,
+                apolloDepts,
+                true,
+                "State-of-the-art multi-disciplinary hospital serving the greater Chittagong coastal division."
+        ));
+
+        // 4. United Hospital Gulshan
+        List<String> unitedDepts = new ArrayList<>();
+        unitedDepts.add("Cardiology");
+        unitedDepts.add("Nephrology");
+        unitedDepts.add("General Surgery");
+        unitedDepts.add("Diagnostic Imaging");
+        unitedDepts.add("Pathology");
+        list.add(new Hospital(
+                "hosp_united_dhk",
+                "UNITED-01",
+                "United Hospital Gulshan",
+                "Plot 15, Road 71, Gulshan-2, Dhaka-1212",
+                "Dhaka",
+                "+880 2 8836000",
+                "info@uhlbd.com",
+                "+880 1914-001234",
+                Hospital.STATUS_ACTIVE,
+                450,
+                unitedDepts,
+                true,
+                "Modern multi-specialty healthcare institution recognized for cardiology, renal transplants, and advanced diagnostics."
+        ));
+
+        return list;
+    }
+
+    // =========================================================================
+    // HOSPITAL MEMBERSHIPS REGISTRY
+    // =========================================================================
+
+    public List<HospitalMembership> getUserMemberships(String userId) {
+        List<HospitalMembership> list = new ArrayList<>();
+        if (userId == null || userId.trim().isEmpty()) return list;
+
+        String json = prefs.getString(KEY_MEMBERSHIPS_REGISTRY_JSON, null);
+        if (json != null && !json.trim().isEmpty()) {
+            try {
+                JSONObject root = new JSONObject(json);
+                Iterator<String> keys = root.keys();
+                while (keys.hasNext()) {
+                    String k = keys.next();
+                    HospitalMembership m = HospitalMembership.fromJson(root.getJSONObject(k));
+                    if (m != null && userId.equalsIgnoreCase(m.getUserId())) {
+                        list.add(m);
+                    }
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+
+        if (list.isEmpty()) {
+            UserAccount acc = getRegisteredAccountByUid(userId);
+            String role = (acc != null && acc.getRole() != null) ? acc.getRole() : "PATIENT";
+            HospitalMembership defaultMem = new HospitalMembership(
+                    "mem_" + userId + "_" + DEFAULT_HOSPITAL_ID,
+                    userId,
+                    DEFAULT_HOSPITAL_ID,
+                    DEFAULT_HOSPITAL_CODE,
+                    role,
+                    HospitalMembership.STATUS_ACTIVE,
+                    "General"
+            );
+            saveHospitalMembership(defaultMem);
+            list.add(defaultMem);
+        }
+
+        return list;
+    }
+
+    public void saveHospitalMembership(HospitalMembership membership) {
+        if (membership == null || membership.getMembershipId() == null || membership.getMembershipId().trim().isEmpty()) {
+            return;
+        }
+        try {
+            JSONObject root = getJsonObject(KEY_MEMBERSHIPS_REGISTRY_JSON);
+            root.put(membership.getMembershipId(), membership.toJson());
+            prefs.edit().putString(KEY_MEMBERSHIPS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public HospitalMembership getActiveMembership(String userId, String hospitalId) {
+        if (userId == null || hospitalId == null) return null;
+        for (HospitalMembership m : getUserMemberships(userId)) {
+            if (hospitalId.equalsIgnoreCase(m.getHospitalId()) && m.isActive()) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    // =========================================================================
+    // SUPER ADMIN AUTHORIZATION REGISTRY
+    // =========================================================================
+
+    public boolean isSuperAdmin(String uid) {
+        if (uid == null || uid.trim().isEmpty()) return false;
+        if ("superadmin_root".equalsIgnoreCase(uid) || "superadmin@arohi.health".equalsIgnoreCase(uid)) {
+            return true;
+        }
+        String json = prefs.getString(KEY_SUPER_ADMINS_REGISTRY_JSON, null);
+        if (json != null && !json.trim().isEmpty()) {
+            try {
+                JSONObject root = new JSONObject(json);
+                if (root.has(uid)) {
+                    SuperAdminAuthorization sa = SuperAdminAuthorization.fromJson(root.getJSONObject(uid));
+                    return sa != null && sa.isActive();
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+        return false;
+    }
+
+    public void saveSuperAdmin(SuperAdminAuthorization admin) {
+        if (admin == null || admin.getSuperAdminUid() == null) return;
+        try {
+            JSONObject root = getJsonObject(KEY_SUPER_ADMINS_REGISTRY_JSON);
+            root.put(admin.getSuperAdminUid(), admin.toJson());
+            prefs.edit().putString(KEY_SUPER_ADMINS_REGISTRY_JSON, root.toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    public List<SuperAdminAuthorization> getAllSuperAdmins() {
+        List<SuperAdminAuthorization> list = new ArrayList<>();
+        String json = prefs.getString(KEY_SUPER_ADMINS_REGISTRY_JSON, null);
+        if (json != null && !json.trim().isEmpty()) {
+            try {
+                JSONObject root = new JSONObject(json);
+                Iterator<String> keys = root.keys();
+                while (keys.hasNext()) {
+                    String k = keys.next();
+                    SuperAdminAuthorization sa = SuperAdminAuthorization.fromJson(root.getJSONObject(k));
+                    if (sa != null) {
+                        list.add(sa);
+                    }
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+        return list;
+    }
+
+    // =========================================================================
+    // BACKWARD COMPATIBILITY & DATA MIGRATION
+    // =========================================================================
+
+    public void migrateLegacyDataToHospital(String targetHospitalId, String targetHospitalCode) {
+        String hId = targetHospitalId != null ? targetHospitalId : DEFAULT_HOSPITAL_ID;
+        String hCode = targetHospitalCode != null ? targetHospitalCode : DEFAULT_HOSPITAL_CODE;
+
+        for (UserAccount acc : getAllRegisteredAccounts()) {
+            if (acc.getHospitalId() == null || acc.getHospitalId().trim().isEmpty() || "hosp_arohi_central".equals(acc.getHospitalId())) {
+                acc.setHospitalId(hId);
+                acc.setHospitalCode(hCode);
+                upsertAccountInRegistry(acc);
+            }
+        }
+    }
+
+    // =========================================================================
+    // PHASE 10: SETTINGS, DARK THEME, LOCALIZATION & PRIVACY
+    // =========================================================================
+
+    public int getThemeMode() {
+        return prefs.getInt(KEY_THEME_MODE, THEME_MODE_SYSTEM);
+    }
+
+    public void setThemeMode(int themeMode) {
+        prefs.edit().putInt(KEY_THEME_MODE, themeMode).apply();
+        AppCompatDelegate.setDefaultNightMode(themeMode);
+    }
+
+    public void applySavedTheme() {
+        AppCompatDelegate.setDefaultNightMode(getThemeMode());
+    }
+
+    public String getAppLanguage() {
+        return prefs.getString(KEY_APP_LANGUAGE, LocaleHelper.LANGUAGE_ENGLISH);
+    }
+
+    public void setAppLanguage(String languageCode) {
+        prefs.edit().putString(KEY_APP_LANGUAGE, languageCode).apply();
+    }
+
+    public void applySavedLocale(Context context) {
+        LocaleHelper.setLocale(context, getAppLanguage());
+    }
+
+    // Notification Preferences
+    public boolean isNotificationEnabled(String categoryKey) {
+        return prefs.getBoolean(categoryKey, true);
+    }
+
+    public void setNotificationEnabled(String categoryKey, boolean enabled) {
+        prefs.edit().putBoolean(categoryKey, enabled).apply();
+    }
+
+    public boolean isAppointmentsNotifEnabled() { return isNotificationEnabled(KEY_NOTIF_APPOINTMENTS); }
+    public boolean isMessagesNotifEnabled() { return isNotificationEnabled(KEY_NOTIF_MESSAGES); }
+    public boolean isPrescriptionsNotifEnabled() { return isNotificationEnabled(KEY_NOTIF_PRESCRIPTIONS); }
+    public boolean isLabReportsNotifEnabled() { return isNotificationEnabled(KEY_NOTIF_LAB_REPORTS); }
+    public boolean isAnnouncementsNotifEnabled() { return isNotificationEnabled(KEY_NOTIF_ANNOUNCEMENTS); }
+    public boolean isEmergencyNotifEnabled() { return isNotificationEnabled(KEY_NOTIF_EMERGENCY); }
+
+    // Privacy Preferences
+    public boolean isPrivacyOptionEnabled(String key) {
+        return prefs.getBoolean(key, true);
+    }
+
+    public void setPrivacyOptionEnabled(String key, boolean enabled) {
+        prefs.edit().putBoolean(key, enabled).apply();
+    }
+
+    public boolean isEmergencyProfileSharingEnabled() { return isPrivacyOptionEnabled(KEY_PRIVACY_SHARE_EMERGENCY); }
+    public boolean isPublicCommunityFeedEnabled() { return isPrivacyOptionEnabled(KEY_PRIVACY_PUBLIC_COMMUNITY); }
+    public boolean isMedicalRecordSharingEnabled() { return isPrivacyOptionEnabled(KEY_PRIVACY_RECORD_SHARING); }
+
+    // Account Management
+    public boolean changeLocalPassword(String email, String oldPassword, String newPassword) {
+        if (!verifyLocalSandboxPassword(email, oldPassword)) {
+            return false;
+        }
+        saveLocalSandboxPasswordHash(email, newPassword);
+        return true;
+    }
+
+    public void requestAccountDeletion(String uid, String reason) {
+        UserAccount account = getRegisteredAccountByUid(uid);
+        if (account != null) {
+            account.setVerificationStatus("DELETION_REQUESTED");
+            account.setBioNotes("DELETION REQUESTED: " + (reason != null ? reason : "User requested account removal"));
+            account.setUpdatedAt(System.currentTimeMillis());
+            upsertAccountInRegistry(account);
+        }
     }
 
     private String normalizeEmailKey(String email) {

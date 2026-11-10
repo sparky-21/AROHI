@@ -37,6 +37,8 @@ import com.arohi.healthcare.fragments.PharmacyFragment;
 import com.arohi.healthcare.fragments.RoleSectionInfoFragment;
 import com.arohi.healthcare.fragments.UnifiedCalendarFragment;
 import com.arohi.healthcare.models.ConversationThread;
+import com.arohi.healthcare.models.Hospital;
+import com.arohi.healthcare.models.HospitalMembership;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
@@ -142,7 +144,10 @@ public class RolePortalActivity extends AppCompatActivity {
         binding.tvPortalHeaderTitle.setText(portalTitle);
         String arohiId = account.getArohiId() != null ? account.getArohiId() : "AROHI-USER";
         String name = account.getFullName() != null ? account.getFullName() : "";
-        binding.tvPortalHeaderSub.setText("ID: " + arohiId + (name.isEmpty() ? "" : " • " + name));
+        String hospCode = sessionManager.getSelectedHospitalCode();
+        binding.tvPortalHeaderSub.setText("[" + (hospCode != null ? hospCode : "AROHI-HQ") + "] " + arohiId + (name.isEmpty() ? "" : " • " + name));
+
+        binding.topPortalBar.setOnClickListener(v -> showHospitalSwitcherDialog());
 
         binding.tvPortalStatusBadge.setText(status.getKey());
         if (status == VerificationStatus.VERIFIED) {
@@ -414,6 +419,54 @@ public class RolePortalActivity extends AppCompatActivity {
             unreadConversationsListener = null;
         }
         super.onDestroy();
+    }
+
+    private void showHospitalSwitcherDialog() {
+        if (currentAccount == null) return;
+        List<HospitalMembership> memberships = sessionManager.getUserMemberships(currentAccount.getUid());
+        String currentHospId = sessionManager.getSelectedHospitalId();
+
+        List<String> options = new java.util.ArrayList<>();
+        List<Hospital> matchingHospitals = new java.util.ArrayList<>();
+
+        for (HospitalMembership m : memberships) {
+            Hospital h = sessionManager.findHospitalById(m.getHospitalId());
+            if (h != null) {
+                boolean isCurrent = h.getHospitalId().equalsIgnoreCase(currentHospId);
+                options.add((isCurrent ? "● ACTIVE: " : "○ SWITCH TO: ") + h.getHospitalName() + " [" + h.getHospitalCode() + "] • Role: " + m.getRole());
+                matchingHospitals.add(h);
+            }
+        }
+
+        options.add("🌐 Explore Global Network Directory");
+        if (sessionManager.isSuperAdmin(currentAccount.getUid())) {
+            options.add("⚙️ Super Admin Hospital Governance");
+        }
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("AROHI Multi-Hospital Network Switcher")
+                .setItems(options.toArray(new String[0]), (dialog, which) -> {
+                    if (which < matchingHospitals.size()) {
+                        Hospital selected = matchingHospitals.get(which);
+                        sessionManager.setSelectedHospital(selected.getHospitalId(), selected.getHospitalCode(), selected.getHospitalName());
+                        HospitalMembership activeMem = sessionManager.getActiveMembership(currentAccount.getUid(), selected.getHospitalId());
+                        if (activeMem != null && activeMem.getRole() != null) {
+                            currentAccount.setRole(activeMem.getRole());
+                            currentAccount.setHospitalId(selected.getHospitalId());
+                            currentAccount.setHospitalCode(selected.getHospitalCode());
+                            sessionManager.saveUserSession(currentAccount);
+                        }
+                        setupTopHeader(currentAccount);
+                        setupBottomNavigationForRole(currentAccount.getUserRoleEnum());
+                        switchToTab(defaultTabId);
+                        android.widget.Toast.makeText(this, "Switched facility to: " + selected.getHospitalName(), android.widget.Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent intent = new Intent(this, HospitalDiscoveryActivity.class);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     public void performLogout() {

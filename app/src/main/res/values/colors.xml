@@ -47,4 +47,12 @@
     <color name="arohi_amber_warning">#D99B45</color>
     <color name="arohi_crimson_alert">#C94B4B</color>
     <color name="arohi_info_blue">#3B7A57</color>
+
+    <!-- Phase 9 Multi-Tenant Color Aliases -->
+    <color name="arohi_moss_green">#557B52</color>
+    <color name="arohi_ivory_cream">#F7F8F3</color>
+    <color name="arohi_card_bg">#FFFFFF</color>
+    <color name="arohi_card_stroke">#D5E0CE</color>
+    <color name="arohi_text_primary">#26332A</color>
+    <color name="arohi_text_secondary">#778276</color>
 </resources>

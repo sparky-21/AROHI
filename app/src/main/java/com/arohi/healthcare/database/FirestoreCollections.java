@@ -18,6 +18,11 @@ public final class FirestoreCollections {
     public static final String ADMIN_AUTHORIZATIONS = "adminAuthorizations";
     public static final String AUDIT_LOGS = "auditLogs";
 
+    // Global Hospital Network & Multi-Tenant Architecture (Phase 9)
+    public static final String HOSPITALS = "hospitals";
+    public static final String HOSPITAL_MEMBERSHIPS = "hospitalMemberships";
+    public static final String SUPER_ADMINS = "superAdmins";
+
     // Connected Clinical Workflow Collections (Prepared for Subsequent Phases)
     public static final String DOCTOR_REQUESTS = "doctorRequests";
     public static final String CONNECTIONS = "connections";
