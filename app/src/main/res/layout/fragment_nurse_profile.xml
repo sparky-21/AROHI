@@ -25,8 +25,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-black"
-                android:text="Nurse Professional Profile"
-                android:textColor="@color/arohi_pure_white"
+                android:text="@string/nurse_profile_title"
+                android:textColor="@color/white"
                 android:textSize="20sp" />
 
             <TextView
@@ -45,8 +45,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:fontFamily="sans-serif"
-                android:text="BNMC Nursing License is locked once verified by Hospital Administration."
-                android:textColor="@color/arohi_sage_mist"
+                android:text="@string/nurse_profile_lock_note"
+                android:textColor="@color/soft_sage"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/arohi_pure_white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
             app:strokeColor="@color/arohi_border_subtle"
@@ -71,7 +71,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-bold"
-                    android:text="Nursing Credentials &amp; Ward Roster"
+                    android:text="@string/nurse_profile_section"
                     android:textColor="@color/arohi_charcoal_text"
                     android:textSize="16sp" />
 
@@ -81,7 +81,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Nurse Full Name">
+                    android:hint="@string/label_nurse_full_name">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNurseFullName"
@@ -96,7 +96,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Mobile Number"
+                    android:hint="@string/label_phone"
                     app:helperText="e.g., 017XXXXXXXX">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -112,7 +112,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="BNMC / Nursing License Number"
+                    android:hint="@string/label_bnmc_number"
                     app:helperText="Subject to Hospital Authority verification">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -128,7 +128,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Nursing Qualification"
+                    android:hint="@string/label_nursing_qualification"
                     app:helperText="e.g., B.Sc in Nursing, Diploma in Nursing">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -144,7 +144,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Preferred Ward / Unit"
+                    android:hint="@string/label_pref_ward_unit"
                     app:helperText="e.g., ICU, CCU, General Medicine, Surgical Ward">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -160,7 +160,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Currently Assigned Ward (Admin Managed)"
+                    android:hint="@string/label_assigned_ward_admin"
                     app:helperText="Assigned by Hospital Administration">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -178,7 +178,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Duty Shift Preference"
+                    android:hint="@string/label_duty_shift_pref"
                     app:helperText="e.g., Morning (8AM–2PM), Evening (2PM–8PM), Night">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -194,7 +194,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Residential Address">
+                    android:hint="@string/label_residential_address">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNurseAddress"
@@ -209,7 +209,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Clinical Skills &amp; Certifications">
+                    android:hint="@string/label_clinical_skills">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNurseBioNotes"
@@ -234,9 +234,9 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="16dp"
                     android:fontFamily="sans-serif-bold"
-                    android:text="Save Nurse Profile"
+                    android:text="@string/action_save_nurse_profile"
                     android:textAllCaps="false"
-                    android:textColor="@color/arohi_pure_white"
+                    android:textColor="@color/white"
                     app:backgroundTint="@color/arohi_forest_primary"
                     app:cornerRadius="12dp" />
 
@@ -247,7 +247,7 @@
                     android:layout_height="48dp"
                     android:layout_marginTop="10dp"
                     android:fontFamily="sans-serif-bold"
-                    android:text="Sign Out of AROHI"
+                    android:text="@string/action_sign_out_arohi"
                     android:textAllCaps="false"
                     android:textColor="@color/arohi_crimson_alert"
                     app:cornerRadius="12dp"

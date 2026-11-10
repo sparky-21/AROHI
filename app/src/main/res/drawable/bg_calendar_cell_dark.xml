@@ -3,7 +3,7 @@
     <!-- Base Warm Ivory / Soft Moss Surface -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#F7F8F4" />
+            <solid android:color="@color/surface_background" />
         </shape>
     </item>
     <!-- Subtle Moss Green Grid Border -->
@@ -13,7 +13,7 @@
         <shape android:shape="rectangle">
             <stroke
                 android:width="0.5dp"
-                android:color="#D5E0CE" />
+                android:color="@color/border_stroke" />
         </shape>
     </item>
 </layer-list>

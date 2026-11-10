@@ -61,6 +61,14 @@ public class PatientProfileFragment extends Fragment {
         }
 
         binding.btnSavePatientProfile.setOnClickListener(v -> saveProfile());
+        binding.btnPatientOpenSettings.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(com.arohi.healthcare.R.id.fragmentContainer, new SettingsFragment())
+                        .addToBackStack("settings")
+                        .commit();
+            }
+        });
         binding.btnPatientLogout.setOnClickListener(v -> {
             if (getActivity() instanceof RolePortalActivity) {
                 ((RolePortalActivity) getActivity()).performLogout();

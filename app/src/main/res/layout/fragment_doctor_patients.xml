@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="BMDC VERIFICATION REQUIRED FOR CLINICAL ACTIONS"
+            android:text="@string/doc_verify_req_title"
             android:textColor="@color/arohi_amber_warning"
             android:textSize="12sp" />
 
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:fontFamily="sans-serif"
-            android:text="Your account is awaiting Hospital Administrator approval. Accepting/declining consultation requests and viewing patient clinical profiles unlock once VERIFIED."
+            android:text="@string/doc_verify_req_desc"
             android:textColor="@color/arohi_charcoal_text"
             android:textSize="12sp" />
     </LinearLayout>
@@ -56,7 +56,7 @@
             android:maxLines="1"
             android:minWidth="0dp"
             android:paddingHorizontal="6dp"
-            android:text="Incoming Requests"
+            android:text="@string/tab_incoming_requests"
             android:textAllCaps="false"
             android:textSize="12sp"
             app:cornerRadius="10dp" />
@@ -72,7 +72,7 @@
             android:maxLines="1"
             android:minWidth="0dp"
             android:paddingHorizontal="6dp"
-            android:text="Accepted Patients"
+            android:text="@string/doc_card_accepted_pats"
             android:textAllCaps="false"
             android:textSize="12sp"
             app:cornerRadius="10dp" />
@@ -84,7 +84,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-medium"
-        android:text="Review incoming patient consultation requests"
+        android:text="@string/doc_review_incoming_sub"
         android:textColor="@color/arohi_slate_muted"
         android:textSize="12sp" />
 
@@ -97,7 +97,7 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:padding="24dp"
-        android:text="No consultation requests found."
+        android:text="@string/doc_no_requests"
         android:textColor="@color/arohi_slate_muted"
         android:textSize="13sp"
         android:visibility="gone" />

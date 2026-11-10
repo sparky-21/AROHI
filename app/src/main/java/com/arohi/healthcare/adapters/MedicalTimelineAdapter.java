@@ -86,7 +86,7 @@ public class MedicalTimelineAdapter extends RecyclerView.Adapter<MedicalTimeline
                 case MedicalRecordEntry.CATEGORY_CONSULTATION:
                     binding.tvTimelineCategoryIcon.setText("App");
                     binding.tvTimelineCategoryIcon.setTextColor(
-                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.deep_forest_green));
+                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.accent_heading));
                     break;
                 case MedicalRecordEntry.CATEGORY_OPERATION:
                     binding.tvTimelineCategoryIcon.setText("OT");
@@ -96,7 +96,7 @@ public class MedicalTimelineAdapter extends RecyclerView.Adapter<MedicalTimeline
                 case MedicalRecordEntry.CATEGORY_ADMISSION:
                     binding.tvTimelineCategoryIcon.setText("Bed");
                     binding.tvTimelineCategoryIcon.setTextColor(
-                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.deep_forest_green));
+                            ContextCompat.getColor(binding.getRoot().getContext(), R.color.accent_heading));
                     break;
                 case MedicalRecordEntry.CATEGORY_VITALS:
                     binding.tvTimelineCategoryIcon.setText("Vit");

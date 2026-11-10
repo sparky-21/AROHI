@@ -44,7 +44,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Interactive Hospital Map"
+                    android:text="@string/map_title"
                     android:textColor="@color/white"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Indoor Navigation &amp; Department Directory"
+                    android:text="@string/map_sub"
                     android:textColor="@color/soft_sage"
                     android:textSize="11.5sp" />
             </LinearLayout>
@@ -70,7 +70,7 @@
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
                 android:text="🗺️ See Google Map"
-                android:textColor="@color/deep_forest_green"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="🗺️ Interactive Map Simulation: Live Indoor Positioning simulation for AROHI Central Hospital. Tap any department to preview location and route instructions."
-                android:textColor="@color/deep_forest_green"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -113,7 +113,7 @@
                 android:id="@+id/etSearchDepartment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Search Emergency, ICU, OT, Laboratory, Pharmacy, Wards..."
+                android:hint="@string/hint_search_map"
                 android:imeOptions="actionSearch"
                 android:inputType="text"
                 android:paddingVertical="10dp"
@@ -140,35 +140,35 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Ground Floor" />
+                    android:text="@string/floor_ground" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFloor1"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Floor 1" />
+                    android:text="@string/floor_1" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFloor2"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Floor 2 (Wards)" />
+                    android:text="@string/floor_2_wards" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFloor3"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Floor 3 (ICU/OT)" />
+                    android:text="@string/floor_3_icu" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFloorBasement"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Basement" />
+                    android:text="@string/floor_basement" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
@@ -178,7 +178,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="10dp"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:strokeColor="@color/border_stroke"
@@ -235,7 +235,7 @@
                         android:gravity="center"
                         android:padding="6dp"
                         android:text="West Wing\nEmergency"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -249,7 +249,7 @@
                         android:gravity="center"
                         android:padding="6dp"
                         android:text="Central Atrium\nReception &amp; Lobby"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -263,7 +263,7 @@
                         android:gravity="center"
                         android:padding="6dp"
                         android:text="East Wing\nPharmacy"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -298,7 +298,7 @@
                         android:gravity="center"
                         android:padding="6dp"
                         android:text="North Wing\nRadiology"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -312,7 +312,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:strokeColor="@color/border_focused"
@@ -347,7 +347,7 @@
                         android:background="@drawable/bg_badge_forest"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="3dp"
-                        android:text="Ground Floor"
+                        android:text="@string/floor_ground"
                         android:textColor="@color/white"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -375,7 +375,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🚶 Step-by-Step Route Directions:"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -403,7 +403,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Hours: 24 Hours / 7 Days"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -424,7 +424,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="16dp"
-            android:text="Departments on this Floor"
+            android:text="@string/map_departments_on_floor"
             android:textColor="@color/text_primary"
             android:textSize="15sp"
             android:textStyle="bold" />

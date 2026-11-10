@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Family Health Profiles"
+                android:text="@string/family_title"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -44,7 +44,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Authorized Family Care Coordination"
+                android:text="@string/family_sub"
                 android:textColor="@color/soft_sage"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:backgroundTint="@color/primary_moss_green"
-            android:text="+ Add"
+            android:text="@string/action_add_plus"
             android:textColor="@color/white"
             android:textSize="12sp" />
     </LinearLayout>
@@ -91,8 +91,8 @@
                 android:layout_marginStart="10dp"
                 android:layout_weight="1"
                 android:lineSpacingExtra="2dp"
-                android:text="Clinical Privacy Protection: Family profiles enable appointment booking and care reminders for dependents. They DO NOT grant automatic access to confidential medical records or prescriptions."
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/family_privacy_banner"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -111,7 +111,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No Family Profiles Added"
+            android:text="@string/family_empty_title"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -121,7 +121,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:gravity="center"
-            android:text="Add authorized family members (Spouse, Child, Parent) to book doctor consultations and manage care reminders on their behalf."
+            android:text="@string/family_empty_sub"
             android:textColor="@color/text_muted"
             android:textSize="13sp" />
 
@@ -132,7 +132,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:backgroundTint="@color/deep_forest_green"
-            android:text="Add Family Member"
+            android:text="@string/action_add_family_member"
             android:textColor="@color/white" />
     </LinearLayout>
 

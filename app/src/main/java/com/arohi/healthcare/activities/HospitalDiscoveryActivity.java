@@ -34,7 +34,7 @@ import java.util.List;
  * Allows users to discover hospitals, lookup by unique code, explore services,
  * view emergency hotlines without logging in, and select an active hospital before authentication.
  */
-public class HospitalDiscoveryActivity extends AppCompatActivity implements HospitalAdapter.OnHospitalActionListener {
+public class HospitalDiscoveryActivity extends BaseActivity implements HospitalAdapter.OnHospitalActionListener {
 
     private ActivityHospitalDiscoveryBinding binding;
     private HospitalNetworkRepository repository;
@@ -159,11 +159,11 @@ public class HospitalDiscoveryActivity extends AppCompatActivity implements Hosp
         if (hospitals == null || hospitals.isEmpty()) {
             binding.rvHospitals.setVisibility(View.GONE);
             binding.layoutEmptyHospitals.setVisibility(View.VISIBLE);
-            binding.tvDiscoveryResultsCount.setText("Available Hospitals (0)");
+            binding.tvDiscoveryResultsCount.setText(getString(R.string.discovery_available_count, 0));
         } else {
             binding.rvHospitals.setVisibility(View.VISIBLE);
             binding.layoutEmptyHospitals.setVisibility(View.GONE);
-            binding.tvDiscoveryResultsCount.setText("Available Hospitals (" + hospitals.size() + ")");
+            binding.tvDiscoveryResultsCount.setText(getString(R.string.discovery_available_count, hospitals.size()));
             adapter.submitList(hospitals);
         }
     }
@@ -175,15 +175,15 @@ public class HospitalDiscoveryActivity extends AppCompatActivity implements Hosp
         dialogBinding.dialogHospitalName.setText(hospital.getHospitalName());
         dialogBinding.dialogHospitalCity.setText(hospital.getCity() != null ? hospital.getCity() : "Bangladesh");
         dialogBinding.dialogHospitalCode.setText(hospital.getHospitalCode());
-        dialogBinding.dialogBedCapacity.setText("🛏️ " + hospital.getTotalBeds() + " Operational Beds");
+        dialogBinding.dialogBedCapacity.setText(getString(R.string.label_operational_beds, hospital.getTotalBeds()));
         dialogBinding.dialogDescription.setText(hospital.getDescription() != null ? hospital.getDescription() : "Comprehensive healthcare services within the AROHI Network.");
         dialogBinding.dialogAddress.setText(hospital.getAddress() != null ? hospital.getAddress() : "Address on file.");
 
         if (hospital.isVerified()) {
-            dialogBinding.dialogVerificationBadge.setText("✓ ACCREDITED INSTITUTION");
+            dialogBinding.dialogVerificationBadge.setText(getString(R.string.badge_accredited_institution));
             dialogBinding.dialogVerificationBadge.setVisibility(View.VISIBLE);
         } else {
-            dialogBinding.dialogVerificationBadge.setText("PENDING ACCREDITATION");
+            dialogBinding.dialogVerificationBadge.setText(getString(R.string.badge_pending_accreditation));
             dialogBinding.dialogVerificationBadge.setVisibility(View.VISIBLE);
         }
 
@@ -194,7 +194,7 @@ public class HospitalDiscoveryActivity extends AppCompatActivity implements Hosp
                 startActivity(dialIntent);
             });
         } else {
-            dialogBinding.dialogHotline.setText("Emergency hotline not specified");
+            dialogBinding.dialogHotline.setText(getString(R.string.label_hotline_missing));
             dialogBinding.btnCallHotline.setEnabled(false);
         }
 

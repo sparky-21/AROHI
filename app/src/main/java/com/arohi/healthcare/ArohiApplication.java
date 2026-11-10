@@ -4,10 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+import com.arohi.healthcare.utils.SessionManager;
+
 /**
  * Custom Application class for AROHI Healthcare.
  * Installs a robust global uncaught exception interceptor to prevent silent abrupt termination
  * ("app being off"), persist diagnostic logs, and protect background services.
+ * Automatically restores user's persisted Appearance (Light/Dark/System) and Language (English/Bangla).
  */
 public class ArohiApplication extends Application {
 
@@ -19,9 +22,28 @@ public class ArohiApplication extends Application {
     }
 
     @Override
+    protected void attachBaseContext(Context base) {
+        try {
+            SessionManager sm = new SessionManager(base);
+            super.attachBaseContext(com.arohi.healthcare.utils.LocaleHelper.wrapContext(base, sm.getAppLanguage()));
+        } catch (Exception e) {
+            super.attachBaseContext(base);
+        }
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
+
+        // Restore saved Theme & Language preferences (Phase 10)
+        try {
+            SessionManager sessionManager = new SessionManager(this);
+            sessionManager.applySavedTheme();
+            sessionManager.applySavedLocale(this);
+        } catch (Exception e) {
+            Log.w(TAG, "Failed initializing theme or locale on application start: " + e.getMessage());
+        }
 
         // Global Uncaught Exception Handler
         final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();

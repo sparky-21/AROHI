@@ -16,7 +16,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * 4. Patient Registration Screen
  * Validates personal and emergency health details and creates a verified Patient identity.
  */
-public class PatientRegistrationActivity extends AppCompatActivity {
+public class PatientRegistrationActivity extends BaseActivity {
 
     private ActivityPatientRegistrationBinding binding;
     private AuthRepository authRepository;

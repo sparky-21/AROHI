@@ -13,7 +13,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * 9. Forgot Password Screen
  * Dispatches a secure password reset email via Firebase Authentication.
  */
-public class ForgotPasswordActivity extends AppCompatActivity {
+public class ForgotPasswordActivity extends BaseActivity {
 
     private ActivityForgotPasswordBinding binding;
     private AuthRepository authRepository;

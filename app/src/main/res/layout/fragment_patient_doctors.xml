@@ -27,7 +27,7 @@
             android:maxLines="1"
             android:minWidth="0dp"
             android:paddingHorizontal="4dp"
-            android:text="Find Doctors"
+            android:text="@string/service_find_doctors"
             android:textAllCaps="false"
             android:textSize="11sp"
             app:cornerRadius="10dp" />
@@ -44,7 +44,7 @@
             android:maxLines="1"
             android:minWidth="0dp"
             android:paddingHorizontal="4dp"
-            android:text="My Requests"
+            android:text="@string/tab_my_requests"
             android:textAllCaps="false"
             android:textSize="11sp"
             app:cornerRadius="10dp" />
@@ -60,7 +60,7 @@
             android:maxLines="1"
             android:minWidth="0dp"
             android:paddingHorizontal="4dp"
-            android:text="Secure Chat"
+            android:text="@string/tab_secure_chat"
             android:textAllCaps="false"
             android:textSize="11sp"
             app:cornerRadius="10dp" />
@@ -83,7 +83,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search doctor by name, specialty, or qualification">
+            android:hint="@string/hint_search_doctors">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etSearchDoctor"
@@ -111,7 +111,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="All Specialties"
+                    android:text="@string/chip_all_specialties"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -122,7 +122,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="Medicine"
+                    android:text="@string/spec_medicine"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -133,7 +133,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="Cardiology"
+                    android:text="@string/spec_cardiology"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -144,7 +144,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="Neurology"
+                    android:text="@string/spec_neurology"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -155,7 +155,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="Pediatrics"
+                    android:text="@string/spec_pediatrics"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -166,7 +166,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="Orthopedics"
+                    android:text="@string/spec_orthopedics"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -177,7 +177,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginEnd="6dp"
-                    android:text="Gynecology"
+                    android:text="@string/spec_gynecology"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -187,7 +187,7 @@
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:text="Surgery"
+                    android:text="@string/spec_surgery"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     app:cornerRadius="10dp" />
@@ -200,7 +200,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:fontFamily="sans-serif-medium"
-            android:text="Showing verified specialists from Cloud Firestore"
+            android:text="@string/doctors_showing_verified"
             android:textColor="@color/arohi_slate_muted"
             android:textSize="12sp" />
 
@@ -213,7 +213,7 @@
             android:fontFamily="sans-serif"
             android:gravity="center"
             android:padding="24dp"
-            android:text="No verified doctors match your current filter. Only doctors approved by Hospital Administration appear in Patient Discovery."
+            android:text="@string/doctors_empty_filter"
             android:textColor="@color/arohi_slate_muted"
             android:textSize="13sp"
             android:visibility="gone" />
@@ -255,7 +255,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="6dp"
-                android:text="All"
+                android:text="@string/filter_all"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 app:cornerRadius="10dp" />
@@ -272,7 +272,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="6dp"
-                android:text="Pending"
+                android:text="@string/filter_pending"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 app:cornerRadius="10dp" />
@@ -288,7 +288,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="6dp"
-                android:text="Accepted"
+                android:text="@string/filter_accepted"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 app:cornerRadius="10dp" />
@@ -339,7 +339,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-bold"
-                android:text="Authorized Doctor Conversations"
+                android:text="@string/chat_authorized_convs"
                 android:textColor="@color/arohi_charcoal_text"
                 android:textSize="14sp" />
 
@@ -348,7 +348,7 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:text="Alerts"
+                android:text="@string/btn_alerts"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 app:cornerRadius="10dp" />
@@ -363,7 +363,7 @@
             android:fontFamily="sans-serif"
             android:gravity="center"
             android:padding="24dp"
-            android:text="Secure messaging becomes available only after a verified doctor accepts your consultation request."
+            android:text="@string/chat_empty_notice"
             android:textColor="@color/arohi_slate_muted"
             android:textSize="13sp"
             android:visibility="gone" />

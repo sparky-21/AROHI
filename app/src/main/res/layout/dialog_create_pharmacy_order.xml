@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="20dp"
-        android:background="@color/white">
+        android:background="@color/surface_card">
 
         <!-- Title -->
         <TextView
@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Place Pharmacy Order"
-            android:textColor="@color/deep_forest_green"
+            android:textColor="@color/accent_heading"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -129,21 +129,21 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="Hospital Counter Pickup (Ground Floor, Room G-12)"
-                android:textSize="12sp" />
+                android:textSize="12sp"  android:textColor="@color/text_primary" />
 
             <RadioButton
                 android:id="@+id/rbWard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Inpatient Ward Bedside Delivery"
-                android:textSize="12sp" />
+                android:textSize="12sp"  android:textColor="@color/text_primary" />
 
             <RadioButton
                 android:id="@+id/rbHome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Home Delivery"
-                android:textSize="12sp" />
+                android:textSize="12sp"  android:textColor="@color/text_primary" />
         </RadioGroup>
 
         <!-- Address / Notes Input -->
@@ -187,7 +187,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="৳ 12.00"
-                android:textColor="@color/deep_forest_green"
+                android:textColor="@color/accent_heading"
                 android:textSize="17sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -207,8 +207,8 @@
                 android:layout_height="42dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Cancel"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/action_cancel"
+                android:textColor="@color/accent_heading"
                 app:cornerRadius="21dp"
                 app:strokeColor="@color/border_stroke"
                 app:strokeWidth="1dp" />

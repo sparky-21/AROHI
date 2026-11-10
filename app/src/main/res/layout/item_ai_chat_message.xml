@@ -67,8 +67,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="AROHI AI Assistant"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/ai_title"
+                android:textColor="@color/accent_heading"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 

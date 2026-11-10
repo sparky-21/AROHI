@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="AROHI Smart E-Pharmacy"
+                android:text="@string/pharmacy_title"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -55,7 +55,7 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="+ Add"
+            android:text="@string/action_add_plus"
             android:textColor="@color/white"
             android:textSize="11sp"
             app:strokeColor="@color/soft_sage"
@@ -69,7 +69,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp"
-        android:background="@color/white">
+        android:background="@color/surface_card">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTabCatalogue"
@@ -78,7 +78,7 @@
             android:layout_height="40dp"
             android:layout_weight="1"
             android:backgroundTint="@color/deep_forest_green"
-            android:text="Medicine Catalogue"
+            android:text="@string/tab_medicine_catalogue"
             android:textColor="@color/white"
             android:textSize="12sp" />
 
@@ -89,8 +89,8 @@
             android:layout_height="40dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="Pharmacy Orders"
-            android:textColor="@color/deep_forest_green"
+            android:text="@string/tab_pharmacy_orders"
+            android:textColor="@color/accent_heading"
             android:textSize="12sp"
             app:strokeColor="@color/border_focused" />
     </LinearLayout>
@@ -124,15 +124,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Order From Doctor's Prescription"
-                    android:textColor="@color/deep_forest_green"
+                    android:text="@string/pharmacy_rx_order_title"
+                    android:textColor="@color/accent_heading"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Fulfill verified digital prescriptions directly with 1-click."
+                    android:text="@string/pharmacy_rx_order_sub"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -143,7 +143,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:backgroundTint="@color/deep_forest_green"
-                android:text="Select Rx"
+                android:text="@string/action_select_rx"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -168,7 +168,7 @@
             android:id="@+id/etSearchMedicine"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search medicine name, generic, or category..."
+            android:hint="@string/hint_search_medicine"
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:paddingVertical="10dp"
@@ -196,56 +196,56 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="All" />
+                android:text="@string/filter_all" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAnalgesics"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Analgesics" />
+                android:text="@string/cat_analgesics" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAntibiotics"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Antibiotics" />
+                android:text="@string/cat_antibiotics" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipCardio"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cardiovascular" />
+                android:text="@string/cat_cardiovascular" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipGI"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gastrointestinal" />
+                android:text="@string/cat_gastrointestinal" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipRespiratory"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Respiratory" />
+                android:text="@string/cat_respiratory" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipDiabetes"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Diabetes" />
+                android:text="@string/cat_diabetes" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipVitamins"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Vitamins" />
+                android:text="@string/cat_vitamins" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
@@ -264,7 +264,7 @@
             android:id="@+id/tvEmptyTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No Medicines Found"
+            android:text="@string/pharmacy_empty_title"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -275,7 +275,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:gravity="center"
-            android:text="Try searching with a different brand or generic medicine name."
+            android:text="@string/pharmacy_empty_sub"
             android:textColor="@color/text_muted"
             android:textSize="13sp" />
     </LinearLayout>

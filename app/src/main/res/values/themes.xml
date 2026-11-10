@@ -30,6 +30,12 @@
         <item name="colorOnSurfaceVariant">@color/text_secondary</item>
         <item name="colorOutline">@color/border_stroke</item>
 
+        <!-- Global Typography Defaults -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_muted</item>
+        <item name="editTextColor">@color/text_primary</item>
+
         <!-- System Bars -->
         <item name="android:statusBarColor">@color/deep_forest_green</item>
         <item name="android:navigationBarColor">@color/warm_ivory</item>

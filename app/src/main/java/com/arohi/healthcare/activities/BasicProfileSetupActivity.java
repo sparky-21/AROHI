@@ -19,7 +19,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * enforces unverified professional restrictions for Doctor/Nurse/Admin accounts,
  * and allows completing core profile details and testing session persistence / logout.
  */
-public class BasicProfileSetupActivity extends AppCompatActivity {
+public class BasicProfileSetupActivity extends BaseActivity {
 
     private ActivityBasicProfileSetupBinding binding;
     private AuthRepository authRepository;

@@ -38,7 +38,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Nurse Duty &amp; OT Assistance"
+                        android:text="@string/nurse_schedule_title"
                         android:textColor="@color/text_primary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -62,7 +62,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="8dp"
                     android:text="📅 Calendar"
-                    android:textColor="@color/deep_forest_green"
+                    android:textColor="@color/accent_heading"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     app:strokeColor="@color/border_focused" />
@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="No duty shifts or OT assistance scheduled for this period."
+            android:text="@string/nurse_schedule_empty"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:visibility="gone" />

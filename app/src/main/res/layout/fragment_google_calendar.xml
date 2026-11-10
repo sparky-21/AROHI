@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F7F8F4">
+    android:background="@color/surface_background">
 
     <!-- Google Calendar Top App Bar (Moss Green Theme) -->
     <LinearLayout
@@ -26,7 +26,7 @@
             app:tint="@color/white"
             android:contentDescription="Back" />
 
-        <!-- Month Title with Dropdown Arrow (e.g. "Nov 2026 ▾") -->
+        <!-- Month Title with Dropdown Arrow (e.g. "Nov 2026 â–¾") -->
         <TextView
             android:id="@+id/tvGoogleMonthTitle"
             android:layout_width="0dp"
@@ -38,7 +38,7 @@
             android:ellipsize="end"
             android:paddingVertical="4dp"
             android:singleLine="true"
-            android:text="Nov 2026 ▾"
+            android:text="Nov 2026 â–¾"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -88,7 +88,7 @@
             android:insetBottom="0dp"
             android:minWidth="0dp"
             android:paddingHorizontal="10dp"
-            android:text="Standard"
+            android:text="@string/action_standard_view"
             android:textColor="@color/white"
             android:textSize="11sp"
             app:strokeColor="@color/white"
@@ -101,14 +101,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingVertical="8dp"
-        android:background="#E8EFE2">
+        android:background="@color/pale_mint">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Sun"
+            android:text="@string/day_sun"
             android:textColor="@color/primary_moss_green"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -118,7 +118,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Mon"
+            android:text="@string/day_mon"
             android:textColor="@color/text_primary"
             android:textSize="12sp" />
 
@@ -127,7 +127,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Tue"
+            android:text="@string/day_tue"
             android:textColor="@color/text_primary"
             android:textSize="12sp" />
 
@@ -136,7 +136,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Wed"
+            android:text="@string/day_wed"
             android:textColor="@color/text_primary"
             android:textSize="12sp" />
 
@@ -145,7 +145,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Thu"
+            android:text="@string/day_thu"
             android:textColor="@color/text_primary"
             android:textSize="12sp" />
 
@@ -154,7 +154,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Fri"
+            android:text="@string/day_fri"
             android:textColor="@color/text_primary"
             android:textSize="12sp" />
 
@@ -163,7 +163,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Sat"
+            android:text="@string/day_sat"
             android:textColor="@color/text_primary"
             android:textSize="12sp" />
     </LinearLayout>
@@ -172,7 +172,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="#D5E0CE" />
+        android:background="@color/divider_color" />
 
     <!-- Main Content Frame: Month Grid with Floating Moss Green FAB -->
     <FrameLayout
@@ -186,7 +186,7 @@
             android:layout_height="match_parent"
             android:fillViewport="true"
             android:scrollbars="none"
-            android:background="#F7F8F4">
+            android:background="@color/surface_background">
 
             <LinearLayout
                 android:id="@+id/layoutMonthGrid"

@@ -16,7 +16,7 @@ import java.util.List;
  * 2. Onboarding Screens
  * Introduces the AROHI connected healthcare ecosystem with a 3-step ViewPager2 experience.
  */
-public class OnboardingActivity extends AppCompatActivity {
+public class OnboardingActivity extends BaseActivity {
 
     private ActivityOnboardingBinding binding;
     private SessionManager sessionManager;

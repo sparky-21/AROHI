@@ -19,8 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="Secure Clinical Conversations"
-            android:textColor="@color/arohi_pure_white"
+            android:text="@string/conv_header_title"
+            android:textColor="@color/white"
             android:textSize="18sp" />
 
         <TextView
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:fontFamily="sans-serif"
-            android:text="1-to-1 messaging unlocked only for Accepted connections"
+            android:text="@string/conv_header_sub"
             android:textColor="@color/arohi_mint_tint"
             android:textSize="12sp" />
 
@@ -48,12 +48,12 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:paddingHorizontal="14dp"
-                android:text="View Notifications"
+                android:text="@string/action_view_notifications"
                 android:textAllCaps="false"
-                android:textColor="@color/arohi_forest_primary"
+                android:textColor="@color/accent_heading"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/arohi_pure_white"
+                app:backgroundTint="@color/surface_card"
                 app:cornerRadius="18dp" />
         </LinearLayout>
     </LinearLayout>
@@ -67,7 +67,7 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:padding="24dp"
-        android:text="No active conversations yet. Conversations appear automatically once a consultation request is Accepted."
+        android:text="@string/conv_empty"
         android:textColor="@color/arohi_slate_muted"
         android:textSize="13sp"
         android:visibility="gone" />

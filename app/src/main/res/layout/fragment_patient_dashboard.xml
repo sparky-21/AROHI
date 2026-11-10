@@ -41,7 +41,7 @@
                     android:id="@+id/tvPatientVerificationTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Account Verification Pending"
+                    android:text="@string/pat_dash_pending_title"
                     android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                     android:textSize="14sp" />
 
@@ -50,7 +50,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Awaiting Hospital Authority verification."
+                    android:text="@string/pat_dash_pending_desc"
                     android:textAppearance="@style/TextAppearance.AROHI.BodyMedium"
                     android:textColor="@color/text_primary"
                     android:textSize="12sp" />
@@ -75,7 +75,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"
-                    android:text="PATIENT HEALTHCARE DASHBOARD"
+                    android:text="@string/pat_dash_header"
                     android:textColor="@color/soft_sage"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -96,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Patient ID: AROHI-PAT-0000"
-                    android:textColor="@color/pale_mint"
+                    android:textColor="@color/soft_sage"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -146,7 +146,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Emergency Health Card Shortcut"
+                        android:text="@string/pat_dash_emergency_title"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textColor="@color/status_emergency"
                         android:textSize="14sp" />
@@ -155,7 +155,7 @@
                         android:id="@+id/tvEmergencyCardPreview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tap to view Blood Group, Allergies &amp; Emergency Contact"
+                        android:text="@string/pat_dash_emergency_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.BodyMedium"
                         android:textColor="@color/text_primary"
                         android:textSize="12sp" />
@@ -174,7 +174,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_xs"
-            android:text="Your Healthcare Overview"
+            android:text="@string/pat_dash_overview"
             android:textAppearance="@style/TextAppearance.AROHI.TitleLarge" />
 
         <!-- Row 1: Upcoming Appointments & Recent Prescriptions -->
@@ -206,7 +206,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -214,7 +214,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Upcoming Appointments"
+                        android:text="@string/pat_card_appointments"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textSize="13sp" />
 
@@ -223,7 +223,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="No scheduled appointments"
+                        android:text="@string/pat_card_appointments_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.Caption"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -258,7 +258,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Recent Prescriptions"
+                        android:text="@string/pat_card_prescriptions"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textSize="13sp" />
 
@@ -267,7 +267,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="No digital prescriptions yet"
+                        android:text="@string/pat_card_prescriptions_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.Caption"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -303,7 +303,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -311,7 +311,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Pending Lab Reports"
+                        android:text="@string/pat_card_lab_reports"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textSize="13sp" />
 
@@ -319,7 +319,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Synced with Lab workflow"
+                        android:text="@string/pat_card_lab_reports_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.Caption"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -354,7 +354,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Medicine Reminders"
+                        android:text="@string/pat_card_med_reminders"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textSize="13sp" />
 
@@ -362,7 +362,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Linked to active prescriptions"
+                        android:text="@string/pat_card_med_reminders_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.Caption"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -398,7 +398,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
-                        android:textColor="@color/deep_forest_green"
+                        android:textColor="@color/accent_heading"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -406,7 +406,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Doctor Connections"
+                        android:text="@string/pat_card_doc_connections"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textSize="13sp" />
 
@@ -414,7 +414,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Authorized doctors"
+                        android:text="@string/pat_card_doc_connections_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.Caption"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -446,7 +446,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Notifications"
+                        android:text="@string/pat_card_notifications"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                         android:textSize="13sp" />
 
@@ -454,7 +454,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Real-time alerts"
+                        android:text="@string/pat_card_notifications_sub"
                         android:textAppearance="@style/TextAppearance.AROHI.Caption"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -488,9 +488,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Smart Patient Journey"
+                        android:text="@string/pat_journey_title"
                         android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
-                        android:textColor="@color/deep_forest_green" />
+                        android:textColor="@color/accent_heading" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -531,7 +531,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_xs"
-            android:text="Quick-Access Healthcare Services"
+            android:text="@string/pat_quick_services"
             android:textAppearance="@style/TextAppearance.AROHI.TitleLarge" />
 
         <LinearLayout
@@ -550,7 +550,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Find Doctors"
+                android:text="@string/service_find_doctors"
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -563,7 +563,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Medical Records"
+                android:text="@string/service_medical_records"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -583,7 +583,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Medical Calendar"
+                android:text="@string/service_medical_calendar"
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -596,7 +596,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Health Profile"
+                android:text="@string/service_health_profile"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -617,7 +617,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Smart E-Pharmacy"
+                android:text="@string/service_smart_pharmacy"
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -630,7 +630,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="AROHI AI"
+                android:text="@string/service_arohi_ai"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -651,7 +651,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Hospital Map"
+                android:text="@string/service_hospital_map"
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -664,7 +664,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
-                android:text="Family Health"
+                android:text="@string/service_family_health"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -684,7 +684,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Latest Hospital Announcement"
+                    android:text="@string/pat_latest_announcement"
                     android:textAppearance="@style/TextAppearance.AROHI.Caption"
                     android:textColor="@color/primary_moss_green"
                     android:textStyle="bold" />
@@ -694,7 +694,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="No hospital announcements published yet."
+                    android:text="@string/pat_no_announcement"
                     android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
                     android:textSize="14sp" />
 
@@ -703,7 +703,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Official updates from AROHI Hospital Authority will appear here."
+                    android:text="@string/pat_no_announcement_sub"
                     android:textAppearance="@style/TextAppearance.AROHI.BodyMedium"
                     android:textSize="12sp" />
             </LinearLayout>

@@ -54,7 +54,7 @@
                 android:background="@drawable/bg_badge_pill"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="Pending"
+                android:text="@string/filter_pending"
                 android:textColor="@color/status_warning"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -75,7 +75,7 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@drawable/ic_calendar"
-                app:tint="@color/deep_forest_green" />
+                app:tint="@color/accent_heading" />
 
             <TextView
                 android:id="@+id/tvApptDateTime"
@@ -138,7 +138,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="6dp"
-                android:text="Reschedule"
+                android:text="@string/action_reschedule"
                 android:textColor="@color/primary_moss_green"
                 android:textSize="11sp"
                 app:strokeColor="@color/primary_moss_green" />
@@ -155,7 +155,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="6dp"
-                android:text="Cancel"
+                android:text="@string/action_cancel"
                 android:textColor="@color/status_emergency"
                 android:textSize="11sp"
                 app:strokeColor="@color/status_emergency" />
@@ -172,7 +172,7 @@
                 android:maxLines="1"
                 android:minWidth="0dp"
                 android:paddingHorizontal="6dp"
-                android:text="Confirm"
+                android:text="@string/action_confirm"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
         </LinearLayout>

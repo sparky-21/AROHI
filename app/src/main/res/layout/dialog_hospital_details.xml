@@ -167,7 +167,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:text="Call"
-                android:textColor="@color/arohi_ivory_cream"
+                android:textColor="@color/white"
                 android:textSize="12sp"
                 app:cornerRadius="6dp" />
         </LinearLayout>
@@ -206,7 +206,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Close"
+                android:text="@string/action_close"
                 android:textColor="@color/arohi_moss_green"
                 app:cornerRadius="8dp"
                 app:strokeColor="@color/arohi_moss_green" />
@@ -219,7 +219,7 @@
                 android:layout_weight="1.4"
                 android:backgroundTint="@color/arohi_moss_green"
                 android:text="Select Hospital"
-                android:textColor="@color/arohi_ivory_cream"
+                android:textColor="@color/white"
                 app:cornerRadius="8dp" />
         </LinearLayout>
 

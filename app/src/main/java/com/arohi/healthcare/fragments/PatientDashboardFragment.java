@@ -64,11 +64,11 @@ public class PatientDashboardFragment extends Fragment {
         if (binding == null) return;
         String name = account.getFullName() != null && !account.getFullName().isEmpty()
                 ? account.getFullName()
-                : "Patient";
+                : getString(R.string.role_patient_title);
         String arohiId = account.getArohiId() != null ? account.getArohiId() : "AROHI-PAT-0000";
 
-        binding.tvPatientGreeting.setText("Hello, " + name);
-        binding.tvPatientIdBadge.setText("Patient ID: " + arohiId);
+        binding.tvPatientGreeting.setText(getString(R.string.pat_dash_hello, name));
+        binding.tvPatientIdBadge.setText(getString(R.string.pat_dash_id_prefix, arohiId));
 
         VerificationStatus status = account.getVerificationStatusEnum();
         if (status == VerificationStatus.VERIFIED) {
@@ -76,13 +76,13 @@ public class PatientDashboardFragment extends Fragment {
         } else {
             binding.bannerPatientVerification.setVisibility(View.VISIBLE);
             if (status == VerificationStatus.REJECTED) {
-                binding.tvPatientVerificationTitle.setText("Account Verification Declined");
+                binding.tvPatientVerificationTitle.setText(getString(R.string.pat_dash_declined_title));
                 binding.tvPatientVerificationDesc.setText(
-                        "Please review your profile details and contact Hospital Administration.");
+                        getString(R.string.pat_dash_pending_desc));
             } else {
-                binding.tvPatientVerificationTitle.setText("Account Verification Pending");
+                binding.tvPatientVerificationTitle.setText(getString(R.string.pat_dash_pending_title));
                 binding.tvPatientVerificationDesc.setText(
-                        "Your Patient registration is awaiting Hospital Authority approval. You can already complete your Health Profile and Emergency Card.");
+                        getString(R.string.pat_dash_pending_desc));
             }
         }
     }

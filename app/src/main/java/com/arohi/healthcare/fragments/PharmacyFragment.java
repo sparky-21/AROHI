@@ -202,11 +202,12 @@ public class PharmacyFragment extends Fragment {
         if (binding == null || getContext() == null || !isAdded()) return;
 
         int forestColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.deep_forest_green);
+        int accentHeading = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.accent_heading);
         int whiteColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.white);
 
         if (isOrdersTab) {
             binding.btnTabCatalogue.setBackgroundTintList(null);
-            binding.btnTabCatalogue.setTextColor(forestColor);
+            binding.btnTabCatalogue.setTextColor(accentHeading);
             binding.btnTabOrders.setBackgroundTintList(android.content.res.ColorStateList.valueOf(forestColor));
             binding.btnTabOrders.setTextColor(whiteColor);
 
@@ -217,7 +218,7 @@ public class PharmacyFragment extends Fragment {
             loadOrders();
         } else {
             binding.btnTabOrders.setBackgroundTintList(null);
-            binding.btnTabOrders.setTextColor(forestColor);
+            binding.btnTabOrders.setTextColor(accentHeading);
             binding.btnTabCatalogue.setBackgroundTintList(android.content.res.ColorStateList.valueOf(forestColor));
             binding.btnTabCatalogue.setTextColor(whiteColor);
 
@@ -501,18 +502,26 @@ public class PharmacyFragment extends Fragment {
         int padV = 8 * dp;
         container.setPadding(padH, padV, padH, padV);
 
+        int textPrimary = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_primary);
+        int dividerColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.divider_color);
+        int borderColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.border_stroke);
+        int surfaceBg = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.surface_background);
+        int subtleBg = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.pale_mint);
+        int mossGreen = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary_moss_green);
+        int accentHeading = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.accent_heading);
+
         // Dialog title
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText("Select Digital Prescription");
         tvTitle.setTextSize(18f);
-        tvTitle.setTextColor(0xFF26332A);
+        tvTitle.setTextColor(textPrimary);
         tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
         tvTitle.setPadding(0, 12 * dp, 0, 8 * dp);
         container.addView(tvTitle);
 
         // Divider under title
         View dividerTop = new View(requireContext());
-        dividerTop.setBackgroundColor(0xFFD5E0CE);
+        dividerTop.setBackgroundColor(dividerColor);
         LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 1);
         container.addView(dividerTop, dividerParams);
@@ -528,7 +537,7 @@ public class PharmacyFragment extends Fragment {
             MaterialButton btn = new MaterialButton(requireContext(),
                     null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
             btn.setText(label);
-            btn.setTextColor(0xFF26332A);
+            btn.setTextColor(textPrimary);
             btn.setTextSize(13f);
             btn.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
             btn.setAllCaps(false);
@@ -536,9 +545,9 @@ public class PharmacyFragment extends Fragment {
             btn.setInsetBottom(0);
             btn.setCornerRadius(12 * dp);
             btn.setStrokeWidth(1 * dp);
-            btn.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFCAD8C5));
-            btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFF7F8F3));
-            btn.setRippleColor(android.content.res.ColorStateList.valueOf(0xFFE8EFE2));
+            btn.setStrokeColor(android.content.res.ColorStateList.valueOf(borderColor));
+            btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(surfaceBg));
+            btn.setRippleColor(android.content.res.ColorStateList.valueOf(subtleBg));
             btn.setPadding(14 * dp, 12 * dp, 14 * dp, 12 * dp);
             LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -555,7 +564,7 @@ public class PharmacyFragment extends Fragment {
 
         // Divider above cancel
         View dividerBottom = new View(requireContext());
-        dividerBottom.setBackgroundColor(0xFFD5E0CE);
+        dividerBottom.setBackgroundColor(dividerColor);
         LinearLayout.LayoutParams dividerBottom2 = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 1);
         dividerBottom2.setMargins(0, 14 * dp, 0, 0);
@@ -564,15 +573,15 @@ public class PharmacyFragment extends Fragment {
         // Cancel button (prominent pill button, not plain text)
         MaterialButton btnCancel = new MaterialButton(requireContext(),
                 null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
-        btnCancel.setText("Cancel");
+        btnCancel.setText(getString(R.string.action_cancel));
         btnCancel.setAllCaps(false);
         btnCancel.setInsetTop(0);
         btnCancel.setInsetBottom(0);
         btnCancel.setCornerRadius(22 * dp);
         btnCancel.setStrokeWidth(1 * dp);
-        btnCancel.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFF557B52));
-        btnCancel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFE8EFE2));
-        btnCancel.setTextColor(0xFF263D2B);
+        btnCancel.setStrokeColor(android.content.res.ColorStateList.valueOf(mossGreen));
+        btnCancel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(subtleBg));
+        btnCancel.setTextColor(accentHeading);
         btnCancel.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams cancelParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 46 * dp);

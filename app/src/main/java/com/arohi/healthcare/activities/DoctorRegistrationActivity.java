@@ -16,7 +16,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * Captures medical license, specialty, qualifications, department, and experience.
  * Enforces PENDING verification status until Hospital Authority approval.
  */
-public class DoctorRegistrationActivity extends AppCompatActivity {
+public class DoctorRegistrationActivity extends BaseActivity {
 
     private ActivityDoctorRegistrationBinding binding;
     private AuthRepository authRepository;

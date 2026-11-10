@@ -2,7 +2,7 @@ package com.arohi.healthcare.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+import com.arohi.healthcare.R;
 import com.arohi.healthcare.databinding.ActivityRoleSelectionBinding;
 import com.arohi.healthcare.utils.SessionManager;
 
@@ -12,7 +12,7 @@ import com.arohi.healthcare.utils.SessionManager;
  * (Patient, Doctor, Nurse, Authorized Admin Setup) or to the Login screen.
  * Displays active Hospital tenant context and allows switching hospitals.
  */
-public class RoleSelectionActivity extends AppCompatActivity {
+public class RoleSelectionActivity extends BaseActivity {
 
     private ActivityRoleSelectionBinding binding;
     private SessionManager sessionManager;
@@ -39,7 +39,8 @@ public class RoleSelectionActivity extends AppCompatActivity {
         String hospName = sessionManager.getSelectedHospitalName();
         String hospCode = sessionManager.getSelectedHospitalCode();
         binding.tvActiveHospitalName.setText(hospName != null ? hospName : SessionManager.DEFAULT_HOSPITAL_NAME);
-        binding.tvActiveHospitalCode.setText("Code: " + (hospCode != null ? hospCode : SessionManager.DEFAULT_HOSPITAL_CODE) + " • Verified Network");
+        binding.tvActiveHospitalCode.setText(getString(R.string.label_hospital_code_verified,
+                (hospCode != null ? hospCode : SessionManager.DEFAULT_HOSPITAL_CODE)));
     }
 
     private void setupRoleListeners() {

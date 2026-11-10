@@ -71,20 +71,21 @@ public class NurseDashboardFragment extends Fragment {
         binding.tvNurseName.setText(name);
 
         VerificationStatus status = account.getVerificationStatusEnum();
-        binding.tvNurseVerificationPill.setText(status.getKey());
+        String statusText = status == VerificationStatus.VERIFIED
+                ? getString(R.string.status_verified)
+                : (status == VerificationStatus.REJECTED ? getString(R.string.status_rejected) : getString(R.string.status_pending));
+        binding.tvNurseVerificationPill.setText(statusText);
 
         if (status == VerificationStatus.VERIFIED) {
             binding.cardNurseVerificationBanner.setVisibility(View.GONE);
         } else {
             binding.cardNurseVerificationBanner.setVisibility(View.VISIBLE);
             if (status == VerificationStatus.REJECTED) {
-                binding.tvNurseVerificationBannerTitle.setText("NURSING CREDENTIAL REVIEW DECLINED");
-                binding.tvNurseVerificationBannerDesc.setText(
-                        "Hospital Administration declined your credential verification. Please review your BNMC Nursing License in your Profile.");
+                binding.tvNurseVerificationBannerTitle.setText(getString(R.string.nurse_dash_declined_title));
+                binding.tvNurseVerificationBannerDesc.setText(getString(R.string.nurse_dash_pending_desc));
             } else {
-                binding.tvNurseVerificationBannerTitle.setText("NURSING CREDENTIAL REVIEW PENDING");
-                binding.tvNurseVerificationBannerDesc.setText(
-                        "Your BNMC Nursing License is awaiting Hospital Administrator approval. Ward and task assignments unlock immediately after verification.");
+                binding.tvNurseVerificationBannerTitle.setText(getString(R.string.nurse_dash_pending_title));
+                binding.tvNurseVerificationBannerDesc.setText(getString(R.string.nurse_dash_pending_desc));
             }
         }
     }
@@ -93,24 +94,24 @@ public class NurseDashboardFragment extends Fragment {
         profileRepository.loadNurseProfile(uid, new AuthCallback<NurseProfile>() {
             @Override
             public void onSuccess(NurseProfile profile) {
-                if (binding == null) return;
+                if (binding == null || !isAdded()) return;
                 String name = notEmpty(profile.getFullName(), "Registered Nurse");
                 String qual = notEmpty(profile.getQualification(), "BSc in Nursing");
-                String license = notEmpty(profile.getNursingLicenseNumber(), "Pending");
+                String license = notEmpty(profile.getNursingLicenseNumber(), getString(R.string.status_pending));
                 String prefWard = notEmpty(profile.getPreferredWard(), "General Ward");
                 String assignedWard = notEmpty(profile.getAssignedWardId(), "UNASSIGNED");
                 String shift = notEmpty(profile.getShiftPreference(), "Morning");
 
                 binding.tvNurseName.setText(name);
-                binding.tvNurseQualAndLicense.setText(qual + " • License: " + license);
+                binding.tvNurseQualAndLicense.setText(qual + " • " + license);
 
                 String activeWardDisplay = "UNASSIGNED".equalsIgnoreCase(assignedWard)
                         ? prefWard
                         : assignedWard;
-                binding.tvNurseWardSummary.setText("Ward: " + activeWardDisplay);
-                binding.tvNurseShiftBadge.setText("Shift: " + shift);
+                binding.tvNurseWardSummary.setText(getString(R.string.nurse_ward_prefix, activeWardDisplay));
+                binding.tvNurseShiftBadge.setText(getString(R.string.nurse_shift_prefix, shift));
                 binding.tvNurseAssignedWardName.setText(activeWardDisplay);
-                binding.tvNursePreferredWardNote.setText("Preferred: " + prefWard);
+                binding.tvNursePreferredWardNote.setText(getString(R.string.nurse_pref_prefix, prefWard));
 
                 binding.tvNurseDutyScheduleDetails.setText(
                         "Nurse ID: " + notEmpty(profile.getArohiId(), "AROHI-NRS")

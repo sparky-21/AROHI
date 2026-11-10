@@ -3,21 +3,21 @@
     <item
         android:id="@+id/nav_nurse_dashboard"
         android:icon="@drawable/ic_nav_home"
-        android:title="Dashboard" />
+        android:title="@string/nav_dashboard" />
     <item
         android:id="@+id/nav_nurse_patients"
         android:icon="@drawable/ic_role_patient"
-        android:title="Patients" />
+        android:title="@string/nav_patients" />
     <item
         android:id="@+id/nav_nurse_tasks"
         android:icon="@drawable/ic_nav_records"
-        android:title="Tasks" />
+        android:title="@string/nav_tasks" />
     <item
         android:id="@+id/nav_nurse_schedule"
         android:icon="@drawable/ic_calendar"
-        android:title="Schedule" />
+        android:title="@string/nav_schedule" />
     <item
         android:id="@+id/nav_nurse_profile"
         android:icon="@drawable/ic_role_nurse"
-        android:title="Profile" />
+        android:title="@string/nav_profile" />
 </menu>

@@ -47,8 +47,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif-black"
-                        android:text="Hospital Administrator"
-                        android:textColor="@color/arohi_pure_white"
+                        android:text="@string/admin_dash_role"
+                        android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <TextView
@@ -58,7 +58,7 @@
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif-medium"
                         android:text="Designation • ID: ---"
-                        android:textColor="@color/arohi_sage_mist"
+                        android:textColor="@color/soft_sage"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -69,8 +69,8 @@
                     android:fontFamily="sans-serif-bold"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="5dp"
-                    android:text="AUTHORITY"
-                    android:textColor="@color/arohi_forest_primary"
+                    android:text="@string/admin_dash_badge"
+                    android:textColor="@color/accent_heading"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -79,7 +79,7 @@
                 android:layout_height="1dp"
                 android:layout_marginVertical="12dp"
                 android:alpha="0.25"
-                android:background="@color/arohi_pure_white" />
+                android:background="@color/surface_card" />
 
             <TextView
                 android:id="@+id/tvAdminOperationalSummary"
@@ -87,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif"
                 android:text="Live Firestore ecosystem overview • Approve or decline pending accounts below"
-                android:textColor="@color/arohi_pure_white"
+                android:textColor="@color/white"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -98,7 +98,7 @@
             android:layout_marginTop="18dp"
             android:layout_marginBottom="10dp"
             android:fontFamily="sans-serif-bold"
-            android:text="Hospital Operational Statistics"
+            android:text="@string/admin_stats_title"
             android:textColor="@color/arohi_charcoal_text"
             android:textSize="16sp" />
 
@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -131,7 +131,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-black"
                         android:text="0"
-                        android:textColor="@color/arohi_forest_primary"
+                        android:textColor="@color/accent_heading"
                         android:textSize="24sp" />
 
                     <TextView
@@ -139,7 +139,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Total Patients"
+                        android:text="@string/admin_card_patients"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -148,7 +148,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="Registered in /patients"
+                        android:text="@string/admin_card_patients_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -160,7 +160,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -186,7 +186,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Doctors &amp; Nurses"
+                        android:text="@string/admin_card_staff"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -216,7 +216,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -242,7 +242,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Pending Verifications"
+                        android:text="@string/admin_card_verifications"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -251,7 +251,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="Awaiting Admin review"
+                        android:text="@string/admin_card_verifications_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -263,7 +263,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -289,7 +289,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Departments"
+                        android:text="@string/admin_card_departments"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -298,7 +298,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="Clinical units active"
+                        android:text="@string/admin_card_departments_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -318,7 +318,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -336,7 +336,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-black"
                         android:text="0 / 0"
-                        android:textColor="@color/arohi_forest_primary"
+                        android:textColor="@color/accent_heading"
                         android:textSize="24sp" />
 
                     <TextView
@@ -344,7 +344,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Ward &amp; Bed Overview"
+                        android:text="@string/admin_card_ward_bed"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -366,7 +366,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -392,7 +392,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="OT Overview"
+                        android:text="@string/admin_card_ot"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -422,7 +422,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-bold"
-                android:text="Hospital Announcements"
+                android:text="@string/admin_announcements_title"
                 android:textColor="@color/arohi_charcoal_text"
                 android:textSize="16sp" />
 
@@ -434,7 +434,7 @@
                 android:layout_marginEnd="6dp"
                 android:text="📊 Analytics"
                 android:textAllCaps="false"
-                android:textColor="@color/arohi_forest_primary"
+                android:textColor="@color/accent_heading"
                 android:textSize="12sp"
                 app:backgroundTint="@color/arohi_sage_mist"
                 app:cornerRadius="10dp" />
@@ -444,9 +444,9 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
-                android:text="+ Publish Notice"
+                android:text="@string/admin_btn_publish_notice"
                 android:textAllCaps="false"
-                android:textColor="@color/arohi_forest_primary"
+                android:textColor="@color/accent_heading"
                 android:textSize="12sp"
                 app:backgroundTint="@color/arohi_sage_mist"
                 app:cornerRadius="10dp" />
@@ -456,7 +456,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:cardBackgroundColor="@color/arohi_pure_white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
             app:strokeColor="@color/arohi_border_subtle"
@@ -473,7 +473,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-bold"
-                    android:text="No Hospital Announcements Published Yet"
+                    android:text="@string/admin_no_notices_title"
                     android:textColor="@color/arohi_charcoal_text"
                     android:textSize="14sp" />
 
@@ -504,7 +504,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-bold"
-                android:text="Pending Verification Requests"
+                android:text="@string/admin_pending_reqs_title"
                 android:textColor="@color/arohi_charcoal_text"
                 android:textSize="16sp" />
 
@@ -515,7 +515,7 @@
                 android:fontFamily="sans-serif-bold"
                 android:padding="4dp"
                 android:text="All Accounts →"
-                android:textColor="@color/arohi_forest_primary"
+                android:textColor="@color/accent_heading"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -528,7 +528,7 @@
             android:fontFamily="sans-serif"
             android:gravity="center"
             android:padding="20dp"
-            android:text="All Patient, Doctor, and Nurse registrations are up to date. No accounts are currently awaiting verification."
+            android:text="@string/admin_all_verified_empty"
             android:textColor="@color/arohi_slate_muted"
             android:textSize="13sp"
             android:visibility="gone" />

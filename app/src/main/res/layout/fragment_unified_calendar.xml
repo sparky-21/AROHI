@@ -28,7 +28,7 @@
                 android:id="@+id/tvCalendarHeaderTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Synchronized Medical Calendar"
+                android:text="@string/cal_sync_title"
                 android:textColor="@color/text_primary"
                 android:textSize="17sp"
                 android:textStyle="bold" />
@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Appointments, Lab Tests, Reminders &amp; Procedures"
+                android:text="@string/cal_sync_sub"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -62,7 +62,7 @@
                     android:minWidth="0dp"
                     android:paddingHorizontal="10dp"
                     android:text="📅 See Google Calendar"
-                    android:textColor="@color/deep_forest_green"
+                    android:textColor="@color/accent_heading"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     app:strokeColor="@color/border_focused" />
@@ -77,7 +77,7 @@
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
                     android:paddingHorizontal="12dp"
-                    android:text="+ Book Slot"
+                    android:text="@string/action_book_slot"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -96,7 +96,7 @@
                     android:layout_height="36dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_arrow_back"
-                    app:tint="@color/deep_forest_green" />
+                    app:tint="@color/accent_heading" />
 
                 <TextView
                     android:id="@+id/tvSelectedDateDisplay"
@@ -115,7 +115,7 @@
                     android:layout_height="36dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/deep_forest_green" />
+                    app:tint="@color/accent_heading" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPickSpecificDate"
@@ -127,7 +127,7 @@
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
                     android:paddingHorizontal="8dp"
-                    android:text="Pick Date"
+                    android:text="@string/action_pick_date"
                     android:textColor="@color/primary_moss_green"
                     android:textSize="11sp"
                     app:strokeColor="@color/primary_moss_green" />
@@ -154,7 +154,7 @@
                     android:maxLines="1"
                     android:minWidth="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="All"
+                    android:text="@string/filter_all"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
 
@@ -170,7 +170,7 @@
                     android:maxLines="1"
                     android:minWidth="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="Appts"
+                    android:text="@string/filter_appts"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:strokeColor="@color/border_stroke" />
@@ -187,7 +187,7 @@
                     android:maxLines="1"
                     android:minWidth="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="Lab Tests"
+                    android:text="@string/tab_lab_tests"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:strokeColor="@color/border_stroke" />
@@ -203,7 +203,7 @@
                     android:maxLines="1"
                     android:minWidth="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="Reminders"
+                    android:text="@string/filter_reminders"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:strokeColor="@color/border_stroke" />
@@ -238,7 +238,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="No Scheduled Events"
+                android:text="@string/cal_empty_title"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -249,7 +249,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:gravity="center"
-                android:text="No consultations, lab tests, or clinical reminders for this date."
+                android:text="@string/cal_empty_sub"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>

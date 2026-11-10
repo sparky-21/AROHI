@@ -38,7 +38,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Nursing Care Tasks &amp; Orders"
+                        android:text="@string/nurse_tasks_title"
                         android:textColor="@color/text_primary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -48,7 +48,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Medications, Vitals Checks, Procedures &amp; Doctor Orders"
+                        android:text="@string/nurse_tasks_sub"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -62,7 +62,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:text="+ Record Vitals"
+                    android:text="@string/action_record_vitals"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -89,7 +89,7 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:paddingHorizontal="10dp"
-                        android:text="All Tasks"
+                        android:text="@string/filter_all_tasks"
                         android:textColor="@color/white"
                         android:textSize="11sp" />
 
@@ -143,7 +143,7 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:paddingHorizontal="10dp"
-                        android:text="Pending Only"
+                        android:text="@string/filter_pending_only"
                         android:textColor="@color/text_secondary"
                         android:textSize="11sp"
                         app:strokeColor="@color/border_stroke" />
@@ -165,7 +165,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="No nursing tasks found for the selected category."
+            android:text="@string/nurse_tasks_empty"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:visibility="gone" />

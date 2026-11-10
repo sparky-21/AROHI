@@ -32,7 +32,7 @@ import java.util.List;
  * Enforces both client-side and Firestore-rule connection verification before streaming
  * or sending messages. Only Accepted connections can access this conversation.
  */
-public class SecureChatActivity extends AppCompatActivity {
+public class SecureChatActivity extends BaseActivity {
 
     public static final String EXTRA_CONVERSATION_ID = "extra_conversation_id";
     public static final String EXTRA_COUNTERPARTY_UID = "extra_counterparty_uid";

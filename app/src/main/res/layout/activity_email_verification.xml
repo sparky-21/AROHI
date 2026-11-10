@@ -89,7 +89,7 @@
                     android:paddingVertical="5dp"
                     android:text="Status: Awaiting Verification"
                     android:textAppearance="@style/TextAppearance.AROHI.Caption"
-                    android:textColor="@color/deep_forest_green"
+                    android:textColor="@color/accent_heading"
                     android:textStyle="bold" />
 
             </LinearLayout>

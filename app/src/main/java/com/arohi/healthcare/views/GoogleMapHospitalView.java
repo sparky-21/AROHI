@@ -71,14 +71,21 @@ public class GoogleMapHospitalView extends View {
         init();
     }
 
+    private boolean isNightMode() {
+        int nightModeFlags = getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
     private void init() {
         routePlanner = new HospitalRoutePlanner();
+        boolean dark = isNightMode();
 
-        // Google Maps Theme Palette
-        bgPaint.setColor(Color.parseColor("#E5E3DF")); // Google Maps ground background
+        // Google Maps Theme Palette (Dark & Light adaptive)
+        bgPaint.setColor(dark ? Color.parseColor("#111813") : Color.parseColor("#E5E3DF"));
 
-        corridorPaint.setColor(Color.WHITE); // Google street white corridors
-        corridorBorderPaint.setColor(Color.parseColor("#D5D3CE"));
+        corridorPaint.setColor(dark ? Color.parseColor("#1E2B22") : Color.WHITE);
+        corridorBorderPaint.setColor(dark ? Color.parseColor("#354A3C") : Color.parseColor("#D5D3CE"));
         corridorBorderPaint.setStyle(Paint.Style.STROKE);
         corridorBorderPaint.setStrokeWidth(2f);
 
@@ -86,12 +93,12 @@ public class GoogleMapHospitalView extends View {
         roomStrokePaint.setStyle(Paint.Style.STROKE);
         roomStrokePaint.setStrokeWidth(3f);
 
-        textPaint.setColor(Color.parseColor("#202124")); // Google dark charcoal
+        textPaint.setColor(dark ? Color.parseColor("#F5F8F4") : Color.parseColor("#202124"));
         textPaint.setTextSize(26f);
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setFakeBoldText(true);
 
-        subTextPaint.setColor(Color.parseColor("#5F6368")); // Google grey
+        subTextPaint.setColor(dark ? Color.parseColor("#CBD7C8") : Color.parseColor("#5F6368"));
         subTextPaint.setTextSize(20f);
         subTextPaint.setTextAlign(Paint.Align.CENTER);
 
@@ -180,7 +187,7 @@ public class GoogleMapHospitalView extends View {
         if (w == 0 || h == 0) return;
 
         // 1. Draw Google Maps Base Canvas
-        canvas.drawColor(Color.parseColor("#E5E3DF"));
+        canvas.drawColor(isNightMode() ? Color.parseColor("#111813") : Color.parseColor("#E5E3DF"));
 
         // 2. Draw Google Maps Intersecting Corridors / Hallways
         drawCorridors(canvas, w, h);
@@ -232,34 +239,35 @@ public class GoogleMapHospitalView extends View {
 
         RectF rect = new RectF(cx - rw / 2f, cy - rh / 2f, cx + rw / 2f, cy + rh / 2f);
 
-        // Google Maps pastel category color mapping
+        // Google Maps pastel category color mapping (adaptive for night mode)
         int fillColor;
         int strokeColor;
         String type = node.getDepartmentType();
+        boolean dark = isNightMode();
 
         if ("EMERGENCY".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#FCE8E6"); // Google Red soft
+            fillColor = Color.parseColor(dark ? "#3D1E1E" : "#FCE8E6");
             strokeColor = Color.parseColor("#EA4335");
         } else if ("PHARMACY".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#E6F4EA"); // Google Green soft
+            fillColor = Color.parseColor(dark ? "#193524" : "#E6F4EA");
             strokeColor = Color.parseColor("#34A853");
         } else if ("LABORATORY".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#E8F0FE"); // Google Blue soft
+            fillColor = Color.parseColor(dark ? "#1B2C45" : "#E8F0FE");
             strokeColor = Color.parseColor("#4285F4");
         } else if ("RADIOLOGY".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#FEF7E0"); // Google Yellow soft
+            fillColor = Color.parseColor(dark ? "#382B13" : "#FEF7E0");
             strokeColor = Color.parseColor("#FBBC04");
         } else if ("ICU".equalsIgnoreCase(type) || "OT".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#F3E8FD"); // Google Purple soft
+            fillColor = Color.parseColor(dark ? "#2E1C3F" : "#F3E8FD");
             strokeColor = Color.parseColor("#9334E6");
         } else if ("WARD".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#E0F2FE");
+            fillColor = Color.parseColor(dark ? "#152E3D" : "#E0F2FE");
             strokeColor = Color.parseColor("#0284C7");
         } else if ("ELEVATOR".equalsIgnoreCase(type) || "STAIRS".equalsIgnoreCase(type)) {
-            fillColor = Color.parseColor("#F1F3F4");
+            fillColor = Color.parseColor(dark ? "#243128" : "#F1F3F4");
             strokeColor = Color.parseColor("#1A73E8");
         } else {
-            fillColor = Color.WHITE;
+            fillColor = dark ? Color.parseColor("#1B241E") : Color.WHITE;
             strokeColor = Color.parseColor("#9AA0A6");
         }
 

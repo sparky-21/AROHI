@@ -57,7 +57,7 @@
                 android:gravity="center"
                 android:text="@string/role_selection_subtitle"
                 android:textAlignment="center"
-                android:textColor="@color/pale_mint"
+                android:textColor="@color/soft_sage"
                 android:textSize="12sp" />
 
         </LinearLayout>
@@ -124,7 +124,7 @@
                     android:background="@drawable/bg_role_chip"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="4dp"
-                    android:text="Change"
+                    android:text="@string/action_change"
                     android:textColor="@color/arohi_moss_green"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -197,7 +197,7 @@
                                 android:gravity="center"
                                 android:lineSpacingExtra="1dp"
                                 android:text="@string/role_patient_desc"
-                                android:textColor="@color/pale_mint"
+                                android:textColor="@color/soft_sage"
                                 android:textSize="11sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -254,7 +254,7 @@
                                 android:gravity="center"
                                 android:lineSpacingExtra="1dp"
                                 android:text="@string/role_doctor_desc"
-                                android:textColor="@color/pale_mint"
+                                android:textColor="@color/soft_sage"
                                 android:textSize="11sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -321,7 +321,7 @@
                                 android:gravity="center"
                                 android:lineSpacingExtra="1dp"
                                 android:text="@string/role_nurse_desc"
-                                android:textColor="@color/pale_mint"
+                                android:textColor="@color/soft_sage"
                                 android:textSize="11sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -378,7 +378,7 @@
                                 android:gravity="center"
                                 android:lineSpacingExtra="1dp"
                                 android:text="@string/role_admin_desc"
-                                android:textColor="@color/pale_mint"
+                                android:textColor="@color/soft_sage"
                                 android:textSize="11sp" />
                         </LinearLayout>
                     </LinearLayout>

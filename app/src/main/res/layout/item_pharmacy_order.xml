@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="14dp"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/surface_card"
     app:cardCornerRadius="14dp"
     app:cardElevation="2dp"
     app:strokeColor="@color/border_stroke"
@@ -200,7 +200,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="৳ 69.00"
-                    android:textColor="@color/deep_forest_green"
+                    android:textColor="@color/accent_heading"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -211,7 +211,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Update Status"
-                android:textColor="@color/deep_forest_green"
+                android:textColor="@color/accent_heading"
                 android:textSize="12sp"
                 app:strokeColor="@color/border_focused"
                 android:visibility="gone" />

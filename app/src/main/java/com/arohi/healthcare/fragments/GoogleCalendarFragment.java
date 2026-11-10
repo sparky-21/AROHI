@@ -157,21 +157,30 @@ public class GoogleCalendarFragment extends Fragment {
 
         LinearLayout container = new LinearLayout(requireContext());
         container.setOrientation(LinearLayout.VERTICAL);
+        int surfaceCard = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.surface_card);
+        int textPrimary = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_primary);
+        int dividerColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.divider_color);
+        int borderColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.border_stroke);
+        int surfaceBg = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.surface_background);
+        int subtleBg = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.pale_mint);
+        int mossGreen = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary_moss_green);
+        int accentHeading = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.accent_heading);
+
         int padH = 20 * dp;
         int padV = 16 * dp;
         container.setPadding(padH, padV, padH, 12 * dp);
-        container.setBackgroundColor(0xFFFFFFFF);
+        container.setBackgroundColor(surfaceCard);
 
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText("Select Month");
         tvTitle.setTextSize(18f);
-        tvTitle.setTextColor(0xFF26332A);
+        tvTitle.setTextColor(textPrimary);
         tvTitle.setTypeface(null, Typeface.BOLD);
         tvTitle.setPadding(0, 0, 0, 10 * dp);
         container.addView(tvTitle);
 
         View divider = new View(requireContext());
-        divider.setBackgroundColor(0xFFD5E0CE);
+        divider.setBackgroundColor(dividerColor);
         container.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
 
         AlertDialog[] dialogRef = new AlertDialog[1];
@@ -181,7 +190,7 @@ public class GoogleCalendarFragment extends Fragment {
             final int index = i;
             MaterialButton btn = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
             btn.setText(labels[i]);
-            btn.setTextColor(0xFF26332A);
+            btn.setTextColor(textPrimary);
             btn.setTextSize(13f);
             btn.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
             btn.setAllCaps(false);
@@ -189,9 +198,9 @@ public class GoogleCalendarFragment extends Fragment {
             btn.setInsetBottom(0);
             btn.setCornerRadius(12 * dp);
             btn.setStrokeWidth(1 * dp);
-            btn.setStrokeColor(ColorStateList.valueOf(0xFFCAD8C5));
-            btn.setBackgroundTintList(ColorStateList.valueOf(0xFFF7F8F3));
-            btn.setRippleColor(ColorStateList.valueOf(0xFFE8EFE2));
+            btn.setStrokeColor(ColorStateList.valueOf(borderColor));
+            btn.setBackgroundTintList(ColorStateList.valueOf(surfaceBg));
+            btn.setRippleColor(ColorStateList.valueOf(subtleBg));
 
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMargins(0, 8 * dp, 0, 0);
@@ -214,15 +223,15 @@ public class GoogleCalendarFragment extends Fragment {
         }
 
         MaterialButton btnCancel = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
-        btnCancel.setText("Cancel");
+        btnCancel.setText(getString(R.string.action_cancel));
         btnCancel.setAllCaps(false);
         btnCancel.setInsetTop(0);
         btnCancel.setInsetBottom(0);
         btnCancel.setCornerRadius(21 * dp);
         btnCancel.setStrokeWidth(1 * dp);
-        btnCancel.setStrokeColor(ColorStateList.valueOf(0xFF557B52));
-        btnCancel.setBackgroundTintList(ColorStateList.valueOf(0xFFE8EFE2));
-        btnCancel.setTextColor(0xFF263D2B);
+        btnCancel.setStrokeColor(ColorStateList.valueOf(mossGreen));
+        btnCancel.setBackgroundTintList(ColorStateList.valueOf(subtleBg));
+        btnCancel.setTextColor(accentHeading);
         btnCancel.setTypeface(null, Typeface.BOLD);
         LinearLayout.LayoutParams cancelLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 44 * dp);
         cancelLp.setMargins(0, 14 * dp, 0, 0);
@@ -364,7 +373,7 @@ public class GoogleCalendarFragment extends Fragment {
             View rowDivider = new View(requireContext());
             rowDivider.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 1));
-            rowDivider.setBackgroundColor(Color.parseColor("#D5E0CE"));
+            rowDivider.setBackgroundColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.divider_color));
             binding.layoutMonthGrid.addView(rowDivider);
         }
     }
@@ -395,11 +404,16 @@ public class GoogleCalendarFragment extends Fragment {
         dateParams.bottomMargin = dpToPx(2);
         tvDate.setLayoutParams(dateParams);
 
+        int primaryMoss = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary_moss_green);
+        int accentHeading = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.accent_heading);
+        int textPrimary = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_primary);
+        int textMuted = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_muted);
+
         if (isToday) {
             // Google Calendar Today highlight: Moss Green circle with white bold text
             GradientDrawable circle = new GradientDrawable();
             circle.setShape(GradientDrawable.OVAL);
-            circle.setColor(Color.parseColor("#557B52")); // Arohi Primary Moss Green
+            circle.setColor(primaryMoss);
             tvDate.setBackground(circle);
             tvDate.setTextColor(Color.WHITE);
             tvDate.setTypeface(null, Typeface.BOLD);
@@ -407,16 +421,14 @@ public class GoogleCalendarFragment extends Fragment {
             // Selected day ring in Moss Green
             GradientDrawable ring = new GradientDrawable();
             ring.setShape(GradientDrawable.OVAL);
-            ring.setStroke(dpToPx(1.5f), Color.parseColor("#557B52"));
+            ring.setStroke(dpToPx(1.5f), accentHeading);
             ring.setColor(Color.TRANSPARENT);
             tvDate.setBackground(ring);
-            tvDate.setTextColor(Color.parseColor("#557B52"));
+            tvDate.setTextColor(accentHeading);
             tvDate.setTypeface(null, Typeface.BOLD);
         } else {
             tvDate.setBackground(null);
-            tvDate.setTextColor(isCurrentMonth
-                    ? Color.parseColor("#26332A") // Deep Forest Charcoal
-                    : Color.parseColor("#9AA599")); // Muted Sage
+            tvDate.setTextColor(isCurrentMonth ? textPrimary : textMuted);
         }
 
         cell.addView(tvDate);
@@ -459,9 +471,9 @@ public class GoogleCalendarFragment extends Fragment {
 
             if (dayEvents.size() > 2) {
                 TextView tvMore = new TextView(requireContext());
-                tvMore.setText("+" + (dayEvents.size() - 2) + " more");
+                tvMore.setText("+" + (dayEvents.size() - 2) + " " + getString(R.string.label_more));
                 tvMore.setTextSize(8f);
-                tvMore.setTextColor(Color.parseColor("#557B52"));
+                tvMore.setTextColor(accentHeading);
                 tvMore.setGravity(Gravity.CENTER_HORIZONTAL);
                 LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);

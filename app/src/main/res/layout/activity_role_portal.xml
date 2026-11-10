@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/warm_ivory">
+    android:background="@color/surface_background">
 
     <!-- Top Portal App Bar -->
     <LinearLayout
@@ -73,8 +73,8 @@
             android:maxLines="1"
             android:paddingHorizontal="7dp"
             android:paddingVertical="3dp"
-            android:text="VERIFIED"
-            android:textColor="@color/deep_forest_green"
+            android:text="@string/status_verified"
+            android:textColor="@color/text_primary"
             android:textSize="9sp"
             android:textStyle="bold" />
 
@@ -84,9 +84,21 @@
             android:layout_height="32dp"
             android:layout_marginEnd="5dp"
             android:background="@drawable/bg_icon_circle_mint"
-            android:contentDescription="Community Feed"
+            android:contentDescription="@string/nav_community_feed"
             android:padding="6dp"
-            android:src="@drawable/ic_nav_messages" />
+            android:src="@drawable/ic_nav_messages"
+            app:tint="@color/text_primary" />
+
+        <ImageButton
+            android:id="@+id/btnHeaderSettings"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/bg_icon_circle_mint"
+            android:contentDescription="@string/settings_title"
+            android:padding="6dp"
+            android:src="@drawable/ic_nav_settings"
+            app:tint="@color/text_primary" />
 
         <ImageButton
             android:id="@+id/btnHeaderRefresh"
@@ -95,7 +107,8 @@
             android:background="@drawable/bg_icon_circle_mint"
             android:contentDescription="@string/action_retry"
             android:padding="6dp"
-            android:src="@drawable/ic_refresh" />
+            android:src="@drawable/ic_refresh"
+            app:tint="@color/text_primary" />
     </LinearLayout>
 
     <!-- Main Fragment Container -->
@@ -113,11 +126,11 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/surface_card"
         app:elevation="8dp"
         app:itemActiveIndicatorStyle="@style/Widget.Material3.BottomNavigationView.ActiveIndicator"
-        app:itemIconTint="@color/deep_forest_green"
-        app:itemTextColor="@color/deep_forest_green"
+        app:itemIconTint="@color/nav_item_color_selector"
+        app:itemTextColor="@color/nav_item_color_selector"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

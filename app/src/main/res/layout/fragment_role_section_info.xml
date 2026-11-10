@@ -29,7 +29,7 @@
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="4dp"
                 android:text="LIVE FIRESTORE MODULE"
-                android:textColor="@color/arohi_forest_primary"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp" />
 
             <TextView
@@ -39,7 +39,7 @@
                 android:layout_marginTop="10dp"
                 android:fontFamily="sans-serif-black"
                 android:text="Module Title"
-                android:textColor="@color/arohi_pure_white"
+                android:textColor="@color/white"
                 android:textSize="22sp" />
 
             <TextView
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/arohi_pure_white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
             app:strokeColor="@color/arohi_border_subtle"
@@ -86,7 +86,7 @@
                     android:layout_marginTop="4dp"
                     android:fontFamily="sans-serif-black"
                     android:text="0 Active Records"
-                    android:textColor="@color/arohi_forest_primary"
+                    android:textColor="@color/accent_heading"
                     android:textSize="24sp" />
 
                 <TextView
@@ -107,7 +107,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            app:cardBackgroundColor="@color/arohi_pure_white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
             app:strokeColor="@color/arohi_border_subtle"
@@ -147,7 +147,7 @@
                     android:layout_marginTop="14dp"
                     android:text="Return to Main Dashboard"
                     android:textAllCaps="false"
-                    android:textColor="@color/arohi_forest_primary"
+                    android:textColor="@color/accent_heading"
                     android:textSize="12sp"
                     app:backgroundTint="@color/arohi_sage_mist"
                     app:cornerRadius="10dp" />

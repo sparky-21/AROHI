@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/surface_card"
     app:cardCornerRadius="14dp"
     app:cardElevation="2dp"
     app:strokeColor="@color/border_stroke"
@@ -41,7 +41,7 @@
                 android:background="@drawable/bg_badge_forest"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="3dp"
-                android:text="Ground Floor"
+                android:text="@string/floor_ground"
                 android:textColor="@color/white"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -78,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Hours: 24 Hours / 7 Days"
-                android:textColor="@color/deep_forest_green"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -103,7 +103,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Show Step-by-Step Directions"
-            android:textColor="@color/deep_forest_green"
+            android:textColor="@color/accent_heading"
             android:textSize="13sp"
             app:strokeColor="@color/border_focused" />
     </LinearLayout>

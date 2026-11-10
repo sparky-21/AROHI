@@ -14,6 +14,7 @@
     <color name="text_secondary">#778276</color>
     <color name="text_on_primary">#FFFFFF</color>
     <color name="text_muted">#9AA599</color>
+    <color name="accent_heading">#263D2B</color>
 
     <!-- Semantic Status Colors -->
     <color name="status_warning">#D99B45</color>

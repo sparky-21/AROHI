@@ -15,7 +15,7 @@ import com.arohi.healthcare.utils.UiStateHelper;
  * Allows newly registered users to verify their email address, resend the verification link,
  * and proceed to Basic Profile Setup.
  */
-public class EmailVerificationActivity extends AppCompatActivity {
+public class EmailVerificationActivity extends BaseActivity {
 
     private ActivityEmailVerificationBinding binding;
     private AuthRepository authRepository;

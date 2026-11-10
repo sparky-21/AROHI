@@ -39,7 +39,7 @@
                 android:background="@drawable/bg_white_pill"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="Available"
+                android:text="@string/analytics_available"
                 android:textColor="@color/status_verified"
                 android:textSize="11sp"
                 android:textStyle="bold" />

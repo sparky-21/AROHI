@@ -16,7 +16,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * Captures Nursing Council license, qualification, preferred ward, and shift preference.
  * Enforces PENDING verification status until Hospital Authority approval.
  */
-public class NurseRegistrationActivity extends AppCompatActivity {
+public class NurseRegistrationActivity extends BaseActivity {
 
     private ActivityNurseRegistrationBinding binding;
     private AuthRepository authRepository;

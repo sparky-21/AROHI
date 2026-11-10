@@ -67,7 +67,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif"
             android:text="Outgoing message content"
-            android:textColor="@color/arohi_pure_white"
+            android:textColor="@color/white"
             android:textSize="14sp" />
 
         <TextView

@@ -19,8 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="Hospital Staff &amp; User Directory"
-            android:textColor="@color/arohi_pure_white"
+            android:text="@string/admin_staff_title"
+            android:textColor="@color/white"
             android:textSize="18sp" />
 
         <TextView
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:fontFamily="sans-serif"
-            android:text="Review and manage verification status for Doctors, Nurses, and Patients."
+            android:text="@string/admin_staff_sub"
             android:textColor="@color/arohi_mint_tint"
             android:textSize="12sp" />
     </LinearLayout>
@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:layout_marginEnd="8dp"
-                android:text="All Accounts"
+                android:text="@string/filter_all_accounts"
                 android:textAllCaps="false"
                 android:textSize="12sp"
                 app:cornerRadius="10dp" />
@@ -63,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:layout_marginEnd="8dp"
-                android:text="Pending Review"
+                android:text="@string/filter_pending_review"
                 android:textAllCaps="false"
                 android:textSize="12sp"
                 app:cornerRadius="10dp" />
@@ -74,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:layout_marginEnd="8dp"
-                android:text="Doctors"
+                android:text="@string/filter_doctors"
                 android:textAllCaps="false"
                 android:textSize="12sp"
                 app:cornerRadius="10dp" />
@@ -85,7 +85,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:layout_marginEnd="8dp"
-                android:text="Nurses"
+                android:text="@string/filter_nurses"
                 android:textAllCaps="false"
                 android:textSize="12sp"
                 app:cornerRadius="10dp" />
@@ -95,7 +95,7 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
-                android:text="Patients"
+                android:text="@string/filter_patients"
                 android:textAllCaps="false"
                 android:textSize="12sp"
                 app:cornerRadius="10dp" />
@@ -111,7 +111,7 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:padding="24dp"
-        android:text="No matching accounts found in Firestore."
+        android:text="@string/admin_staff_empty"
         android:textColor="@color/arohi_slate_muted"
         android:textSize="13sp"
         android:visibility="gone" />

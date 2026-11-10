@@ -26,7 +26,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hospital Operations &amp; Facility Care"
+                android:text="@string/admin_ops_title"
                 android:textColor="@color/text_primary"
                 android:textSize="17sp"
                 android:textStyle="bold" />
@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Operation Theatres (OT), Inpatient Wards, Beds &amp; Clinical Services"
+                android:text="@string/admin_ops_sub"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -59,7 +59,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="OT &amp; Surgeries"
+                    android:text="@string/tab_ot_surgeries"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
 
@@ -73,7 +73,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="Wards &amp; Beds"
+                    android:text="@string/tab_wards_beds"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:strokeColor="@color/border_stroke" />
@@ -87,7 +87,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="4dp"
-                    android:text="Services &amp; Depts"
+                    android:text="@string/tab_services_depts"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:strokeColor="@color/border_stroke" />
@@ -121,7 +121,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:text="+ Schedule Surgery"
+                    android:text="@string/action_schedule_surgery"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -141,7 +141,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="No operations or records found in this category."
+            android:text="@string/admin_ops_empty"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:visibility="gone" />

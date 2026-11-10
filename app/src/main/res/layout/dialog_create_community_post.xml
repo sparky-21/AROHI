@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Publish Hospital &amp; Community Post"
-            android:textColor="@color/deep_forest_green"
+            android:textColor="@color/accent_heading"
             android:textSize="17sp"
             android:textStyle="bold" />
 
@@ -116,8 +116,8 @@
                 android:layout_height="42dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Cancel"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/action_cancel"
+                android:textColor="@color/accent_heading"
                 app:cornerRadius="21dp"
                 app:strokeColor="@color/border_stroke"
                 app:strokeWidth="1dp" />

@@ -40,7 +40,7 @@
                 android:background="@drawable/bg_white_pill"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="Pending"
+                android:text="@string/filter_pending"
                 android:textColor="@color/status_warning"
                 android:textSize="11sp"
                 android:textStyle="bold" />

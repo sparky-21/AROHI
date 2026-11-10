@@ -2376,7 +2376,7 @@ public class SessionManager {
     }
 
     public void setThemeMode(int themeMode) {
-        prefs.edit().putInt(KEY_THEME_MODE, themeMode).apply();
+        prefs.edit().putInt(KEY_THEME_MODE, themeMode).commit();
         AppCompatDelegate.setDefaultNightMode(themeMode);
     }
 
@@ -2389,7 +2389,7 @@ public class SessionManager {
     }
 
     public void setAppLanguage(String languageCode) {
-        prefs.edit().putString(KEY_APP_LANGUAGE, languageCode).apply();
+        prefs.edit().putString(KEY_APP_LANGUAGE, languageCode).commit();
     }
 
     public void applySavedLocale(Context context) {

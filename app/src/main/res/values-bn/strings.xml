@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">আরোহী</string>
+    <string name="app_tagline">উন্নত স্বাস্থ্যের প্রতিটি পদক্ষেপে আরোহী।</string>
+    <string name="app_subtitle">ডিজিটাল স্বাস্থ্যসেবা ও সমন্বিত হাসপাতাল ব্যবস্থাপনা ইকোসিস্টেম</string>
+
+    <!-- Splash & Common -->
+    <string name="loading_please_wait">নিরাপদ স্বাস্থ্যসেবা সেশন সিঙ্ক্রোনাইজ করা হচ্ছে…</string>
+    <string name="action_continue">এগিয়ে যান</string>
+    <string name="action_back">পেছনে</string>
+    <string name="action_skip">এড়িয়ে যান</string>
+    <string name="action_next">পরবর্তী</string>
+    <string name="action_get_started">স্বাস্থ্যসেবা যাত্রা শুরু করুন</string>
+    <string name="action_sign_in">লগইন করুন</string>
+    <string name="action_sign_out">লগআউট</string>
+    <string name="action_retry">পুনরায় চেষ্টা করুন</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">সমন্বিত স্বাস্থ্যসেবা ব্যবস্থা</string>
+    <string name="onboarding_desc_1">রোগী, ভেরিফায়েড চিকিৎসক, নার্স, ল্যাবরেটরি, অপারেশন থিয়েটার ও ফার্মেসিকে যুক্ত করে একটি নিরবচ্ছিন্ন চিকিৎসা সেবা প্রদান।</string>
+    <string name="onboarding_badge_1">পরিপূর্ণ স্বাস্থ্যসেবা</string>
+
+    <string name="onboarding_title_2">অনুমোদিত পেশাদার নির্ভরতা</string>
+    <string name="onboarding_desc_2">প্রতিটি চিকিৎসক এবং নার্সিং পেশাদার হাসপাতাল কর্তৃপক্ষ কর্তৃক কঠোরভাবে যাচাইকৃত। মেডিকেল রেকর্ড সম্পূর্ণ সুরক্ষিত।</string>
+    <string name="onboarding_badge_2">যাচাইকৃত পেশাদার</string>
+
+    <string name="onboarding_title_3">রিয়েল-টাইম স্বাস্থ্য টাইমলাইন</string>
+    <string name="onboarding_desc_3">পরামর্শ অনুরোধ, ডিজিটাল প্রেসক্রিপশন থেকে শুরু করে ল্যাব ডায়াগনস্টিক রিপোর্ট এবং পোস্ট-অপারেটিভ ফলো-আপ—সবকিছু এক প্ল্যাটফর্মে।</string>
+    <string name="onboarding_badge_3">স্মার্ট পেশেন্ট জার্নি</string>
+
+    <!-- Role Selection -->
+    <string name="role_who_you_are">আপনার ভূমিকা নির্বাচন করুন</string>
+    <string name="role_selection_title">আপনার পোর্টাল নির্বাচন করুন</string>
+    <string name="role_selection_subtitle">আরোহী নেটওয়ার্কে আপনার ভূমিকা বেছে নিন। চিকিৎসক ও নার্স অ্যাকাউন্ট হাসপাতাল কর্তৃপক্ষ দ্বারা অনুমোদিত হতে হবে।</string>
+    <string name="role_patient_title">রোগী (Patient)</string>
+    <string name="role_patient_desc">ডাক্তারের পরামর্শ, প্রেসক্রিপশন, ল্যাব রিপোর্ট ও স্বাস্থ্য টাইমলাইন দেখুন।</string>
+    <string name="role_doctor_title">চিকিৎসক (Doctor)</string>
+    <string name="role_doctor_desc">রোগীর পরামর্শ, ডিজিটাল প্রেসক্রিপশন, ডায়াগনস্টিক ও অপারেশন ব্যবস্থাপনা।</string>
+    <string name="role_nurse_title">নার্স (Nurse)</string>
+    <string name="role_nurse_desc">ওয়ার্ড পর্যবেক্ষণ, ভাইটাল সাইন রেকর্ডিং, নার্সিং টাস্ক ও ওটি শিডিউল।</string>
+    <string name="role_admin_title">হাসপাতাল কর্তৃপক্ষ</string>
+    <string name="role_admin_desc">স্বাস্থ্যকর্মী অনুমোদন এবং সামগ্রিক হাসপাতাল অপারেশন নিয়ন্ত্রণ করুন।</string>
+    <string name="already_have_account">ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন</string>
+
+    <!-- Login -->
+    <string name="login_title">আরোহীতে স্বাগতম</string>
+    <string name="login_subtitle">আপনার স্বাস্থ্যসেবা পোর্টালে প্রবেশ করতে নিবন্ধিত ইমেইল ও পাসওয়ার্ড প্রদান করুন।</string>
+    <string name="label_email">ইমেইল ঠিকানা</string>
+    <string name="label_password">পাসওয়ার্ড</string>
+    <string name="label_confirm_password">পাসওয়ার্ড নিশ্চিত করুন</string>
+    <string name="label_full_name">পূর্ণ নাম</string>
+    <string name="label_phone">মোবাইল নম্বর</string>
+    <string name="forgot_password_prompt">পাসওয়ার্ড ভুলে গেছেন?</string>
+    <string name="no_account_prompt">আরোহীতে নতুন? ভূমিকা নির্বাচন করে নিবন্ধন করুন</string>
+
+    <!-- Patient Registration -->
+    <string name="patient_reg_title">রোগী নিবন্ধন</string>
+    <string name="patient_reg_subtitle">আপনার স্বাস্থ্য প্রোফাইল তৈরি করুন। হাসপাতাল কর্তৃপক্ষের অনুমোদন সাপেক্ষে সক্রিয় হবে।</string>
+    <string name="label_dob">জন্ম তারিখ</string>
+    <string name="dob_helper_format">ফরম্যাট: বছর/মাস/দিন অথবা ক্যালেন্ডারে ট্যাপ করুন</string>
+    <string name="label_gender">লিঙ্গ</string>
+    <string name="helper_gender">যেমন: পুরুষ, মহিলা, অন্যান্য</string>
+    <string name="label_blood_group">রক্তের গ্রুপ</string>
+    <string name="helper_blood_group">যেমন: A+, A-, B+, B-, AB+, AB-, O+, O-</string>
+    <string name="label_emergency_contact_name">জরুরি যোগাযোগের ব্যক্তির নাম</string>
+    <string name="label_emergency_contact_phone">জরুরি যোগাযোগের মোবাইল নম্বর</string>
+    <string name="label_allergies">অ্যালার্জি সংক্রান্ত তথ্য (ঐচ্ছিক)</string>
+    <string name="helper_allergies">যেমন: পেনিসিলিন, ধুলাবালি, নেই</string>
+    <string name="label_chronic_conditions">দীর্ঘস্থায়ী রোগ (ঐচ্ছিক)</string>
+    <string name="action_register_patient">রোগী অ্যাকাউন্ট তৈরি করুন</string>
+
+    <!-- Doctor Registration -->
+    <string name="doctor_reg_title">চিকিৎসক নিবন্ধন</string>
+    <string name="doctor_reg_subtitle">আপনার মেডিকেল লাইসেন্স ও বিশেষজ্ঞ বিবরণ জমা দিন। হাসপাতাল কর্তৃপক্ষের যাচাইকরণ সম্পন্ন না হওয়া পর্যন্ত অনুমোদন প্রক্রিয়াধীন থাকবে।</string>
+    <string name="label_medical_license">বিএমডিসি লাইসেন্স নম্বর (BMDC)</string>
+    <string name="helper_medical_license">যেমন: BMDC-45901</string>
+    <string name="label_specialty">মূল চিকিৎসা বিভাগ</string>
+    <string name="helper_specialty">যেমন: কার্ডিওলজি, নিউরোলজি, মেডিসিন</string>
+    <string name="label_qualifications">ডিগ্রি ও শিক্ষাগত যোগ্যতা</string>
+    <string name="helper_qualifications">যেমন: MBBS, FCPS, MD, FRCS</string>
+    <string name="label_department">হাসপাতাল বিভাগ</string>
+    <string name="helper_department">যেমন: হৃদরোগ বিভাগ</string>
+    <string name="label_experience_years">ক্লিনিক্যাল অভিজ্ঞতার বছর</string>
+    <string name="helper_experience_years">যেমন: ৮ (বছরের সংখ্যা লিখুন)</string>
+    <string name="label_consultation_fee">পরামর্শ ফি (টাকা)</string>
+    <string name="helper_consultation_fee">যেমন: ১০০০</string>
+    <string name="action_register_doctor">চিকিৎসক আবেদন জমা দিন</string>
+
+    <!-- Nurse Registration -->
+    <string name="nurse_reg_title">নার্স নিবন্ধন</string>
+    <string name="nurse_reg_subtitle">নার্সিং লাইসেন্স ও ওয়ার্ডের বিবরণ জমা দিন। হাসপাতাল কর্তৃপক্ষের যাচাই সাপেক্ষে ওয়ার্ডে রোগী দেখাশোনা বরাদ্দ করা হবে।</string>
+    <string name="label_nursing_license">নার্সিং কাউন্সিল নিবন্ধন নম্বর (BNMC)</string>
+    <string name="helper_nursing_license">যেমন: BNMC-33812</string>
+    <string name="label_nursing_qualification">নার্সিং শিক্ষাগত যোগ্যতা</string>
+    <string name="helper_nursing_qualification">যেমন: বিএসসি ইন নার্সিং, ডিপ্লোমা ইন নার্সিং</string>
+    <string name="label_preferred_ward">প্রধান বিভাগ / ওয়ার্ড</string>
+    <string name="helper_preferred_ward">যেমন: আইসিইউ ওয়ার্ড এ, জেনারেল মেডিসিন</string>
+    <string name="label_shift_preference">ডিউটি শিফট</string>
+    <string name="helper_shift_preference">সকাল, সন্ধ্যা, রাত</string>
+    <string name="action_register_nurse">নার্স আবেদন জমা দিন</string>
+
+    <!-- Authorized Admin Setup -->
+    <string name="admin_setup_title">হাসপাতাল প্রশাসক অনুমোদন</string>
+    <string name="admin_setup_subtitle">সাধারণ ব্যবহারকারী প্রশাসক হিসেবে সরাসরি নিবন্ধন করতে পারেন না। পূর্ব-অনুমোদিত সিকিউরিটি টোকেন প্রদান করুন।</string>
+    <string name="label_admin_employee_id">হাসপাতাল এমপ্লয়ি আইডি</string>
+    <string name="label_admin_designation">দাপ্তরিক পদবী</string>
+    <string name="label_admin_auth_code">কর্তৃপক্ষ অনুমোদন টোকেন</string>
+    <string name="admin_security_notice">নিরাপত্তা নীতি: অনুমোদনহীন অ্যাক্সেস ফায়ারস্টোর সিকিউরিটি রুলস দ্বারা প্রতিহত করা হয়।</string>
+    <string name="action_setup_admin">অ্যাডমিন অ্যাকাউন্ট সক্রিয় করুন</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_password_title">পাসওয়ার্ড রিসেট করুন</string>
+    <string name="forgot_password_subtitle">আপনার নিবন্ধিত ইমেইল ঠিকানা দিন। আমরা পাসওয়ার্ড রিসেট করার লিঙ্ক পাঠাব।</string>
+    <string name="action_send_reset_link">রিসেট লিঙ্ক পাঠান</string>
+    <string name="reset_link_sent_message">পাসওয়ার্ড রিসেট ইমেইল পাঠানো হয়েছে। দয়া করে ইনবক্স বা স্প্যাম ফোল্ডার দেখুন।</string>
+
+    <!-- Email Verification -->
+    <string name="email_verification_title">ইমেইল ঠিকানা যাচাই করুন</string>
+    <string name="email_verification_subtitle">সংবেদনশীল স্বাস্থ্য তথ্য সুরক্ষার স্বার্থে এগিয়ে যাওয়ার পূর্বে আপনার ইমেইল নিশ্চিত করুন।</string>
+    <string name="action_check_verification">আমি ইমেইল যাচাই করেছি</string>
+    <string name="action_resend_verification">পুনরায় যাচাইকরণ ইমেইল পাঠান</string>
+    <string name="verification_sent_feedback">যাচাইকরণ ইমেইল পাঠানো হয়েছে!</string>
+
+    <!-- Basic Profile Setup -->
+    <string name="profile_setup_title">প্রোফাইল তথ্য ও পরিচয়</string>
+    <string name="profile_setup_subtitle">আপনার আরোহী হেলথকেয়ার আইডি এবং প্রোফাইলের তথ্য পর্যালোচনা করুন।</string>
+    <string name="label_address">বর্তমান ঠিকানা / চেম্বার</string>
+    <string name="label_bio_notes">স্বাস্থ্য সারাংশ / পেশাগত পরিচয়</string>
+    <string name="action_save_profile">সংরক্ষণ করুন</string>
+    <string name="status_banner_pending_title">অনুমোদন প্রক্রিয়াধীন রয়েছে</string>
+    <string name="status_banner_pending_desc">আপনার আবেদন জমা হয়েছে এবং হাসপাতাল কর্তৃপক্ষের অনুমোদনের অপেক্ষায় রয়েছে।</string>
+    <string name="status_banner_verified_title">যাচাইকৃত ও অনুমোদিত পরিচয়</string>
+    <string name="status_banner_verified_desc">আপনার আরোহী পরিচয় এবং ভূমিকা সম্পূর্ণরূপে সক্রিয়।</string>
+
+    <!-- Phase 10: Settings, Appearance, Language, Notifications & Privacy -->
+    <string name="settings_title">সেটিংস ও পছন্দসমূহ</string>
+    <string name="settings_subtitle">থিম, ভাষা, নোটিফিকেশন ও নিরাপত্তা কাস্টমাইজ করুন</string>
+    <string name="settings_appearance_title">অ্যাপ থিম ও দৃশ্যমানতা</string>
+    <string name="theme_system_default">সিস্টেম ডিফল্ট</string>
+    <string name="theme_light">লাইট থিম (আইভরি ও মস গ্রিন)</string>
+    <string name="theme_dark">ডার্ক থিম (ফরেস্ট নাইট)</string>
+    <string name="settings_language_title">ভাষা / Language</string>
+    <string name="lang_english">English (ইংরেজি)</string>
+    <string name="lang_bangla">বাংলা (Bangla)</string>
+    <string name="settings_notifications_title">নোটিফিকেশন ক্যাটাগরি</string>
+    <string name="notif_appointments">ডাক্তার অ্যাপয়েন্টমেন্ট ও শিডিউল</string>
+    <string name="notif_messages">নিরাপদ মেসেজ ও পরামর্শ</string>
+    <string name="notif_prescriptions">ডিজিটাল প্রেসক্রিপশন ও ঔষধের অনুস্মারক</string>
+    <string name="notif_lab_reports">ল্যাব রিপোর্ট ও টেস্ট ফলাফল</string>
+    <string name="notif_announcements">হাসপাতাল ও স্বাস্থ্য সচেতনতা বার্তা</string>
+    <string name="notif_emergency">জরুরি ট্রায়াজ ও ইমার্জেন্সি সতর্কতা</string>
+    <string name="settings_account_privacy_title">অ্যাকাউন্ট ও গোপনীয়তা</string>
+    <string name="action_edit_profile">ব্যক্তিগত প্রোফাইল সম্পাদনা</string>
+    <string name="action_change_password">অ্যাকাউন্টের পাসওয়ার্ড পরিবর্তন</string>
+    <string name="action_manage_hospitals">সংযুক্ত হাসপাতালসমূহ পরিচালনা</string>
+    <string name="privacy_share_emergency">জরুরি অবস্থায় রেসপন্ডারদের সাথে প্রোফাইল শেয়ার</string>
+    <string name="privacy_record_sharing">সংযুক্ত চিকিৎসকদের স্বাস্থ্য টাইমলাইন দেখার অনুমতি দিন</string>
+    <string name="settings_permissions_title">ডিভাইস পারমিশনসমূহ</string>
+    <string name="perm_camera">ক্যামেরা ও ফাইল অ্যাক্সেস</string>
+    <string name="perm_notifications">পুশ নোটিফিকেশন</string>
+    <string name="action_request_account_deletion">অ্যাকাউন্ট মুছে ফেলার অনুরোধ</string>
+    <string name="dialog_delete_account_title">অ্যাকাউন্ট মুছে ফেলার নিশ্চিতকরণ</string>
+    <string name="dialog_delete_account_msg">আপনি কি নিশ্চিতভাবে আপনার অ্যাকাউন্ট স্থায়ীভাবে মুছে ফেলার অনুরোধ করতে চান? এর ফলে সমস্ত হাসপাতাল সদস্যপদ স্থগিত হবে এবং আইনানুগভাবে রেকর্ড সংরক্ষিত হবে।</string>
+    <string name="dialog_change_password_title">পাসওয়ার্ড পরিবর্তন করুন</string>
+    <string name="label_current_password">বর্তমান পাসওয়ার্ড</string>
+    <string name="label_new_password">নতুন পাসওয়ার্ড</string>
+    <string name="label_confirm_new_password">নতুন পাসওয়ার্ড নিশ্চিত করুন</string>
+    <string name="password_changed_success">পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।</string>
+    <string name="error_password_mismatch">নতুন পাসওয়ার্ড দুটির মিল নেই।</string>
+    <string name="error_current_password_invalid">বর্তমান পাসওয়ার্ড সঠিক নয়।</string>
+
+    <!-- Bottom Navigation & Portal Header -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_doctors">চিকিৎসক</string>
+    <string name="nav_records">রেকর্ডস</string>
+    <string name="nav_calendar">ক্যালেন্ডার</string>
+    <string name="nav_profile">প্রোফাইল</string>
+    <string name="nav_dashboard">ড্যাশবোর্ড</string>
+    <string name="nav_patients">রোগী</string>
+    <string name="nav_schedule">শিডিউল</string>
+    <string name="nav_messages">মেসেজ</string>
+    <string name="nav_tasks">কাজসমূহ</string>
+    <string name="nav_overview">সারসংক্ষেপ</string>
+    <string name="nav_departments">বিভাগসমূহ</string>
+    <string name="nav_operations">অপারেশন</string>
+    <string name="nav_staff">স্টাফ</string>
+    <string name="nav_settings">সেটিংস</string>
+    <string name="nav_community_feed">কমিউনিটি ফিড</string>
+
+    <string name="portal_title_patient">আরোহী রোগী পোর্টাল</string>
+    <string name="portal_title_doctor">আরোহী চিকিৎসক পোর্টাল</string>
+    <string name="portal_title_nurse">আরোহী নার্স পোর্টাল</string>
+    <string name="portal_title_admin">আরোহী হাসপাতাল কর্তৃপক্ষ</string>
+    <string name="status_verified">যাচাইকৃত</string>
+    <string name="status_pending">অপেক্ষমাণ</string>
+    <string name="status_rejected">বাতিল</string>
+    <string name="status_granted">অনুমোদিত</string>
+    <string name="status_active">সক্রিয়</string>
+    <string name="badge_secure_auth">আরোহী নিরাপদ অথেনটিকেশন</string>
+
+    <string name="action_close">বন্ধ করুন</string>
+    <string name="action_cancel">বাতিল</string>
+    <string name="action_save">সংরক্ষণ</string>
+    <string name="action_confirm_deletion">মুছে ফেলা নিশ্চিত করুন</string>
+    <string name="action_send">পাঠান</string>
+    <string name="action_add_plus">+ যোগ করুন</string>
+    <string name="action_refresh_btn">↻ রিফ্রেশ</string>
+    <string name="action_view_details">বিস্তারিত দেখুন ▸</string>
+    <string name="action_accept">গ্রহণ করুন</string>
+    <string name="action_decline">প্রত্যাখ্যান</string>
+    <string name="action_details">বিস্তারিত</string>
+    <string name="action_confirm">নিশ্চিত করুন</string>
+    <string name="action_reschedule">সময় পরিবর্তন</string>
+    <string name="action_save_post">সংরক্ষণ</string>
+    <string name="action_report_post">⚑ রিপোর্ট</string>
+    <string name="action_moderate_post">⚙ মডারেশন</string>
+    <string name="action_view_profile">প্রোফাইল দেখুন</string>
+    <string name="action_send_request">অনুরোধ পাঠান</string>
+    <string name="label_more">আরও</string>
+
+    <string name="sync_firestore_status">ফায়ারস্টোরের সাথে সিঙ্ক হয়েছে • অবস্থা: %1$s</string>
+    <string name="dialog_hospital_switcher_title">আরোহী মাল্টি-হসপিটাল নেটওয়ার্ক সুইচার</string>
+    <string name="hospital_prefix_active">● সক্রিয়: </string>
+    <string name="hospital_prefix_switch">○ পরিবর্তন করুন: </string>
+    <string name="label_role_prefix">ভূমিকা: %1$s</string>
+    <string name="action_explore_network_directory">🌐 গ্লোবাল নেটওয়ার্ক ডিরেক্টরি দেখুন</string>
+    <string name="action_super_admin_governance">⚙ সুপার অ্যাডমিন হাসপাতাল পরিচালনা</string>
+    <string name="toast_switched_facility">হাসপাতাল পরিবর্তন হয়েছে: %1$s</string>
+    <string name="error_no_active_session">আপডেট করার জন্য কোনো সক্রিয় সেশন নেই।</string>
+    <string name="error_password_policy">পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে এবং অক্ষর ও সংখ্যা থাকতে হবে।</string>
+    <string name="toast_account_deletion_requested">অ্যাকাউন্ট মুছে ফেলার অনুরোধ পাঠানো হয়েছে। লগআউট হচ্ছে।</string>
+
+    <!-- Patient Dashboard -->
+    <string name="pat_dash_header">রোগী স্বাস্থ্যসেবা ড্যাশবোর্ড</string>
+    <string name="pat_dash_hello">স্বাগতম, %1$s</string>
+    <string name="pat_dash_id_prefix">রোগী আইডি: %1$s</string>
+    <string name="pat_dash_pending_title">অ্যাকাউন্ট যাচাইকরণ অপেক্ষমাণ</string>
+    <string name="pat_dash_declined_title">অ্যাকাউন্ট যাচাইকরণ প্রত্যাখ্যাত</string>
+    <string name="pat_dash_pending_desc">হাসপাতাল কর্তৃপক্ষের অনুমোদনের অপেক্ষায় রয়েছে।</string>
+    <string name="pat_dash_emergency_title">জরুরি স্বাস্থ্য কার্ড শর্টকাট</string>
+    <string name="pat_dash_emergency_sub">রক্তের গ্রুপ, অ্যালার্জি ও জরুরি যোগাযোগ দেখতে ট্যাপ করুন</string>
+    <string name="pat_dash_overview">আপনার স্বাস্থ্যসেবা সারসংক্ষেপ</string>
+    <string name="pat_card_appointments">আসন্ন অ্যাপয়েন্টমেন্ট</string>
+    <string name="pat_card_appointments_sub">কোনো অ্যাপয়েন্টমেন্ট নির্ধারিত নেই</string>
+    <string name="pat_card_prescriptions">সাম্প্রতিক প্রেসক্রিপশন</string>
+    <string name="pat_card_prescriptions_sub">এখনো কোনো ডিজিটাল প্রেসক্রিপশন নেই</string>
+    <string name="pat_card_lab_reports">অপেক্ষমাণ ল্যাব রিপোর্ট</string>
+    <string name="pat_card_lab_reports_sub">ল্যাব ওয়ার্কফ্লো-র সাথে সিঙ্ক করা</string>
+    <string name="pat_card_med_reminders">ঔষধের অনুস্মারক</string>
+    <string name="pat_card_med_reminders_sub">সক্রিয় প্রেসক্রিপশনের সাথে যুক্ত</string>
+    <string name="pat_card_doc_connections">সংযুক্ত চিকিৎসক</string>
+    <string name="pat_card_doc_connections_sub">অনুমোদিত চিকিৎসকগণ</string>
+    <string name="pat_card_notifications">নোটিফিকেশন</string>
+    <string name="pat_card_notifications_sub">রিয়েল-টাইম সতর্কতা</string>
+    <string name="pat_journey_title">স্মার্ট পেশেন্ট জার্নি</string>
+    <string name="pat_journey_steps">১. পরামর্শ → ২. রোগ নির্ণয় → ৩. পরীক্ষা → ৪. চিকিৎসা → ৫. অপারেশন → ৬. সুস্থতা → ৭. ফলো-আপ</string>
+    <string name="pat_journey_current_default">বর্তমান ধাপ: ১. ক্লিনিক্যাল পরামর্শ (অনুমোদিত চিকিৎসা কার্যক্রম অনুযায়ী স্বয়ংক্রিয়ভাবে আপডেট হয়)</string>
+    <string name="pat_quick_services">দ্রুত স্বাস্থ্যসেবা সমূহ</string>
+    <string name="service_find_doctors">চিকিৎসক খুঁজুন</string>
+    <string name="service_medical_records">মেডিকেল রেকর্ড</string>
+    <string name="service_medical_calendar">মেডিকেল ক্যালেন্ডার</string>
+    <string name="service_health_profile">স্বাস্থ্য প্রোফাইল</string>
+    <string name="service_smart_pharmacy">স্মার্ট ই-ফার্মেসি</string>
+    <string name="service_arohi_ai">আরোহী এআই</string>
+    <string name="service_hospital_map">হাসপাতাল ম্যাপ</string>
+    <string name="service_family_health">পারিবারিক স্বাস্থ্য</string>
+    <string name="pat_latest_announcement">সর্বশেষ হাসপাতাল ঘোষণা</string>
+    <string name="pat_no_announcement">এখনো কোনো হাসপাতাল ঘোষণা প্রকাশিত হয়নি।</string>
+    <string name="pat_no_announcement_sub">আরোহী হাসপাতাল কর্তৃপক্ষের অফিসিয়াল বার্তা এখানে দেখা যাবে।</string>
+
+    <!-- Doctor Dashboard -->
+    <string name="doc_dash_header">বিশেষজ্ঞ চিকিৎসক ড্যাশবোর্ড</string>
+    <string name="doc_dash_pending_title">বিএমডিসি সনদ যাচাইকরণ অপেক্ষমাণ</string>
+    <string name="doc_dash_declined_title">বিএমডিসি সনদ যাচাইকরণ প্রত্যাখ্যাত</string>
+    <string name="doc_dash_pending_desc">হাসপাতাল প্রশাসকের অনুমোদনের আগ পর্যন্ত রোগীর অনুরোধ গ্রহণ, রেকর্ড দেখা ও ডিজিটাল প্রেসক্রিপশন কার্যক্রম বন্ধ থাকবে।</string>
+    <string name="doc_dash_id_bmdc">চিকিৎসক আইডি: %1$s • বিএমডিসি: %2$s</string>
+    <string name="doc_dash_overview">চিকিৎসা কার্যক্রমের সারসংক্ষেপ</string>
+    <string name="doc_card_today_appts">আজকের অ্যাপয়েন্টমেন্ট</string>
+    <string name="doc_card_today_appts_sub">নির্ধারিত পরামর্শসমূহ</string>
+    <string name="doc_card_pending_reqs">অপেক্ষমাণ রোগীর অনুরোধ</string>
+    <string name="doc_card_pending_reqs_sub">আপনার পর্যালোচনার অপেক্ষায়</string>
+    <string name="doc_card_accepted_pats">অনুমোদিত রোগী</string>
+    <string name="doc_card_accepted_pats_sub">অনুমোদিত সংযোগ</string>
+    <string name="doc_card_upcoming_ops">আসন্ন অপারেশন</string>
+    <string name="doc_card_upcoming_ops_sub">ওটি শিডিউল সিঙ্ক করা</string>
+    <string name="doc_card_lab_reviews">অপেক্ষমাণ রিপোর্ট পর্যালোচনা</string>
+    <string name="doc_card_lab_reviews_sub">ল্যাব ডায়াগনস্টিক আপলোড</string>
+    <string name="doc_card_followups">ফলো-আপ অনুস্মারক</string>
+    <string name="doc_card_followups_sub">পরামর্শ পরবর্তী যত্ন</string>
+    <string name="doc_recent_activity">সাম্প্রতিক রোগীর কার্যক্রম</string>
+    <string name="doc_recent_activity_empty">এখনো কোনো অনুমোদিত রোগী পরামর্শ নেই। রোগীদের অনুরোধ গ্রহণ করলে তাদের রিয়েল-টাইম তথ্য এখানে দেখা যাবে।</string>
+    <string name="doc_manage_profile_btn">পেশাদার প্রোফাইল ও সময়সূচী পরিচালনা</string>
+
+    <!-- Nurse Dashboard -->
+    <string name="nurse_dash_pending_title">নার্সিং সনদ যাচাইকরণ অপেক্ষমাণ</string>
+    <string name="nurse_dash_declined_title">নার্সিং সনদ যাচাইকরণ প্রত্যাখ্যাত</string>
+    <string name="nurse_dash_pending_desc">আপনার বিএনএমসি নার্সিং লাইসেন্স হাসপাতাল কর্তৃপক্ষের অনুমোদনের অপেক্ষায় আছে। যাচাই সম্পন্ন হলে ওয়ার্ড ও কাজের দায়িত্ব সক্রিয় হবে।</string>
+    <string name="nurse_dash_header">নার্সিং স্টেশন ও ওয়ার্ড কেয়ার</string>
+    <string name="nurse_ward_prefix">ওয়ার্ড: %1$s</string>
+    <string name="nurse_shift_prefix">শিফট: %1$s</string>
+    <string name="nurse_pref_prefix">পছন্দের ওয়ার্ড: %1$s</string>
+    <string name="nurse_task_overview">কাজ সম্পাদনের সারসংক্ষেপ</string>
+    <string name="nurse_task_live_note">ফায়ারস্টোর /nurseAssignments থেকে লাইভ টাস্ক ট্র্যাকিং।</string>
+    <string name="nurse_ward_assignments">ওয়ার্ড ও রোগী বরাদ্দ</string>
+    <string name="nurse_card_assigned_pats">বরাদ্দকৃত রোগী</string>
+    <string name="nurse_card_assigned_pats_sub">সক্রিয় অন্তর্বিভাগীয় সেবা</string>
+    <string name="nurse_card_assigned_ward">বরাদ্দকৃত ওয়ার্ড</string>
+    <string name="nurse_card_tasks">আজকের নার্সিং কাজ</string>
+    <string name="nurse_card_tasks_sub">কোনো বকেয়া ওয়ার্ড কাজ নেই</string>
+    <string name="nurse_card_meds">ঔষধের সময়সূচী</string>
+    <string name="nurse_card_meds_sub">নির্ধারিত ডোজ বাকি নেই</string>
+    <string name="nurse_card_procedures">আসন্ন প্রসিডিউর</string>
+    <string name="nurse_card_procedures_sub">ড্রেসিং ও ভাইটালস পরীক্ষা</string>
+    <string name="nurse_card_ot_assist">অপারেশন সহায়তা</string>
+    <string name="nurse_card_ot_assist_sub">ওটি স্ক্রাব ও রিকভারি ডিউটি</string>
+    <string name="nurse_duty_roster_title">ডিউটি শিডিউল ও নার্সিং স্টেশন</string>
+    <string name="nurse_manage_profile_btn">নার্সিং প্রোফাইল পরিচালনা</string>
+
+    <!-- Admin Dashboard & Analytics -->
+    <string name="admin_dash_role">হাসপাতাল প্রশাসক</string>
+    <string name="admin_dash_badge">কর্তৃপক্ষ</string>
+    <string name="admin_dash_sub">লাইভ ফায়ারস্টোর ইকোসিস্টেম • নিচের অপেক্ষমাণ অ্যাকাউন্টগুলো অনুমোদন বা বাতিল করুন</string>
+    <string name="admin_stats_title">হাসপাতাল পরিচালনা পরিসংখ্যান</string>
+    <string name="admin_card_patients">মোট রোগী</string>
+    <string name="admin_card_patients_sub">/patients এ নিবন্ধিত</string>
+    <string name="admin_card_staff">চিকিৎসক ও নার্স</string>
+    <string name="admin_card_verifications">অপেক্ষমাণ যাচাইকরণ</string>
+    <string name="admin_card_verifications_sub">অ্যাডমিন পর্যালোচনার অপেক্ষায়</string>
+    <string name="admin_card_departments">বিভাগসমূহ</string>
+    <string name="admin_card_departments_sub">সক্রিয় ক্লিনিক্যাল ইউনিট</string>
+    <string name="admin_card_ward_bed">ওয়ার্ড ও বেড সারসংক্ষেপ</string>
+    <string name="admin_card_ot">ওটি সারসংক্ষেপ</string>
+    <string name="admin_announcements_title">হাসপাতাল ঘোষণা</string>
+    <string name="admin_btn_analytics">📊 বিশ্লেষণ</string>
+    <string name="admin_btn_publish_notice">+ নোটিশ প্রকাশ</string>
+    <string name="admin_no_notices_title">এখনো কোনো ঘোষণা প্রকাশিত হয়নি</string>
+    <string name="admin_no_notices_sub">রোগী, চিকিৎসক ও নার্সদের জন্য অফিসিয়াল ঘোষণা প্রকাশ করতে \'+ নোটিশ প্রকাশ\' এ ট্যাপ করুন।</string>
+    <string name="admin_pending_reqs_title">অপেক্ষমাণ যাচাইকরণ অনুরোধ</string>
+    <string name="admin_all_accounts_btn">সকল অ্যাকাউন্ট ▸</string>
+    <string name="admin_all_verified_empty">সকল রোগী, চিকিৎসক এবং নার্সের নিবন্ধন হালনাগাদ রয়েছে। বর্তমানে কোনো অ্যাকাউন্ট অপেক্ষমাণ নেই।</string>
+
+    <!-- Profile Screens -->
+    <string name="pat_profile_title">রোগী প্রোফাইল</string>
+    <string name="pat_profile_section">ব্যক্তিগত ও স্বাস্থ্য প্রোফাইল</string>
+    <string name="pat_profile_section_sub">আপনার ব্যক্তিগত তথ্য এবং জরুরি মেডিকেল রেকর্ড নির্ভুল রাখুন।</string>
+    <string name="label_dob_format">জন্ম তারিখ (YYYY/MM/DD)</string>
+    <string name="label_known_allergies">জ্ঞাত অ্যালার্জি</string>
+    <string name="label_chronic_history">দীর্ঘস্থায়ী রোগ / চিকিৎসা ইতিহাস</string>
+    <string name="label_personal_notes">ব্যক্তিগত স্বাস্থ্য নোট</string>
+    <string name="action_save_patient_profile">রোগী প্রোফাইল সংরক্ষণ</string>
+    <string name="action_sign_out_arohi">আরোহী থেকে লগআউট</string>
+
+    <string name="doc_profile_title">চিকিৎসকের পেশাদার প্রোফাইল</string>
+    <string name="doc_profile_lock_note">হাসপাতাল কর্তৃপক্ষ কর্তৃক যাচাইকৃত হলে বিএমডিসি নিবন্ধন লক হয়ে যায়।</string>
+    <string name="doc_profile_section">চিকিৎসা ও পেশাদার বিবরণ</string>
+    <string name="label_doc_full_name">চিকিৎসকের পূর্ণ নাম</string>
+    <string name="label_bmdc_number">বিএমডিসি / মেডিকেল লাইসেন্স নম্বর</string>
+    <string name="label_medical_specialty">চিকিৎসা বিশেষজ্ঞতা</string>
+    <string name="label_chamber_schedule">চেম্বার ও পরামর্শ সময়সূচী</string>
+    <string name="label_chamber_address">চেম্বার / হাসপাতালের ঠিকানা</string>
+    <string name="label_clinical_bio">চিকিৎসা জীবনী ও বিশেষ আগ্রহ</string>
+    <string name="action_save_doctor_profile">চিকিৎসক প্রোফাইল সংরক্ষণ</string>
+
+    <string name="nurse_profile_title">নার্সের পেশাদার প্রোফাইল</string>
+    <string name="nurse_profile_lock_note">হাসপাতাল কর্তৃপক্ষ কর্তৃক যাচাইকৃত হলে বিএনএমসি লাইসেন্স লক হয়ে যায়।</string>
+    <string name="nurse_profile_section">নার্সিং সনদ ও ওয়ার্ড রোস্টার</string>
+    <string name="label_nurse_full_name">নার্সের পূর্ণ নাম</string>
+    <string name="label_bnmc_number">বিএনএমসি / নার্সিং লাইসেন্স নম্বর</string>
+    <string name="label_pref_ward_unit">পছন্দের ওয়ার্ড / ইউনিট</string>
+    <string name="label_assigned_ward_admin">বর্তমান বরাদ্দকৃত ওয়ার্ড (অ্যাডমিন পরিচালিত)</string>
+    <string name="label_duty_shift_pref">ডিউটি শিফট পছন্দ</string>
+    <string name="label_residential_address">বাসস্থানের ঠিকানা</string>
+    <string name="label_clinical_skills">ক্লিনিক্যাল দক্ষতা ও সনদপত্র</string>
+    <string name="action_save_nurse_profile">নার্স প্রোফাইল সংরক্ষণ</string>
+
+    <string name="admin_profile_title">হাসপাতাল কর্তৃপক্ষ সেটিংস</string>
+    <string name="admin_profile_section">অনুমোদিত হাসপাতাল ও প্রশাসকের তথ্য</string>
+    <string name="label_admin_full_name">প্রশাসকের পূর্ণ নাম</string>
+    <string name="label_official_mobile">দাপ্তরিক মোবাইল নম্বর</string>
+    <string name="label_emp_authority_id">কর্মচারী / কর্তৃপক্ষ আইডি</string>
+    <string name="label_auth_hospital_name">অনুমোদিত হাসপাতালের নাম</string>
+    <string name="label_emergency_hotline">২৪/৭ হাসপাতাল জরুরি হটলাইন</string>
+    <string name="label_campus_address">হাসপাতাল ক্যাম্পাসের ঠিকানা</string>
+    <string name="label_admin_notes">প্রশাসনিক নোট ও পরিচালনা নীতি</string>
+    <string name="action_save_admin_settings">হাসপাতাল ও অ্যাডমিন সেটিংস সংরক্ষণ</string>
+
+    <!-- Discovery & Role Selection & Auth Extras -->
+    <string name="hint_search_hospital">নাম, শহর বা বিভাগ দিয়ে হাসপাতাল খুঁজুন…</string>
+    <string name="hint_hospital_code">হাসপাতাল কোড আছে? (যেমন: AROHI-HQ)</string>
+    <string name="action_find">খুঁজুন</string>
+    <string name="filter_all_hospitals">সকল হাসপাতাল</string>
+    <string name="filter_verified_only">✓ শুধুমাত্র যাচাইকৃত</string>
+    <string name="filter_emergency_24_7">২৪/৭ জরুরি বিভাগ</string>
+    <string name="city_dhaka">ঢাকা</string>
+    <string name="city_chittagong">চট্টগ্রাম</string>
+    <string name="discovery_available_count">উপলব্ধ হাসপাতাল (%1$d)</string>
+    <string name="discovery_super_admin">🛡 সুপার অ্যাডমিন</string>
+    <string name="discovery_empty_title">কোনো হাসপাতাল পাওয়া যায়নি</string>
+    <string name="discovery_empty_sub">অনুসন্ধানের শব্দ পরিবর্তন করুন অথবা আপনার হাসপাতাল কোড যাচাই করুন।</string>
+    <string name="action_register_facility">হাসপাতাল নিবন্ধন</string>
+    <string name="action_sign_in_arohi">আরোহীতে লগইন</string>
+    <string name="action_change">পরিবর্তন</string>
+    <string name="badge_accredited_institution">✓ অনুমোদিত প্রতিষ্ঠান</string>
+    <string name="badge_pending_accreditation">অনুমোদন অপেক্ষমাণ</string>
+    <string name="label_operational_beds">🛏 %1$d টি সক্রিয় বেড</string>
+    <string name="label_hotline_missing">জরুরি হটলাইন উল্লেখ নেই</string>
+    <string name="label_institutional_onboarding">প্রাতিষ্ঠানিক নিবন্ধন আবেদন</string>
+    <string name="label_hospital_code_verified">কোড: %1$s • যাচাইকৃত নেটওয়ার্ক</string>
+
+    <!-- Patient Doctors, Records & Messaging -->
+    <string name="tab_find_doctors">চিকিৎসক খুঁজুন</string>
+    <string name="tab_my_requests">আমার অনুরোধ</string>
+    <string name="tab_secure_chat">নিরাপদ চ্যাট</string>
+    <string name="hint_search_doctors">নাম, বিশেষজ্ঞতা বা ডিগ্রি দিয়ে চিকিৎসক খুঁজুন</string>
+    <string name="chip_all_specialties">সকল বিভাগ</string>
+    <string name="spec_medicine">মেডিসিন</string>
+    <string name="spec_cardiology">কার্ডিওলজি</string>
+    <string name="spec_neurology">নিউরোলজি</string>
+    <string name="spec_pediatrics">শিশুরোগ</string>
+    <string name="spec_orthopedics">অর্থোপেডিকস</string>
+    <string name="spec_gynecology">গাইনোকলজি</string>
+    <string name="spec_surgery">সার্জারি</string>
+    <string name="doctors_showing_verified">ফায়ারস্টোর থেকে যাচাইকৃত বিশেষজ্ঞ চিকিৎসক দেখানো হচ্ছে</string>
+    <string name="doctors_empty_filter">আপনার ফিল্টার অনুযায়ী কোনো যাচাইকৃত চিকিৎসক পাওয়া যায়নি। শুধুমাত্র হাসপাতাল কর্তৃপক্ষ অনুমোদিত চিকিৎসকরাই এখানে প্রদর্শিত হন।</string>
+    <string name="filter_all">সকল</string>
+    <string name="filter_pending">অপেক্ষমাণ</string>
+    <string name="filter_accepted">গৃহীত</string>
+    <string name="requests_empty">আপনি এখনো কোনো পরামর্শের অনুরোধ পাঠাননি। অনুরোধ পাঠাতে \'চিকিৎসক খুঁজুন\' ট্যাবে যান।</string>
+    <string name="chat_authorized_convs">অনুমোদিত চিকিৎসক কথোপকথন</string>
+    <string name="btn_alerts">সতর্কতা</string>
+    <string name="chat_empty_notice">কোনো যাচাইকৃত চিকিৎসক আপনার পরামর্শের অনুরোধ গ্রহণ করলেই কেবল নিরাপদ মেসেজিং চালু হবে।</string>
+
+    <string name="records_vault_title">ডিজিটাল মেডিকেল রেকর্ড ও ভল্ট</string>
+    <string name="records_vault_sub">ফায়ারস্টোর /prescriptions ও /laboratoryReports এর সাথে সংযুক্ত</string>
+    <string name="tab_journey">যাত্রা</string>
+    <string name="tab_timeline">টাইমলাইন</string>
+    <string name="tab_rx_vault">প্রেসক্রিপশন</string>
+    <string name="tab_lab_tests">ল্যাব টেস্ট</string>
+    <string name="records_empty_title">কোনো মেডিকেল রেকর্ড নেই</string>
+    <string name="records_empty_sub">আপনার চিকিৎসকের প্রদত্ত প্রেসক্রিপশন এবং ল্যাব ডায়াগনস্টিক রিপোর্ট স্বয়ংক্রিয়ভাবে এখানে দেখা যাবে।</string>
+
+    <string name="conv_header_title">নিরাপদ ক্লিনিক্যাল কথোপকথন</string>
+    <string name="conv_header_sub">শুধুমাত্র গৃহীত সংযোগের জন্য ১-টু-১ মেসেজিং সক্রিয়</string>
+    <string name="action_view_notifications">নোটিফিকেশন দেখুন</string>
+    <string name="conv_empty">এখনো কোনো সক্রিয় কথোপকথন নেই। পরামর্শের অনুরোধ গৃহীত হলেই চ্যাট এখানে দেখা যাবে।</string>
+    <string name="chat_verified_connection">যাচাইকৃত সংযোগ • এন্ড-টু-এন্ড ফায়ারস্টোর</string>
+    <string name="chat_locked_title">নিরাপদ মেসেজিং লক করা</string>
+    <string name="chat_locked_sub">শুধুমাত্র অনুমোদিত চিকিৎসক-রোগী সংযোগই বার্তা আদান-প্রদান করতে পারেন।</string>
+    <string name="chat_start_prompt">আপনার পরামর্শের সংযোগ গৃহীত হয়েছে। কথোপকথন শুরু করতে নিচে বার্তা লিখুন।</string>
+    <string name="hint_type_secure_message">নিরাপদ ক্লিনিক্যাল বার্তা লিখুন…</string>
+
+    <!-- Doctor Patients, Nurse Tabs, Admin Staff & Operations & Analytics -->
+    <string name="doc_verify_req_title">ক্লিনিক্যাল কার্যক্রমের জন্য বিএমডিসি যাচাই আবশ্যক</string>
+    <string name="doc_verify_req_desc">আপনার অ্যাকাউন্ট হাসপাতাল প্রশাসকের অনুমোদনের অপেক্ষায় আছে। যাচাইকৃত হলে অনুরোধ গ্রহণ ও রোগীর রেকর্ড দেখার সুবিধা চালু হবে।</string>
+    <string name="tab_incoming_requests">আগত অনুরোধ</string>
+    <string name="tab_accepted_patients">গৃহীত রোগী</string>
+    <string name="doc_review_incoming_sub">রোগীদের আগত পরামর্শের অনুরোধ পর্যালোচনা করুন</string>
+    <string name="doc_no_requests">কোনো পরামর্শের অনুরোধ পাওয়া যায়নি।</string>
+
+    <string name="nurse_inpatient_title">অন্তর্বিভাগীয় ওয়ার্ড সেবা ও পর্যবেক্ষণ</string>
+    <string name="nurse_inpatient_sub">বরাদ্দকৃত ওয়ার্ডের অনুমোদিত রোগীদের মধ্যে সীমাবদ্ধ • আরোহী হেলথ সিস্টেম</string>
+    <string name="nurse_no_patients">আপনার বরাদ্দকৃত ওয়ার্ডে বর্তমানে কোনো রোগী ভর্তি নেই।</string>
+    <string name="nurse_tasks_title">নার্সিং সেবা কাজ ও নির্দেশনা</string>
+    <string name="nurse_tasks_sub">ঔষধ, ভাইটালস পরীক্ষা, প্রসিডিউর ও চিকিৎসকের আদেশ</string>
+    <string name="action_record_vitals">+ ভাইটালস রেকর্ড</string>
+    <string name="filter_all_tasks">সকল কাজ</string>
+    <string name="filter_medications">💊 ঔষধসমূহ</string>
+    <string name="filter_vitals">🩺 ভাইটালস</string>
+    <string name="filter_procedures">🩹 প্রসিডিউর</string>
+    <string name="filter_pending_only">শুধুমাত্র বকেয়া</string>
+    <string name="nurse_tasks_empty">নির্বাচিত বিভাগের জন্য কোনো নার্সিং কাজ পাওয়া যায়নি।</string>
+    <string name="nurse_schedule_title">নার্স ডিউটি ও ওটি সহায়তা</string>
+    <string name="nurse_schedule_sub">সকাল, সন্ধ্যা ও রাতের শিফট রোস্টার • অপারেশন থিয়েটার সহায়তা</string>
+    <string name="action_calendar_btn">📅 ক্যালেন্ডার</string>
+    <string name="nurse_schedule_empty">এই সময়ের জন্য কোনো ডিউটি শিফট বা ওটি সহায়তা নির্ধারিত নেই।</string>
+
+    <string name="admin_staff_title">হাসপাতাল স্টাফ ও ব্যবহারকারী ডিরেক্টরি</string>
+    <string name="admin_staff_sub">চিকিৎসক, নার্স ও রোগীদের যাচাইকরণ অবস্থা পর্যালোচনা এবং পরিচালনা করুন।</string>
+    <string name="filter_all_accounts">সকল অ্যাকাউন্ট</string>
+    <string name="filter_pending_review">পর্যালোচনার অপেক্ষায়</string>
+    <string name="filter_doctors">চিকিৎসক</string>
+    <string name="filter_nurses">নার্স</string>
+    <string name="filter_patients">রোগী</string>
+    <string name="admin_staff_empty">ফায়ারস্টোরে কোনো মিল থাকা অ্যাকাউন্ট পাওয়া যায়নি।</string>
+
+    <string name="admin_ops_title">হাসপাতাল অপারেশন ও সুবিধা ব্যবস্থাপনা</string>
+    <string name="admin_ops_sub">অপারেশন থিয়েটার (ওটি), অন্তর্বিভাগীয় ওয়ার্ড, বেড ও ক্লিনিক্যাল সেবা</string>
+    <string name="tab_ot_surgeries">ওটি ও সার্জারি</string>
+    <string name="tab_wards_beds">ওয়ার্ড ও বেড</string>
+    <string name="tab_services_depts">সেবা ও বিভাগ</string>
+    <string name="action_schedule_surgery">+ সার্জারি শিডিউল</string>
+    <string name="admin_ops_empty">এই বিভাগে কোনো অপারেশন বা রেকর্ড পাওয়া যায়নি।</string>
+
+    <string name="analytics_title">হাসপাতাল বিশ্লেষণ (ANALYTICS)</string>
+    <string name="analytics_sub">হাসপাতালের রেকর্ড থেকে সরাসরি গণনাকৃত রিয়েল-টাইম তথ্য</string>
+    <string name="analytics_bed_occupancy">অন্তর্বিভাগীয় বেড ব্যবহার</string>
+    <string name="analytics_total_beds">মোট বেড</string>
+    <string name="analytics_occupied">ব্যবহৃত</string>
+    <string name="analytics_available">ফাঁকা</string>
+    <string name="analytics_sanitizing">জীবাণুমুক্তকরণ</string>
+    <string name="analytics_ot_title">সার্জিক্যাল ওটি ও অপারেশন</string>
+    <string name="analytics_ot_suites">ওটি স্যুইট</string>
+    <string name="analytics_in_progress">চলমান</string>
+    <string name="analytics_scheduled">নির্ধারিত</string>
+    <string name="analytics_completed">সম্পন্ন</string>
+    <string name="analytics_staff_ratio">চিকিৎসা কর্মী ও অনুপাত</string>
+    <string name="analytics_doc_patient">চিকিৎসক : রোগী</string>
+    <string name="analytics_consult_diag">ক্লিনিক্যাল পরামর্শ ও ডায়াগনস্টিক</string>
+    <string name="analytics_consultations">পরামর্শসমূহ</string>
+    <string name="analytics_active_rx">সক্রিয় প্রেসক্রিপশন</string>
+    <string name="analytics_reports_ready">প্রস্তুত রিপোর্ট</string>
+    <string name="analytics_public_posts">পাবলিক পোস্ট</string>
+
+    <!-- Community, Calendar, Pharmacy, AI, Family Health, Hospital Maps -->
+    <string name="community_title">আরোহী কমিউনিটি ফিড</string>
+    <string name="community_sub">স্বাস্থ্য সচেতনতা, টিকাদান ও হাসপাতালের ইভেন্টসমূহ</string>
+    <string name="action_post_plus">+ পোস্ট</string>
+    <string name="cat_all_posts">সকল পোস্ট</string>
+    <string name="cat_announcements">ঘোষণাবলী</string>
+    <string name="cat_health_awareness">স্বাস্থ্য সচেতনতা</string>
+    <string name="cat_vaccination">টিকাদান</string>
+    <string name="cat_hospital_events">হাসপাতাল ইভেন্ট</string>
+    <string name="community_empty">এই বিভাগে কোনো কমিউনিটি পোস্ট পাওয়া যায়নি।</string>
+
+    <string name="cal_sync_title">সমন্বিত মেডিকেল ক্যালেন্ডার</string>
+    <string name="cal_sync_sub">অ্যাপয়েন্টমেন্ট, ল্যাব টেস্ট, অনুস্মারক ও প্রসিডিউর</string>
+    <string name="action_see_google_calendar">📅 গুগল ক্যালেন্ডার দেখুন</string>
+    <string name="action_book_slot">+ স্লট বুক</string>
+    <string name="action_pick_date">তারিখ বাছুন</string>
+    <string name="filter_appts">অ্যাপয়েন্টমেন্ট</string>
+    <string name="filter_lab_tests">ল্যাব টেস্ট</string>
+    <string name="filter_reminders">অনুস্মারক</string>
+    <string name="cal_empty_title">কোনো নির্ধারিত ইভেন্ট নেই</string>
+    <string name="cal_empty_sub">এই তারিখের জন্য কোনো পরামর্শ, ল্যাব টেস্ট বা ক্লিনিক্যাল অনুস্মারক নেই।</string>
+    <string name="action_standard_view">সাধারণ ভিউ</string>
+    <string name="day_sun">রবি</string>
+    <string name="day_mon">সোম</string>
+    <string name="day_tue">মঙ্গল</string>
+    <string name="day_wed">বুধ</string>
+    <string name="day_thu">বৃহঃ</string>
+    <string name="day_fri">শুক্র</string>
+    <string name="day_sat">শনি</string>
+
+    <string name="pharmacy_title">আরোহী স্মার্ট ই-ফার্মেসি</string>
+    <string name="pharmacy_sub">অনুমোদিত হাসপাতাল ডিসপেনসারি • ২৪/৭ খোলা</string>
+    <string name="tab_medicine_catalogue">ঔষধের তালিকা</string>
+    <string name="tab_pharmacy_orders">ফার্মেসি অর্ডার</string>
+    <string name="pharmacy_rx_order_title">চিকিৎসকের প্রেসক্রিপশন থেকে অর্ডার করুন</string>
+    <string name="pharmacy_rx_order_sub">যাচাইকৃত ডিজিটাল প্রেসক্রিপশন সরাসরি ১-ক্লিকে অর্ডার করুন।</string>
+    <string name="action_select_rx">প্রেসক্রিপশন বাছুন</string>
+    <string name="hint_search_medicine">ঔষধের নাম, জেনেরিক বা বিভাগ খুঁজুন…</string>
+    <string name="cat_analgesics">ব্যথানাশক</string>
+    <string name="cat_antibiotics">অ্যান্টিবায়োটিক</string>
+    <string name="cat_cardiovascular">হৃদরোগ</string>
+    <string name="cat_gastrointestinal">পরিপাকতন্ত্র</string>
+    <string name="cat_respiratory">শ্বাসযন্ত্র</string>
+    <string name="cat_diabetes">ডায়াবেটিস</string>
+    <string name="cat_vitamins">ভিটামিন</string>
+    <string name="pharmacy_empty_title">কোনো ঔষধ পাওয়া যায়নি</string>
+    <string name="pharmacy_empty_sub">অন্য ব্র্যান্ড বা জেনেরিক নামে পুনরায় চেষ্টা করুন।</string>
+
+    <string name="ai_title">আরোহী এআই অ্যাসিস্ট্যান্ট</string>
+    <string name="ai_sub">শিক্ষামূলক স্বাস্থ্যসেবা সহায়ক</string>
+    <string name="ai_demo_banner">ডেমো মোড সক্রিয়: লাইভ এআই এপিআই কী কনফিগার করা নেই। স্থানীয় মেডিকেল তথ্য, হাসপাতাল নেভিগেশন ও পরিভাষা প্রদর্শিত হচ্ছে। রোগ নির্ণয় বা প্রেসক্রিপশন প্রদান করে না।</string>
+    <string name="ai_chip_npo">NPO মানে কী?</string>
+    <string name="ai_chip_icu">আইসিইউ যাওয়ার পথ</string>
+    <string name="ai_chip_bp">রক্তচাপ ব্যাখ্যা করুন</string>
+    <string name="ai_chip_appt">অ্যাপয়েন্টমেন্ট কিভাবে নেবো?</string>
+    <string name="ai_chip_rx">আমার প্রেসক্রিপশন কোথায়?</string>
+    <string name="hint_ask_ai">স্বাস্থ্য বিষয়ক প্রশ্ন, হাসপাতালের পথ বা চিকিৎসা পরিভাষা জিজ্ঞাসা করুন…</string>
+
+    <string name="family_title">পারিবারিক স্বাস্থ্য প্রোফাইল</string>
+    <string name="family_sub">অনুমোদিত পারিবারিক সেবা সমন্বয়</string>
+    <string name="family_privacy_banner">গোপনীয়তা সুরক্ষা: পারিবারিক প্রোফাইলের মাধ্যমে নির্ভরশীল সদস্যদের জন্য অ্যাপয়েন্টমেন্ট বুকিং ও অনুস্মারক পরিচালনা করা যায়। এতে ব্যক্তিগত মেডিকেল রেকর্ডের স্বয়ংক্রিয় অ্যাক্সেস দেওয়া হয় না।</string>
+    <string name="family_empty_title">কোনো পারিবারিক প্রোফাইল যোগ করা হয়নি</string>
+    <string name="family_empty_sub">পরিবারের সদস্যদের (স্বামী/স্ত্রী, সন্তান, পিতা-মাতা) যুক্ত করে তাদের পক্ষ থেকে চিকিৎসকের পরামর্শ বুক করুন।</string>
+    <string name="action_add_family_member">পরিবারের সদস্য যোগ করুন</string>
+
+    <string name="map_title">ইন্টারঅ্যাক্টিভ হাসপাতাল ম্যাপ</string>
+    <string name="map_sub">অভ্যন্তরীণ নেভিগেশন ও বিভাগ ডিরেক্টরি</string>
+    <string name="action_see_google_map">🗺 গুগল ম্যাপ দেখুন</string>
+    <string name="map_sim_banner">🗺 ইন্টারঅ্যাক্টিভ ম্যাপ সিমুলেশন: আরোহী সেন্ট্রাল হাসপাতালের অভ্যন্তরীণ দিকনির্দেশনা। অবস্থান ও রুট দেখতে যেকোনো বিভাগে ট্যাপ করুন।</string>
+    <string name="hint_search_map">জরুরি বিভাগ, আইসিইউ, ওটি, ল্যাব, ফার্মেসি বা ওয়ার্ড খুঁজুন…</string>
+    <string name="floor_ground">নিচতলা (Ground)</string>
+    <string name="floor_1">১ম তলা</string>
+    <string name="floor_2_wards">২য় তলা (ওয়ার্ড)</string>
+    <string name="floor_3_icu">৩য় তলা (আইসিইউ/ওটি)</string>
+    <string name="floor_basement">বেজমেন্ট</string>
+    <string name="map_departments_on_floor">এই তলার বিভাগসমূহ</string>
+    <string name="gmap_title">হাসপাতাল অভ্যন্তরীণ নেভিগেশন</string>
+    <string name="action_standard_map">সাধারণ ম্যাপ</string>
+    <string name="gmap_tap_hint">💡 নেভিগেট করতে ম্যাপের যেকোনো রুমে ট্যাপ করুন</string>
+    <string name="action_steps">ধাপসমূহ</string>
+    <string name="gmap_turn_by_turn">🚶 ধাপে ধাপে দিকনির্দেশনা:</string>
+    <string name="action_start_navigation">🧭 নেভিগেশন শুরু</string>
+    <string name="action_exit_nav">✕ প্রস্থান</string>
+    <string name="action_next_step">পরবর্তী ধাপ ➔</string>
+</resources>

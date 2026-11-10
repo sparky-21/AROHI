@@ -89,7 +89,7 @@
                 android:layout_weight="1"
                 android:text="@string/loading_please_wait"
                 android:textAppearance="@style/TextAppearance.AROHI.BodyLarge"
-                android:textColor="@color/deep_forest_green"
+                android:textColor="@color/accent_heading"
                 android:textStyle="bold" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

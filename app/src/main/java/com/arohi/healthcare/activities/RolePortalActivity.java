@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -57,7 +56,7 @@ import java.util.List;
  * Main Role-Specific Portal Activity hosting the 5-tab BottomNavigationView
  * and switching fragments for Patient, Doctor, Nurse, and Hospital Administrator roles.
  */
-public class RolePortalActivity extends AppCompatActivity {
+public class RolePortalActivity extends BaseActivity {
 
     private ActivityRolePortalBinding binding;
     private SessionManager sessionManager;
@@ -68,12 +67,18 @@ public class RolePortalActivity extends AppCompatActivity {
     private UserAccount currentAccount;
     private int currentTabId = -1;
     private int defaultTabId = -1;
+    private boolean restoredState = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityRolePortalBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        if (savedInstanceState != null) {
+            currentTabId = savedInstanceState.getInt("saved_current_tab_id", -1);
+            restoredState = true;
+        }
 
         sessionManager = new SessionManager(this);
         profileRepository = new ProfileRepository(this);
@@ -95,6 +100,12 @@ public class RolePortalActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainer, new com.arohi.healthcare.fragments.CommunityFeedFragment())
                     .addToBackStack("community_feed")
+                    .commit();
+        });
+        binding.btnHeaderSettings.setOnClickListener(v -> {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, new com.arohi.healthcare.fragments.SettingsFragment())
+                    .addToBackStack("settings")
                     .commit();
         });
 
@@ -119,6 +130,12 @@ public class RolePortalActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("saved_current_tab_id", currentTabId);
+    }
+
     public void setupTopHeader(@NonNull UserAccount account) {
         this.currentAccount = account;
         UserRole role = account.getUserRoleEnum();
@@ -127,17 +144,17 @@ public class RolePortalActivity extends AppCompatActivity {
         String portalTitle;
         switch (role) {
             case DOCTOR:
-                portalTitle = "AROHI DOCTOR PORTAL";
+                portalTitle = getString(R.string.portal_title_doctor);
                 break;
             case NURSE:
-                portalTitle = "AROHI NURSE PORTAL";
+                portalTitle = getString(R.string.portal_title_nurse);
                 break;
             case ADMIN:
-                portalTitle = "AROHI HOSPITAL AUTHORITY";
+                portalTitle = getString(R.string.portal_title_admin);
                 break;
             case PATIENT:
             default:
-                portalTitle = "AROHI PATIENT PORTAL";
+                portalTitle = getString(R.string.portal_title_patient);
                 break;
         }
 
@@ -149,14 +166,18 @@ public class RolePortalActivity extends AppCompatActivity {
 
         binding.topPortalBar.setOnClickListener(v -> showHospitalSwitcherDialog());
 
-        binding.tvPortalStatusBadge.setText(status.getKey());
+        String statusLabel;
         if (status == VerificationStatus.VERIFIED) {
+            statusLabel = getString(R.string.status_verified);
             binding.tvPortalStatusBadge.setTextColor(ContextCompat.getColor(this, R.color.status_verified));
         } else if (status == VerificationStatus.REJECTED) {
+            statusLabel = getString(R.string.status_rejected);
             binding.tvPortalStatusBadge.setTextColor(ContextCompat.getColor(this, R.color.status_emergency));
         } else {
+            statusLabel = getString(R.string.status_pending);
             binding.tvPortalStatusBadge.setTextColor(ContextCompat.getColor(this, R.color.status_warning));
         }
+        binding.tvPortalStatusBadge.setText(statusLabel);
     }
 
     private void setupBottomNavigationForRole(@NonNull UserRole role) {
@@ -184,14 +205,26 @@ public class RolePortalActivity extends AppCompatActivity {
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == currentTabId) {
+            if (itemId == currentTabId && getSupportFragmentManager().getBackStackEntryCount() == 0) {
                 return true;
             }
             switchToTabInternal(itemId);
             return true;
         });
 
-        binding.bottomNavigation.setSelectedItemId(defaultTabId);
+        boolean preserveBackStack = restoredState && getSupportFragmentManager().getBackStackEntryCount() > 0;
+        if (preserveBackStack) {
+            int tabToHighlight = currentTabId != -1 ? currentTabId : defaultTabId;
+            if (binding.bottomNavigation.getMenu().findItem(tabToHighlight) != null) {
+                binding.bottomNavigation.getMenu().findItem(tabToHighlight).setChecked(true);
+            }
+        } else if (restoredState && currentTabId != -1 && binding.bottomNavigation.getMenu().findItem(currentTabId) != null) {
+            int target = currentTabId;
+            currentTabId = -1;
+            binding.bottomNavigation.setSelectedItemId(target);
+        } else {
+            binding.bottomNavigation.setSelectedItemId(defaultTabId);
+        }
     }
 
     private void switchToTabInternal(@IdRes int itemId) {
@@ -329,7 +362,7 @@ public class RolePortalActivity extends AppCompatActivity {
             public void onSuccess(UserAccount result) {
                 if (isFinishing() || isDestroyed()) return;
                 setupTopHeader(result);
-                if (currentTabId != -1) {
+                if (currentTabId != -1 && getSupportFragmentManager().getBackStackEntryCount() == 0) {
                     androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
                     String tag = "tab_" + currentTabId;
                     Fragment existing = fm.findFragmentByTag(tag);
@@ -344,7 +377,7 @@ public class RolePortalActivity extends AppCompatActivity {
                 }
                 if (showFeedback && binding != null) {
                     UiStateHelper.showSuccess(binding.getRoot(),
-                            "Synced with Cloud Firestore • Status: " + result.getVerificationStatusEnum().getKey());
+                            getString(R.string.sync_firestore_status, result.getVerificationStatusEnum().getKey()));
                 }
             }
 
@@ -433,18 +466,20 @@ public class RolePortalActivity extends AppCompatActivity {
             Hospital h = sessionManager.findHospitalById(m.getHospitalId());
             if (h != null) {
                 boolean isCurrent = h.getHospitalId().equalsIgnoreCase(currentHospId);
-                options.add((isCurrent ? "● ACTIVE: " : "○ SWITCH TO: ") + h.getHospitalName() + " [" + h.getHospitalCode() + "] • Role: " + m.getRole());
+                options.add((isCurrent ? getString(R.string.hospital_prefix_active) : getString(R.string.hospital_prefix_switch))
+                        + h.getHospitalName() + " [" + h.getHospitalCode() + "] • "
+                        + getString(R.string.label_role_prefix, m.getRole()));
                 matchingHospitals.add(h);
             }
         }
 
-        options.add("🌐 Explore Global Network Directory");
+        options.add(getString(R.string.action_explore_network_directory));
         if (sessionManager.isSuperAdmin(currentAccount.getUid())) {
-            options.add("⚙️ Super Admin Hospital Governance");
+            options.add(getString(R.string.action_super_admin_governance));
         }
 
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                .setTitle("AROHI Multi-Hospital Network Switcher")
+                .setTitle(getString(R.string.dialog_hospital_switcher_title))
                 .setItems(options.toArray(new String[0]), (dialog, which) -> {
                     if (which < matchingHospitals.size()) {
                         Hospital selected = matchingHospitals.get(which);
@@ -459,13 +494,13 @@ public class RolePortalActivity extends AppCompatActivity {
                         setupTopHeader(currentAccount);
                         setupBottomNavigationForRole(currentAccount.getUserRoleEnum());
                         switchToTab(defaultTabId);
-                        android.widget.Toast.makeText(this, "Switched facility to: " + selected.getHospitalName(), android.widget.Toast.LENGTH_SHORT).show();
+                        android.widget.Toast.makeText(this, getString(R.string.toast_switched_facility, selected.getHospitalName()), android.widget.Toast.LENGTH_SHORT).show();
                     } else {
                         Intent intent = new Intent(this, HospitalDiscoveryActivity.class);
                         startActivity(intent);
                     }
                 })
-                .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
+                .setNegativeButton(getString(R.string.action_close), (dialog, which) -> dialog.dismiss())
                 .show();
     }
 

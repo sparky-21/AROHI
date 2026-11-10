@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/surface_card"
     app:cardCornerRadius="14dp"
     app:cardElevation="2dp"
     app:strokeColor="@color/border_stroke"
@@ -78,7 +78,7 @@
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
             android:text="✓ Explicitly authorized for appointment scheduling &amp; medication reminders."
-            android:textColor="@color/deep_forest_green"
+            android:textColor="@color/accent_heading"
             android:textSize="11sp" />
 
         <View

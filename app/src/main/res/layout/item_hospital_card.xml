@@ -165,7 +165,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:text="Select Hospital"
-                android:textColor="@color/arohi_ivory_cream"
+                android:textColor="@color/white"
                 android:textSize="13sp"
                 app:cornerRadius="8dp" />
         </LinearLayout>

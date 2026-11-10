@@ -86,7 +86,7 @@
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="2dp"
                     android:text="APPOINTMENT"
-                    android:textColor="@color/deep_forest_green"
+                    android:textColor="@color/accent_heading"
                     android:textSize="10sp"
                     android:textStyle="bold" />
 

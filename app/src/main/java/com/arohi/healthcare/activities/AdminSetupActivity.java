@@ -17,7 +17,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * Requires a valid institutional token format (AROHI-AUTH-XXXXXX) and server-side
  * /adminAuthorizations/{uid} verification in Firestore.
  */
-public class AdminSetupActivity extends AppCompatActivity {
+public class AdminSetupActivity extends BaseActivity {
 
     private ActivityAdminSetupBinding binding;
     private AuthRepository authRepository;

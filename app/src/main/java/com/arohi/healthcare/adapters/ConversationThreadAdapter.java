@@ -95,13 +95,13 @@ public class ConversationThreadAdapter extends RecyclerView.Adapter<Conversation
                 binding.tvConvLastMessage.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.text_primary));
                 binding.cardConversationItem.setStrokeColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.primary_moss_green));
                 binding.cardConversationItem.setStrokeWidth(Math.max(2, 2 * dp));
-                binding.cardConversationItem.setCardBackgroundColor(0xFFF3F8EF);
+                binding.cardConversationItem.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.surface_subtle));
             } else {
                 binding.tvConvLastMessage.setTypeface(null, android.graphics.Typeface.NORMAL);
                 binding.tvConvLastMessage.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.arohi_slate_muted));
                 binding.cardConversationItem.setStrokeColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.arohi_border_subtle));
                 binding.cardConversationItem.setStrokeWidth(Math.max(1, dp));
-                binding.cardConversationItem.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.arohi_pure_white));
+                binding.cardConversationItem.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(ctx, com.arohi.healthcare.R.color.surface_card));
             }
 
             if (thread.getLastMessageTimestamp() > 0) {

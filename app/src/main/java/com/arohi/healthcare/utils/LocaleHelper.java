@@ -36,8 +36,12 @@ public final class LocaleHelper {
         LocaleListCompat appLocale = LocaleListCompat.forLanguageTags(languageCode);
         AppCompatDelegate.setApplicationLocales(appLocale);
 
-        // 2. Direct resources configuration update for immediate activity rendering
+        // 2. Direct resources configuration update for immediate rendering
         updateResources(context, languageCode);
+        Context appContext = context.getApplicationContext();
+        if (appContext != null && appContext != context) {
+            updateResources(appContext, languageCode);
+        }
     }
 
     /**

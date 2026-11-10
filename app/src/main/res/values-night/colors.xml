@@ -1,58 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- AROHI Dark Master Brand Palette -->
-    <color name="deep_forest_green">#16241A</color>
-    <color name="primary_moss_green">#6BA468</color>
-    <color name="secondary_sage">#8FAF82</color>
-    <color name="soft_sage">#A8C49F</color>
-    <color name="pale_mint">#213227</color>
-    <color name="warm_ivory">#121814</color>
+    <color name="deep_forest_green">#1F3926</color>
+    <color name="primary_moss_green">#4F844B</color>
+    <color name="secondary_sage">#9BC294</color>
+    <color name="soft_sage">#B8DBB3</color>
+    <color name="pale_mint">#223428</color>
+    <color name="warm_ivory">#111813</color>
     <color name="white">#FFFFFF</color>
 
-    <!-- Typography Dark Colors -->
-    <color name="text_primary">#F0F4EE</color>
-    <color name="text_secondary">#A2B29F</color>
-    <color name="text_on_primary">#121814</color>
-    <color name="text_muted">#6E7F6B</color>
+    <!-- High-Contrast Typography Dark Colors -->
+    <color name="text_primary">#F5F8F4</color>
+    <color name="text_secondary">#CBD7C8</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_muted">#A0B09D</color>
+    <color name="accent_heading">#A8D8A2</color>
 
     <!-- Semantic Status Dark Colors -->
-    <color name="status_warning">#E6AA53</color>
-    <color name="status_warning_bg">#332714</color>
-    <color name="status_emergency">#E05D5D</color>
-    <color name="status_emergency_bg">#3D1919</color>
-    <color name="status_rejected">#E05D5D</color>
-    <color name="status_rejected_bg">#3D1919</color>
-    <color name="status_verified">#58B37E</color>
-    <color name="status_verified_bg">#173322</color>
+    <color name="status_warning">#F0B965</color>
+    <color name="status_warning_bg">#362914</color>
+    <color name="status_emergency">#F07171</color>
+    <color name="status_emergency_bg">#3F1A1A</color>
+    <color name="status_rejected">#F07171</color>
+    <color name="status_rejected_bg">#3F1A1A</color>
+    <color name="status_verified">#6AD194</color>
+    <color name="status_verified_bg">#183624</color>
 
     <!-- UI Surface & Border Tokens -->
-    <color name="surface_background">#121814</color>
+    <color name="surface_background">#111813</color>
     <color name="surface_card">#1B241E</color>
-    <color name="surface_subtle">#233027</color>
-    <color name="border_stroke">#2C3E32</color>
-    <color name="border_focused">#6BA468</color>
-    <color name="divider_color">#26382C</color>
+    <color name="surface_subtle">#243128</color>
+    <color name="border_stroke">#354A3C</color>
+    <color name="border_focused">#79B875</color>
+    <color name="divider_color">#2E4134</color>
     <color name="scrim_overlay">#990B100D</color>
 
     <!-- Semantic Aliases for Dark Mode -->
-    <color name="arohi_forest_primary">#16241A</color>
-    <color name="arohi_teal_accent">#6BA468</color>
-    <color name="arohi_sage_mist">#213227</color>
-    <color name="arohi_mint_tint">#A8C49F</color>
-    <color name="arohi_soft_ivory">#121814</color>
-    <color name="arohi_pure_white">#F0F4EE</color>
-    <color name="arohi_charcoal_text">#F0F4EE</color>
-    <color name="arohi_slate_muted">#A2B29F</color>
-    <color name="arohi_border_subtle">#2C3E32</color>
-    <color name="arohi_amber_warning">#E6AA53</color>
-    <color name="arohi_crimson_alert">#E05D5D</color>
-    <color name="arohi_info_blue">#58B37E</color>
+    <color name="arohi_forest_primary">#172A1C</color>
+    <color name="arohi_teal_accent">#79B875</color>
+    <color name="arohi_sage_mist">#223428</color>
+    <color name="arohi_mint_tint">#B8DBB3</color>
+    <color name="arohi_soft_ivory">#111813</color>
+    <color name="arohi_pure_white">#F5F8F4</color>
+    <color name="arohi_charcoal_text">#F5F8F4</color>
+    <color name="arohi_slate_muted">#CBD7C8</color>
+    <color name="arohi_border_subtle">#354A3C</color>
+    <color name="arohi_amber_warning">#F0B965</color>
+    <color name="arohi_crimson_alert">#F07171</color>
+    <color name="arohi_info_blue">#6AD194</color>
 
     <!-- Phase 9 Multi-Tenant Color Aliases for Dark Theme -->
-    <color name="arohi_moss_green">#6BA468</color>
-    <color name="arohi_ivory_cream">#121814</color>
+    <color name="arohi_moss_green">#79B875</color>
+    <color name="arohi_ivory_cream">#111813</color>
     <color name="arohi_card_bg">#1B241E</color>
-    <color name="arohi_card_stroke">#2C3E32</color>
-    <color name="arohi_text_primary">#F0F4EE</color>
-    <color name="arohi_text_secondary">#A2B29F</color>
+    <color name="arohi_card_stroke">#354A3C</color>
+    <color name="arohi_text_primary">#F5F8F4</color>
+    <color name="arohi_text_secondary">#CBD7C8</color>
 </resources>

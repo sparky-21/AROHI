@@ -152,7 +152,7 @@ public class CommunityPostAdapter extends RecyclerView.Adapter<CommunityPostAdap
                     binding.btnModeratePost.setTextColor(ContextCompat.getColor(context, R.color.status_warning));
                 } else {
                     binding.btnModeratePost.setText("⚙ Moderate");
-                    binding.btnModeratePost.setTextColor(ContextCompat.getColor(context, R.color.deep_forest_green));
+                    binding.btnModeratePost.setTextColor(ContextCompat.getColor(context, R.color.accent_heading));
                 }
                 binding.btnModeratePost.setOnClickListener(v -> listener.onModeratePost(post));
             } else {

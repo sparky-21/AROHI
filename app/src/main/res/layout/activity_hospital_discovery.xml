@@ -14,9 +14,9 @@
         android:background="@color/arohi_moss_green"
         app:navigationIcon="@drawable/ic_arohi_logo"
         app:title="AROHI Global Hospital Network"
-        app:titleTextColor="@color/arohi_ivory_cream"
+        app:titleTextColor="@color/white"
         app:subtitle="Accredited Multi-Hospital Platform"
-        app:subtitleTextColor="@color/arohi_card_bg" />
+        app:subtitleTextColor="@color/soft_sage" />
 
     <!-- Search Bar -->
     <LinearLayout
@@ -29,7 +29,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search hospital by name, city or specialty..."
+            android:hint="@string/hint_search_hospital"
             app:boxBackgroundColor="@color/arohi_card_bg"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -73,7 +73,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Have a Hospital Code? (e.g. AROHI-HQ)"
+                android:hint="@string/hint_hospital_code"
                 app:boxBackgroundColor="@color/arohi_ivory_cream"
                 app:boxCornerRadiusBottomEnd="8dp"
                 app:boxCornerRadiusBottomStart="8dp"
@@ -98,8 +98,8 @@
                 android:backgroundTint="@color/arohi_moss_green"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Find"
-                android:textColor="@color/arohi_ivory_cream"
+                android:text="@string/action_find"
+                android:textColor="@color/white"
                 android:textSize="13sp"
                 app:cornerRadius="8dp" />
         </LinearLayout>
@@ -125,7 +125,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="All Hospitals"
+                android:text="@string/filter_all_hospitals"
                 android:textColor="@color/arohi_moss_green" />
 
             <com.google.android.material.chip.Chip
@@ -133,7 +133,7 @@
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="✓ Verified Only"
+                android:text="@string/filter_verified_only"
                 android:textColor="@color/arohi_moss_green" />
 
             <com.google.android.material.chip.Chip
@@ -141,7 +141,7 @@
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="24/7 Emergency"
+                android:text="@string/filter_emergency_24_7"
                 android:textColor="@color/arohi_moss_green" />
 
             <com.google.android.material.chip.Chip
@@ -149,7 +149,7 @@
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Dhaka"
+                android:text="@string/city_dhaka"
                 android:textColor="@color/arohi_moss_green" />
 
             <com.google.android.material.chip.Chip
@@ -157,7 +157,7 @@
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chittagong"
+                android:text="@string/city_chittagong"
                 android:textColor="@color/arohi_moss_green" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -224,7 +224,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="No Hospitals Found"
+                android:text="@string/discovery_empty_title"
                 android:textColor="@color/arohi_moss_green"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -234,7 +234,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:gravity="center"
-                android:text="Try adjusting your search terms or verify your hospital code."
+                android:text="@string/discovery_empty_sub"
                 android:textColor="@color/arohi_text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -264,7 +264,7 @@
                 android:layout_weight="1"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Register Facility"
+                android:text="@string/action_register_facility"
                 android:textColor="@color/arohi_moss_green"
                 android:textSize="12sp"
                 app:cornerRadius="8dp"
@@ -279,8 +279,8 @@
                 android:backgroundTint="@color/arohi_moss_green"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Sign In to Arohi"
-                android:textColor="@color/arohi_ivory_cream"
+                android:text="@string/action_sign_in_arohi"
+                android:textColor="@color/white"
                 android:textSize="12sp"
                 app:cornerRadius="8dp" />
         </LinearLayout>

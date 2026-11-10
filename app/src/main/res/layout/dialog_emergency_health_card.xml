@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/white">
+        android:background="@color/surface_card">
 
         <!-- High-Contrast Emergency Red Header -->
         <LinearLayout
@@ -67,7 +67,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="AROHI ID: AROHI-PAT-1001 • DOB: 1988-04-12"
-                android:textColor="@color/warm_ivory"
+                android:textColor="@color/white"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -135,7 +135,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Blood Group"
+                        android:text="@string/label_blood_group"
                         android:textColor="@color/text_muted"
                         android:textSize="11sp" />
 

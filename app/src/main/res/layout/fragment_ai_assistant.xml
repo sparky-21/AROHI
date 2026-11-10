@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="AROHI AI Assistant"
+                android:text="@string/ai_title"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -45,7 +45,7 @@
                 android:id="@+id/tvAiHeaderStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Educational Healthcare Companion"
+                android:text="@string/ai_sub"
                 android:textColor="@color/soft_sage"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="Demo Mode Active: Live AI API key is not configured. Demonstrating local medical knowledge, hospital navigation, and terminology. Cannot diagnose or prescribe."
+                android:text="@string/ai_demo_banner"
                 android:textColor="@color/status_warning"
                 android:textSize="11sp"
                 android:lineSpacingExtra="2dp" />
@@ -117,8 +117,8 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:text="What is NPO?"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/ai_chip_npo"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 app:strokeColor="@color/border_focused" />
 
@@ -128,8 +128,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginStart="6dp"
-                android:text="Directions to ICU"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/ai_chip_icu"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 app:strokeColor="@color/border_focused" />
 
@@ -139,8 +139,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginStart="6dp"
-                android:text="Explain Blood Pressure"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/ai_chip_bp"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 app:strokeColor="@color/border_focused" />
 
@@ -150,8 +150,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginStart="6dp"
-                android:text="How to book appointment?"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/ai_chip_appt"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 app:strokeColor="@color/border_focused" />
 
@@ -161,8 +161,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginStart="6dp"
-                android:text="Where are my prescriptions?"
-                android:textColor="@color/deep_forest_green"
+                android:text="@string/ai_chip_rx"
+                android:textColor="@color/accent_heading"
                 android:textSize="11sp"
                 app:strokeColor="@color/border_focused" />
         </LinearLayout>
@@ -184,7 +184,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="8dp"
-        android:background="@color/white">
+        android:background="@color/surface_card">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etAiQueryInput"
@@ -192,7 +192,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/bg_card_subtle"
-            android:hint="Ask health questions, hospital navigation, or medical terms..."
+            android:hint="@string/hint_ask_ai"
             android:imeOptions="actionSend"
             android:inputType="textCapSentences|textMultiLine"
             android:maxLines="3"
@@ -208,7 +208,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:backgroundTint="@color/deep_forest_green"
-            android:text="Send"
+            android:text="@string/action_send"
             android:textColor="@color/white"
             android:textSize="13sp" />
     </LinearLayout>

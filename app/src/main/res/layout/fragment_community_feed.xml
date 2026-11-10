@@ -32,8 +32,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AROHI COMMUNITY FEED"
-                    android:textColor="@color/deep_forest_green"
+                    android:text="@string/community_title"
+                    android:textColor="@color/accent_heading"
                     android:textSize="17sp"
                     android:textStyle="bold" />
 
@@ -41,7 +41,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Doctor Health Awareness, Vaccination &amp; Hospital Events"
+                    android:text="@string/community_sub"
                     android:textColor="@color/text_muted"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:backgroundTint="@color/primary_moss_green"
-                android:text="+ Post"
+                android:text="@string/action_post_plus"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:visibility="gone"
@@ -78,35 +78,35 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="All Posts" />
+                    android:text="@string/cat_all_posts" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterAnnouncements"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Announcements" />
+                    android:text="@string/cat_announcements" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterAwareness"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Health Awareness" />
+                    android:text="@string/cat_health_awareness" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterVaccination"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vaccination" />
+                    android:text="@string/cat_vaccination" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterEvents"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hospital Events" />
+                    android:text="@string/cat_hospital_events" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
     </LinearLayout>
@@ -118,7 +118,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="60dp"
         android:gravity="center"
-        android:text="No community posts found in this category."
+        android:text="@string/community_empty"
         android:textColor="@color/text_muted"
         android:textSize="13sp"
         android:visibility="gone" />

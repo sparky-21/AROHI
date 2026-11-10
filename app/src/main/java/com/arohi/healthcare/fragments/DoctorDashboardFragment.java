@@ -76,13 +76,11 @@ public class DoctorDashboardFragment extends Fragment {
         } else {
             binding.bannerDoctorVerification.setVisibility(View.VISIBLE);
             if (status == VerificationStatus.REJECTED) {
-                binding.tvDoctorVerificationTitle.setText("BMDC Credential Verification Declined");
-                binding.tvDoctorVerificationDesc.setText(
-                        "Hospital Administration declined your credential verification. Please review your BMDC registration details in your Profile.");
+                binding.tvDoctorVerificationTitle.setText(getString(R.string.doc_dash_declined_title));
+                binding.tvDoctorVerificationDesc.setText(getString(R.string.doc_dash_pending_desc));
             } else {
-                binding.tvDoctorVerificationTitle.setText("BMDC Credential Verification Pending");
-                binding.tvDoctorVerificationDesc.setText(
-                        "Privileged clinical actions (accepting consultation requests, patient record access, digital prescriptions) remain locked until Hospital Admin approval.");
+                binding.tvDoctorVerificationTitle.setText(getString(R.string.doc_dash_pending_title));
+                binding.tvDoctorVerificationDesc.setText(getString(R.string.doc_dash_pending_desc));
             }
         }
     }
@@ -91,17 +89,17 @@ public class DoctorDashboardFragment extends Fragment {
         profileRepository.loadDoctorProfile(uid, new AuthCallback<DoctorProfile>() {
             @Override
             public void onSuccess(DoctorProfile profile) {
-                if (binding == null) return;
+                if (binding == null || !isAdded()) return;
                 String name = notEmpty(profile.getFullName(), "Dr. Specialist");
                 String arohiId = notEmpty(profile.getArohiId(), "AROHI-DOC-0000");
-                String license = notEmpty(profile.getMedicalLicenseNumber(), "Pending");
+                String license = notEmpty(profile.getMedicalLicenseNumber(), getString(R.string.status_pending));
                 String specialty = notEmpty(profile.getSpecialty(), "General Medicine");
                 String qualifications = notEmpty(profile.getQualifications(), "MBBS");
                 String department = notEmpty(profile.getDepartment(), "Medicine");
                 double fee = profile.getConsultationFeeBdt();
 
                 binding.tvDoctorGreeting.setText(name);
-                binding.tvDoctorIdBadge.setText("Doctor ID: " + arohiId + " • BMDC: " + license);
+                binding.tvDoctorIdBadge.setText(getString(R.string.doc_dash_id_bmdc, arohiId, license));
                 binding.tvDoctorSpecialtySummary.setText(
                         "Specialty: " + specialty + " • Qualifications: " + qualifications);
                 binding.tvDoctorDepartmentFee.setText(

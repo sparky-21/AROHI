@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Community Discussion"
-            android:textColor="@color/deep_forest_green"
+            android:textColor="@color/accent_heading"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -109,7 +109,7 @@
             android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:backgroundTint="@color/primary_moss_green"
-            android:text="Send"
+            android:text="@string/action_send"
             android:textColor="@color/white"
             android:textSize="12sp"
             app:cornerRadius="8dp" />

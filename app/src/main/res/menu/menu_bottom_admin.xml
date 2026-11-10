@@ -3,21 +3,21 @@
     <item
         android:id="@+id/nav_admin_overview"
         android:icon="@drawable/ic_nav_home"
-        android:title="Overview" />
+        android:title="@string/nav_overview" />
     <item
         android:id="@+id/nav_admin_departments"
         android:icon="@drawable/ic_role_admin"
-        android:title="Departments" />
+        android:title="@string/nav_departments" />
     <item
         android:id="@+id/nav_admin_operations"
         android:icon="@drawable/ic_calendar"
-        android:title="Operations" />
+        android:title="@string/nav_operations" />
     <item
         android:id="@+id/nav_admin_staff"
         android:icon="@drawable/ic_role_doctor"
-        android:title="Staff" />
+        android:title="@string/nav_staff" />
     <item
         android:id="@+id/nav_admin_settings"
         android:icon="@drawable/ic_nav_settings"
-        android:title="Settings" />
+        android:title="@string/nav_settings" />
 </menu>

@@ -28,7 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-black"
-                android:text="NURSING CREDENTIAL REVIEW PENDING"
+                android:text="@string/nurse_dash_pending_title"
                 android:textColor="@color/arohi_amber_warning"
                 android:textSize="12sp" />
 
@@ -39,7 +39,7 @@
                 android:layout_marginTop="4dp"
                 android:fontFamily="sans-serif"
                 android:lineSpacingExtra="2dp"
-                android:text="Your BNMC Nursing License is awaiting Hospital Administrator approval. Ward and task assignments will unlock immediately after verification."
+                android:text="@string/nurse_dash_pending_desc"
                 android:textColor="@color/arohi_charcoal_text"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -69,7 +69,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-medium"
-                        android:text="Nursing Station &amp; Ward Care"
+                        android:text="@string/nurse_dash_header"
                         android:textColor="@color/arohi_mint_tint"
                         android:textSize="12sp" />
 
@@ -80,7 +80,7 @@
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif-black"
                         android:text="Loading Nurse..."
-                        android:textColor="@color/arohi_pure_white"
+                        android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <TextView
@@ -90,7 +90,7 @@
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif-medium"
                         android:text="Qualification • License: ---"
-                        android:textColor="@color/arohi_sage_mist"
+                        android:textColor="@color/soft_sage"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -102,8 +102,8 @@
                     android:fontFamily="sans-serif-bold"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="5dp"
-                    android:text="PENDING"
-                    android:textColor="@color/arohi_forest_primary"
+                    android:text="@string/status_pending"
+                    android:textColor="@color/accent_heading"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -112,7 +112,7 @@
                 android:layout_height="1dp"
                 android:layout_marginVertical="12dp"
                 android:alpha="0.25"
-                android:background="@color/arohi_pure_white" />
+                android:background="@color/surface_card" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -127,7 +127,7 @@
                     android:layout_weight="1"
                     android:fontFamily="sans-serif"
                     android:text="Ward: Pending Assignment"
-                    android:textColor="@color/arohi_pure_white"
+                    android:textColor="@color/white"
                     android:textSize="12sp" />
 
                 <TextView
@@ -146,7 +146,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/arohi_pure_white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
             app:strokeColor="@color/arohi_border_subtle"
@@ -169,7 +169,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Task Completion Overview"
+                        android:text="@string/nurse_task_overview"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="15sp" />
 
@@ -179,7 +179,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-black"
                         android:text="0 / 0 Completed"
-                        android:textColor="@color/arohi_forest_primary"
+                        android:textColor="@color/accent_heading"
                         android:textSize="13sp" />
                 </LinearLayout>
 
@@ -199,7 +199,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="sans-serif"
-                    android:text="Live task tracking from Firestore /nurseAssignments collection."
+                    android:text="@string/nurse_task_live_note"
                     android:textColor="@color/arohi_slate_muted"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -212,7 +212,7 @@
             android:layout_marginTop="18dp"
             android:layout_marginBottom="10dp"
             android:fontFamily="sans-serif-bold"
-            android:text="Ward &amp; Patient Assignments"
+            android:text="@string/nurse_ward_assignments"
             android:textColor="@color/arohi_charcoal_text"
             android:textSize="16sp" />
 
@@ -227,7 +227,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -245,7 +245,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-black"
                         android:text="0"
-                        android:textColor="@color/arohi_forest_primary"
+                        android:textColor="@color/accent_heading"
                         android:textSize="24sp" />
 
                     <TextView
@@ -253,7 +253,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Assigned Patients"
+                        android:text="@string/nurse_card_assigned_pats"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -263,7 +263,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="Active inpatient care"
+                        android:text="@string/nurse_card_assigned_pats_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -275,7 +275,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -302,7 +302,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Assigned Ward"
+                        android:text="@string/nurse_card_assigned_ward"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -332,7 +332,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -358,7 +358,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Today's Nursing Tasks"
+                        android:text="@string/nurse_card_tasks"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -368,7 +368,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="No pending ward tasks"
+                        android:text="@string/nurse_card_tasks_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -380,7 +380,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -398,7 +398,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-black"
                         android:text="0"
-                        android:textColor="@color/arohi_forest_primary"
+                        android:textColor="@color/accent_heading"
                         android:textSize="24sp" />
 
                     <TextView
@@ -406,7 +406,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Medication Schedules"
+                        android:text="@string/nurse_card_meds"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -416,7 +416,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="No scheduled doses due"
+                        android:text="@string/nurse_card_meds_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -436,7 +436,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -462,7 +462,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Upcoming Procedures"
+                        android:text="@string/nurse_card_procedures"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -472,7 +472,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="Dressing &amp; vitals checks"
+                        android:text="@string/nurse_card_procedures_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -484,7 +484,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/arohi_pure_white"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/arohi_border_subtle"
@@ -510,7 +510,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-bold"
-                        android:text="Operation Assistance"
+                        android:text="@string/nurse_card_ot_assist"
                         android:textColor="@color/arohi_charcoal_text"
                         android:textSize="13sp" />
 
@@ -520,7 +520,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif"
-                        android:text="OT scrub &amp; recovery duty"
+                        android:text="@string/nurse_card_ot_assist_sub"
                         android:textColor="@color/arohi_slate_muted"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -533,7 +533,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="@color/arohi_pure_white"
+            app:cardBackgroundColor="@color/surface_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
             app:strokeColor="@color/arohi_border_subtle"
@@ -549,7 +549,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-bold"
-                    android:text="Duty Schedule &amp; Nursing Station"
+                    android:text="@string/nurse_duty_roster_title"
                     android:textColor="@color/arohi_charcoal_text"
                     android:textSize="15sp" />
 
@@ -570,9 +570,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginTop="12dp"
-                    android:text="Manage Nursing Profile"
+                    android:text="@string/nurse_manage_profile_btn"
                     android:textAllCaps="false"
-                    android:textColor="@color/arohi_forest_primary"
+                    android:textColor="@color/accent_heading"
                     android:textSize="12sp"
                     app:backgroundTint="@color/arohi_sage_mist"
                     app:cornerRadius="10dp" />

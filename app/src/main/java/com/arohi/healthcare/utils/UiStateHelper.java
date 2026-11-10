@@ -119,7 +119,7 @@ public final class UiStateHelper {
         int activeBg = ContextCompat.getColor(selected.getContext(), R.color.primary_moss_green);
         int activeText = ContextCompat.getColor(selected.getContext(), R.color.white);
         int inactiveBg = ContextCompat.getColor(selected.getContext(), unselectedBgColorRes);
-        int inactiveText = ContextCompat.getColor(selected.getContext(), R.color.deep_forest_green);
+        int inactiveText = ContextCompat.getColor(selected.getContext(), R.color.text_primary);
 
         for (MaterialButton btn : allButtons) {
             if (btn == null) continue;

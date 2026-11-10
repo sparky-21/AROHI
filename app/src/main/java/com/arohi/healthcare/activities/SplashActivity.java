@@ -18,7 +18,7 @@ import com.google.firebase.auth.FirebaseUser;
  * Initializes AROHI session check, synchronizes Firebase Auth state if connected,
  * and routes the user without unnecessary re-logins.
  */
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private static final long SPLASH_DELAY_MS = 1100L;
     private ActivitySplashBinding binding;

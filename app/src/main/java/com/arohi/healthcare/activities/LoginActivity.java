@@ -16,7 +16,7 @@ import com.arohi.healthcare.utils.ValidationUtils;
  * Authenticates users, resolves their authoritative role (PATIENT, DOCTOR, NURSE, ADMIN)
  * and verificationStatus, and navigates appropriately.
  */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private ActivityLoginBinding binding;
     private AuthRepository authRepository;

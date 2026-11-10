@@ -40,10 +40,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/surface_card"
         app:cardCornerRadius="12dp"
         app:cardElevation="2dp"
-        app:strokeColor="#D5E0CE"
+        app:strokeColor="@color/border_stroke"
         app:strokeWidth="1dp">
 
         <LinearLayout
