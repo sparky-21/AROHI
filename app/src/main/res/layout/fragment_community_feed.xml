@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/warm_ivory"
+    android:background="@color/surface_background"
     android:orientation="vertical">
 
     <!-- Header Section -->
@@ -64,6 +64,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:clipToPadding="false"
+            android:paddingEnd="16dp"
             android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup

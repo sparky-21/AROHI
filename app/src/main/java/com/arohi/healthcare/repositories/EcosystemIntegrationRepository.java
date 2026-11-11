@@ -889,14 +889,21 @@ public class EcosystemIntegrationRepository {
                         p.setReportedUserUids(reps);
                     }
 
-                    // Counts are always derived from real user actions, never from stored/seeded numbers
-                    p.setLikeCount(p.getLikedUserUids() != null ? p.getLikedUserUids().size() : 0);
-                    p.setSaveCount(p.getSavedUserUids() != null ? p.getSavedUserUids().size() : 0);
-                    p.setReportCount(p.getReportedUserUids() != null ? p.getReportedUserUids().size() : 0);
-                    p.setCommentCount(getLocalPostComments(p.getPostId()).size());
+                    // Counts are always derived strictly from real user actions, never from stored/seeded numbers
+                    int realLikes = p.getLikedUserUids() != null ? p.getLikedUserUids().size() : 0;
+                    int realSaves = p.getSavedUserUids() != null ? p.getSavedUserUids().size() : 0;
+                    int realReports = p.getReportedUserUids() != null ? p.getReportedUserUids().size() : 0;
+                    int realComments = getLocalPostComments(p.getPostId()).size();
+
+                    p.setLikeCount(realLikes);
+                    p.setSaveCount(realSaves);
+                    p.setReportCount(realReports);
+                    p.setCommentCount(realComments);
 
                     list.add(p);
                 }
+                // Resave to permanently sanitize any stale cached counts on device
+                saveLocalCommunityPosts(list);
             } catch (Exception ignored) {}
         }
         return list;
