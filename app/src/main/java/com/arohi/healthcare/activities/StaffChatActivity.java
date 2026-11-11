@@ -29,6 +29,7 @@ import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.HospitalCommunicationRepository;
 import com.arohi.healthcare.utils.SessionManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.List;
 import java.util.UUID;
@@ -63,6 +64,7 @@ public class StaffChatActivity extends BaseActivity {
     private String conversationTitle;
     private String conversationType;
     private UserAccount currentUser;
+    private ListenerRegistration messagesListener;
 
     // Attached file state
     private Uri selectedFileUri = null;
@@ -187,6 +189,45 @@ public class StaffChatActivity extends BaseActivity {
             @Override
             public void onError(String errorMessage) {
                 Toast.makeText(StaffChatActivity.this, "Failed to load messages: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        attachMessagesListener();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (messagesListener != null) {
+            messagesListener.remove();
+            messagesListener = null;
+        }
+    }
+
+    private void attachMessagesListener() {
+        if (messagesListener != null) {
+            messagesListener.remove();
+        }
+        messagesListener = repository.attachMessagesListener(hospitalId, conversationId, new AuthCallback<List<StaffMessage>>() {
+            @Override
+            public void onSuccess(List<StaffMessage> messages) {
+                if (messages == null || messages.isEmpty()) {
+                    binding.layoutEmptyChat.setVisibility(View.VISIBLE);
+                } else {
+                    binding.layoutEmptyChat.setVisibility(View.GONE);
+                    adapter.submitList(messages);
+                    binding.rvStaffMessages.scrollToPosition(messages.size() - 1);
+                }
+                repository.markMessagesRead(hospitalId, conversationId, currentUser.getUid());
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                loadMessages();
             }
         });
     }

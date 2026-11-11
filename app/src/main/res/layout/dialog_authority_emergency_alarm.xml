@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_dialog"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Emergency Siren Indicator -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_badge_pill"
+        android:backgroundTint="@color/status_emergency_bg"
+        android:gravity="center"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🚨 🔊 AUDITORY BEEP ALARM ACTIVE 🚨"
+            android:textColor="@color/status_emergency"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvAuthorityAlertTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:text="CRITICAL HOSPITAL EMERGENCY"
+        android:textAppearance="@style/TextAppearance.AROHI.TitleLarge"
+        android:textColor="@color/status_emergency"
+        android:textSize="19sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvAuthorityAlertSender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="Triggered by: Dr. Specialist (DOCTOR)"
+        android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
+        android:textColor="@color/accent_heading"
+        android:textSize="14sp" />
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.AROHI.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:cardBackgroundColor="@color/surface_card"
+        app:strokeColor="@color/status_emergency"
+        app:strokeWidth="1.5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/tvAuthorityAlertType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Type: Code Blue (Cardiac / Respiratory Arrest)"
+                android:textColor="@color/status_emergency"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAuthorityAlertLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Location: Ward 4B, Bed 12"
+                android:textColor="@color/text_primary"
+                android:textSize="13.5sp" />
+
+            <TextView
+                android:id="@+id/tvAuthorityAlertMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Immediate clinical team resuscitation required!"
+                android:textColor="@color/text_secondary"
+                android:textSize="12.5sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Action Buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAuthorityAcknowledge"
+        style="@style/Widget.AROHI.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/status_emergency"
+        android:text="🔕 Acknowledge &amp; Silence Beep Alarm"
+        android:textColor="@color/white" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAuthorityOpenGroupChat"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="💬 Open Authority Communication Hub"
+        android:textColor="@color/primary_moss_green"
+        app:strokeColor="@color/primary_moss_green" />
+
+</LinearLayout>

@@ -54,9 +54,12 @@ public class LiveTrackingMapActivity extends BaseActivity {
     private ActivityLiveTrackingMapBinding binding;
     private SessionManager sessionManager;
     private AmbulanceTrackingRepository ambulanceRepo;
+    private com.arohi.healthcare.services.LiveTrackingRealtimeManager rtdbManager;
     private Marker activeVehicleMarker;
     private Marker destinationMarker;
     private ListenerRegistration realtimeListener;
+    private com.google.firebase.database.ValueEventListener rtdbListener;
+    private com.google.firebase.database.DatabaseReference activeRtdbRef;
 
     private String mode;
     private String recordId;
@@ -87,6 +90,7 @@ public class LiveTrackingMapActivity extends BaseActivity {
 
         sessionManager = new SessionManager(this);
         ambulanceRepo = new AmbulanceTrackingRepository(this);
+        rtdbManager = new com.arohi.healthcare.services.LiveTrackingRealtimeManager(this);
 
         mode = getIntent().getStringExtra(EXTRA_MODE);
         recordId = getIntent().getStringExtra(EXTRA_RECORD_ID);
@@ -124,6 +128,21 @@ public class LiveTrackingMapActivity extends BaseActivity {
     private void bindInitialRecordAndListen() {
         bindInitialRecord();
         if (MODE_AMBULANCE.equalsIgnoreCase(mode)) {
+            // 1. Primary low-latency Firebase Realtime Database telemetry listener
+            activeRtdbRef = rtdbManager.getAmbulanceRef(hospitalId, recordId);
+            rtdbListener = rtdbManager.observeAmbulanceTelemetry(hospitalId, recordId,
+                    new com.arohi.healthcare.services.LiveTrackingRealtimeManager.TelemetryObserver() {
+                        @Override
+                        public void onTelemetryReceived(@NonNull com.arohi.healthcare.models.LiveTelemetryPayload payload) {
+                            runOnUiThread(() -> applyRealtimeTelemetry(payload));
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                        }
+                    });
+
+            // 2. Fallback Firestore snapshot listener for metadata sync
             realtimeListener = ambulanceRepo.observeAmbulanceRequestRealtime(hospitalId, recordId,
                     new AuthCallback<AmbulanceRequest>() {
                         @Override
@@ -136,6 +155,21 @@ public class LiveTrackingMapActivity extends BaseActivity {
                         }
                     });
         } else if (MODE_PHARMACY.equalsIgnoreCase(mode)) {
+            // 1. Primary low-latency Firebase Realtime Database telemetry listener
+            activeRtdbRef = rtdbManager.getPharmacyRef(hospitalId, recordId);
+            rtdbListener = rtdbManager.observePharmacyTelemetry(hospitalId, recordId,
+                    new com.arohi.healthcare.services.LiveTrackingRealtimeManager.TelemetryObserver() {
+                        @Override
+                        public void onTelemetryReceived(@NonNull com.arohi.healthcare.models.LiveTelemetryPayload payload) {
+                            runOnUiThread(() -> applyRealtimeTelemetry(payload));
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                        }
+                    });
+
+            // 2. Fallback Firestore snapshot listener for order changes
             FirebaseFirestore db = FirebaseProvider.getFirestore(this);
             if (db != null) {
                 realtimeListener = db.collection(FirestoreCollections.PHARMACY_ORDERS)
@@ -151,6 +185,36 @@ public class LiveTrackingMapActivity extends BaseActivity {
                         });
             }
         }
+    }
+
+    private void applyRealtimeTelemetry(@NonNull com.arohi.healthcare.models.LiveTelemetryPayload payload) {
+        if (!payload.isSharingActive()) {
+            binding.bannerTelemetryNotice.setVisibility(View.VISIBLE);
+            binding.tvTelemetryNoticeText.setText(R.string.tracking_map_session_ended);
+            clearVehicleMarker();
+            return;
+        }
+
+        binding.bannerTelemetryNotice.setVisibility(View.GONE);
+        if (payload.getEtaMinutes() > 0) {
+            binding.tvLiveMapEtaPill.setVisibility(View.VISIBLE);
+            binding.tvLiveMapEtaPill.setText("ETA ~" + payload.getEtaMinutes() + " min");
+        }
+        if (payload.getStatus() != null && !payload.getStatus().isEmpty()) {
+            binding.tvLiveMapStatus.setText("Status: " + payload.getStatus());
+        }
+
+        int tint = MODE_AMBULANCE.equalsIgnoreCase(mode)
+                ? Color.parseColor("#C94B4B")
+                : ContextCompat.getColor(this, R.color.primary_moss_green);
+        String label = (payload.getOperatorName() != null && !payload.getOperatorName().isEmpty())
+                ? payload.getOperatorName()
+                : (MODE_AMBULANCE.equalsIgnoreCase(mode) ? "Ambulance" : "Delivery Rider");
+
+        updateVehicleMarker(payload.getLatitude(), payload.getLongitude(),
+                label,
+                "Live GPS • " + (payload.getSpeed() > 0 ? String.format(java.util.Locale.ROOT, "%.1f km/h", payload.getSpeed()) : "Active"),
+                tint);
     }
 
     private void bindInitialRecord() {
@@ -309,6 +373,10 @@ public class LiveTrackingMapActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (activeRtdbRef != null && rtdbListener != null) {
+            activeRtdbRef.removeEventListener(rtdbListener);
+            rtdbListener = null;
+        }
         if (realtimeListener != null) {
             realtimeListener.remove();
             realtimeListener = null;

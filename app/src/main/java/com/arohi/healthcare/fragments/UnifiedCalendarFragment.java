@@ -482,13 +482,29 @@ public class UnifiedCalendarFragment extends Fragment {
             }
 
             ConsultationRequest pReq = chosenPatient[0] != null ? chosenPatient[0] : acceptedPatients.get(0);
-            String otRoom = dBinding.actvSelectOtRoom.getText().toString();
-            String otRoomId = "ot_02";
+            String selectedOtText = dBinding.actvSelectOtRoom.getText().toString();
+            String otRoomId = "ot_01";
+            String otRoom = selectedOtText;
+
             for (com.arohi.healthcare.models.OTRoom r : roomOptions) {
-                if (otRoom.equals(r.getRoomName())) {
+                if (selectedOtText.contains(r.getRoomName()) || selectedOtText.contains(r.getRoomId())) {
                     otRoomId = r.getRoomId();
+                    otRoom = r.getRoomName();
                     break;
                 }
+            }
+            if (selectedOtText.contains("Suite 1") || selectedOtText.contains("Cardiac")) {
+                otRoomId = "ot_01";
+                otRoom = "OT Suite 1 - Cardiac Surgery";
+            } else if (selectedOtText.contains("Suite 2") || selectedOtText.contains("General")) {
+                otRoomId = "ot_02";
+                otRoom = "OT Suite 2 - General & Laparoscopic";
+            } else if (selectedOtText.contains("Suite 3") || selectedOtText.contains("Orthopedic")) {
+                otRoomId = "ot_03";
+                otRoom = "OT Suite 3 - Orthopedic & Trauma";
+            } else if (selectedOtText.contains("Suite 4") || selectedOtText.contains("Neuro")) {
+                otRoomId = "ot_04";
+                otRoom = "OT Suite 4 - Neuro & Micro-Surgery";
             }
             String date = dBinding.etOpDate.getText().toString().trim();
             String time = dBinding.actvOpTime.getText().toString().trim();

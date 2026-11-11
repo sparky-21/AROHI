@@ -96,7 +96,12 @@ public class PatientBillingHistoryActivity extends BaseActivity {
     }
 
     private void onBillClicked(@NonNull HospitalBill bill) {
-        String hospId = bill.getHospitalId() != null ? bill.getHospitalId() : sessionManager.getSelectedHospitalId();
+        String hospId = (bill.getHospitalId() != null && !bill.getHospitalId().trim().isEmpty())
+                ? bill.getHospitalId() : sessionManager.getSelectedHospitalId();
+
+        // Ensure bill is cached locally so checkout/receipt finds it synchronously
+        billingRepository.updateBillLocally(hospId, bill);
+
         if (PaymentStatus.SUCCESSFUL.name().equalsIgnoreCase(bill.getStatus())) {
             Intent intent = DigitalReceiptActivity.newIntent(this, bill.getBillId(), hospId);
             startActivity(intent);

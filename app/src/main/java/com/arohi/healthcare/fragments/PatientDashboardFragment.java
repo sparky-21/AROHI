@@ -157,7 +157,9 @@ public class PatientDashboardFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        binding.cardEmergencyShortcut.setOnClickListener(v -> showEmergencyCardDialog());
+        binding.cardEmergencyShortcut.setOnClickListener(v -> {
+            showEmergencyCardDialog();
+        });
         binding.cardPatientSmartJourney.setOnClickListener(v -> switchTab(R.id.nav_patient_records));
 
         binding.btnQuickFindDoctors.setOnClickListener(v -> switchTab(R.id.nav_patient_doctors));

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 
+import com.arohi.healthcare.database.FirestoreCollections;
 import com.arohi.healthcare.models.Bed;
 import com.arohi.healthcare.models.CalendarEvent;
 import com.arohi.healthcare.models.ConsultationRequest;
@@ -75,20 +76,28 @@ public class HospitalOperationsRepository {
     // =========================================================================
 
     public void loadOTRooms(AuthCallback<List<OTRoom>> callback) {
-        firestore.collection("otRooms").get()
+        firestore.collection(FirestoreCollections.OPERATION_ROOMS).get()
                 .addOnSuccessListener(querySnapshot -> {
                     List<OTRoom> list = new ArrayList<>();
                     if (querySnapshot != null && !querySnapshot.isEmpty()) {
                         for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                             OTRoom room = doc.toObject(OTRoom.class);
                             if (room != null) {
-                                room.setRoomId(doc.getId());
+                                if (room.getRoomId() == null || room.getRoomId().isEmpty()) {
+                                    room.setRoomId(doc.getId());
+                                }
+                                if (room.getStatus() == null || room.getStatus().isEmpty()) {
+                                    room.setStatus(OTRoom.STATUS_AVAILABLE);
+                                }
                                 list.add(room);
                             }
                         }
                     }
                     if (list.isEmpty()) {
                         list = getLocalOTRooms();
+                        for (OTRoom r : list) {
+                            firestore.collection(FirestoreCollections.OPERATION_ROOMS).document(r.getRoomId()).set(r.toMap());
+                        }
                     } else {
                         saveLocalOTRooms(list);
                     }
@@ -107,7 +116,7 @@ public class HospitalOperationsRepository {
         }
         saveLocalOTRooms(rooms);
 
-        firestore.collection("otRooms").document(roomId)
+        firestore.collection(FirestoreCollections.OPERATION_ROOMS).document(roomId)
                 .update("status", status, "available", OTRoom.STATUS_AVAILABLE.equalsIgnoreCase(status))
                 .addOnSuccessListener(v -> {
                     if (callback != null) callback.onSuccess(null);
@@ -152,7 +161,10 @@ public class HospitalOperationsRepository {
             public void onSuccess(List<Operation> existingOps) {
                 // 1. Conflict Check: OT Room
                 for (Operation other : existingOps) {
-                    if (Operation.STATUS_CANCELLED.equalsIgnoreCase(other.getStatus())) continue;
+                    if (Operation.STATUS_CANCELLED.equalsIgnoreCase(other.getStatus())
+                            || Operation.STATUS_COMPLETED.equalsIgnoreCase(other.getStatus())) {
+                        continue;
+                    }
                     if (other.getOperationDate() != null && other.getOperationDate().equals(op.getOperationDate())) {
                         if (other.getOtRoomId() != null && other.getOtRoomId().equals(op.getOtRoomId())) {
                             if (isTimeConflict(other.getOperationTime(), op.getOperationTime())) {
@@ -167,7 +179,10 @@ public class HospitalOperationsRepository {
 
                 // 2. Conflict Check: Doctor
                 for (Operation other : existingOps) {
-                    if (Operation.STATUS_CANCELLED.equalsIgnoreCase(other.getStatus())) continue;
+                    if (Operation.STATUS_CANCELLED.equalsIgnoreCase(other.getStatus())
+                            || Operation.STATUS_COMPLETED.equalsIgnoreCase(other.getStatus())) {
+                        continue;
+                    }
                     if (other.getOperationDate() != null && other.getOperationDate().equals(op.getOperationDate())) {
                         if (other.getDoctorUid() != null && other.getDoctorUid().equals(op.getDoctorUid())) {
                             if (isTimeConflict(other.getOperationTime(), op.getOperationTime())) {
@@ -183,7 +198,10 @@ public class HospitalOperationsRepository {
                 // 3. Conflict Check: Nurse
                 if (op.getNurseUid() != null && !op.getNurseUid().isEmpty()) {
                     for (Operation other : existingOps) {
-                        if (Operation.STATUS_CANCELLED.equalsIgnoreCase(other.getStatus())) continue;
+                        if (Operation.STATUS_CANCELLED.equalsIgnoreCase(other.getStatus())
+                                || Operation.STATUS_COMPLETED.equalsIgnoreCase(other.getStatus())) {
+                            continue;
+                        }
                         if (other.getOperationDate() != null && other.getOperationDate().equals(op.getOperationDate())) {
                             if (op.getNurseUid().equals(other.getNurseUid())) {
                                 if (isTimeConflict(other.getOperationTime(), op.getOperationTime())) {
@@ -1011,15 +1029,23 @@ public class HospitalOperationsRepository {
                 JSONArray arr = new JSONArray(json);
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject o = arr.getJSONObject(i);
+                    String st = o.optString("status", OTRoom.STATUS_AVAILABLE);
                     OTRoom r = new OTRoom(
                             o.optString("roomId"), o.optString("roomName"), o.optString("floor"),
-                            o.optString("specialties"), o.optString("status"), o.optString("equipmentNotes")
+                            o.optString("specialties"), st, o.optString("equipmentNotes")
                     );
-                    r.setAvailable(o.optBoolean("available", true));
-                    r.setCurrentOperationId(o.optString("currentOperationId"));
+                    r.setAvailable(o.optBoolean("available", OTRoom.STATUS_AVAILABLE.equalsIgnoreCase(st)));
+                    r.setCurrentOperationId(o.optString("currentOperationId", ""));
                     list.add(r);
                 }
             } catch (Exception ignored) {}
+        }
+        if (list.isEmpty()) {
+            list.add(new OTRoom("ot_01", "OT Suite 1 - Cardiac Surgery", "Floor 3, South Wing", "Cardiothoracic, Vascular", OTRoom.STATUS_AVAILABLE, "Laminar flow, Heart-lung bypass console, St. Jude Telemetry"));
+            list.add(new OTRoom("ot_02", "OT Suite 2 - General & Laparoscopic", "Floor 3, South Wing", "General Surgery, Gastro, Urology", OTRoom.STATUS_AVAILABLE, "Karl Storz 4K Laparoscopy Tower, Harmonic scalpel"));
+            list.add(new OTRoom("ot_03", "OT Suite 3 - Orthopedic & Trauma", "Floor 3, South Wing", "Orthopedic, Joint Replacement, Spine", OTRoom.STATUS_AVAILABLE, "C-Arm Fluoroscopy, Stryker Ortho Power Drills"));
+            list.add(new OTRoom("ot_04", "OT Suite 4 - Neuro & Micro-Surgery", "Floor 3, South Wing", "Neurosurgery, Plastic Surgery", OTRoom.STATUS_AVAILABLE, "Zeiss Surgical Microscope, Medtronic StealthStation"));
+            saveLocalOTRooms(list);
         }
         return list;
     }

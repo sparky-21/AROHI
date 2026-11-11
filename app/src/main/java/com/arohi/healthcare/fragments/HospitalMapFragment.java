@@ -62,6 +62,13 @@ public class HospitalMapFragment extends Fragment {
             @Override
             public void onLocationSelected(@NonNull HospitalLocation location) {
                 displaySelectedLocation(location);
+                scrollToDetails();
+            }
+
+            @Override
+            public void onShowDirectionsClicked(@NonNull HospitalLocation location) {
+                displaySelectedLocation(location);
+                showStepByStepDirectionsDialog(location);
             }
         });
         binding.recyclerHospitalLocations.setAdapter(locationAdapter);
@@ -77,15 +84,7 @@ public class HospitalMapFragment extends Fragment {
         });
 
         binding.btnOpenGoogleMapStyle.setOnClickListener(v -> {
-            if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
-                ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).openSubFragment(
-                        GoogleHospitalMapFragment.newInstance(), "google_hospital_map");
-            } else {
-                getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentContainer, GoogleHospitalMapFragment.newInstance())
-                        .addToBackStack("google_hospital_map")
-                        .commit();
-            }
+            openGoogleMapStyleNavigation(selectedLocation != null ? selectedLocation.getName() : null);
         });
 
         // Floor Chips
@@ -170,6 +169,82 @@ public class HospitalMapFragment extends Fragment {
         binding.tvDetailDirections.setText(loc.getStepByStepDirections());
         binding.tvDetailHours.setText("Hours: " + loc.getWorkingHours());
         binding.tvDetailExtension.setText(loc.getContactExtension());
+    }
+
+    private void scrollToDetails() {
+        if (binding == null) return;
+        binding.getRoot().post(() -> {
+            if (binding != null && binding.cardSelectedLocationDetails != null) {
+                binding.getRoot().smoothScrollTo(0, binding.cardSelectedLocationDetails.getTop());
+            }
+        });
+    }
+
+    private void showStepByStepDirectionsDialog(@NonNull HospitalLocation loc) {
+        if (getContext() == null || binding == null || !isAdded()) return;
+
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(requireContext());
+        com.arohi.healthcare.databinding.DialogStepByStepDirectionsBinding sheetBinding =
+                com.arohi.healthcare.databinding.DialogStepByStepDirectionsBinding.inflate(getLayoutInflater());
+        dialog.setContentView(sheetBinding.getRoot());
+
+        sheetBinding.tvDirectionsDialogTitle.setText(loc.getName());
+        sheetBinding.tvDirectionsDialogSubtitle.setText(
+                loc.getFloor() + " • " + loc.getWing() + " • Room " + loc.getRoomNumber());
+        sheetBinding.tvDirectionsDialogHours.setText("Hours: " + loc.getWorkingHours());
+        sheetBinding.tvDirectionsDialogExtension.setText(loc.getContactExtension());
+
+        // Parse and render step-by-step directions as numbered entries
+        String rawDirections = loc.getStepByStepDirections();
+        sheetBinding.layoutDirectionsStepsContainer.removeAllViews();
+        if (rawDirections != null && !rawDirections.trim().isEmpty()) {
+            String[] steps = rawDirections.split("->|\n");
+            int stepNum = 1;
+            for (String step : steps) {
+                String clean = step.trim();
+                if (clean.isEmpty()) continue;
+                android.widget.TextView tvStep = new android.widget.TextView(requireContext());
+                tvStep.setText(stepNum + ". " + clean);
+                tvStep.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_primary));
+                tvStep.setTextSize(13.5f);
+                tvStep.setPadding(0, 4, 0, 8);
+                sheetBinding.layoutDirectionsStepsContainer.addView(tvStep);
+                stepNum++;
+            }
+        } else {
+            android.widget.TextView tvStep = new android.widget.TextView(requireContext());
+            tvStep.setText("Follow hospital hallway signage to " + loc.getName());
+            tvStep.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_secondary));
+            sheetBinding.layoutDirectionsStepsContainer.addView(tvStep);
+        }
+
+        sheetBinding.btnDirectionsDialogClose.setOnClickListener(v -> dialog.dismiss());
+
+        sheetBinding.btnDirectionsViewOnFloorPlan.setOnClickListener(v -> {
+            dialog.dismiss();
+            scrollToDetails();
+        });
+
+        sheetBinding.btnDirectionsStart3DNav.setOnClickListener(v -> {
+            dialog.dismiss();
+            openGoogleMapStyleNavigation(loc.getName());
+        });
+
+        dialog.show();
+    }
+
+    private void openGoogleMapStyleNavigation(@Nullable String destinationName) {
+        GoogleHospitalMapFragment mapFrag = GoogleHospitalMapFragment.newInstance(destinationName);
+        if (getActivity() instanceof com.arohi.healthcare.activities.RolePortalActivity) {
+            ((com.arohi.healthcare.activities.RolePortalActivity) getActivity()).openSubFragment(
+                    mapFrag, "google_hospital_map");
+        } else {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, mapFrag)
+                    .addToBackStack("google_hospital_map")
+                    .commit();
+        }
     }
 
     private void updateFloorPlanSchematicTiles(String floor) {

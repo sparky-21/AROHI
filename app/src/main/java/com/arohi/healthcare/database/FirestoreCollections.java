@@ -53,4 +53,10 @@ public final class FirestoreCollections {
     // Phase 14 Unified Tracking & Ambulance Telemetry
     public static final String AMBULANCE_REQUESTS = "ambulanceRequests";
     public static final String TRACKING_EVENTS = "trackingEvents";
+
+    // Staff Rating & Reviews
+    public static final String STAFF_RATINGS = "staffRatings";
+
+    // Phase 13 Hospital Billing
+    public static final String HOSPITAL_BILLS = "hospitalBills";
 }

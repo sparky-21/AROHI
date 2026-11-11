@@ -62,6 +62,8 @@ public class AmbulanceRequest implements Serializable {
     // Live GPS Telemetry (ONLY populated by authorized telemetry feed, never fabricated)
     private Double currentLat;
     private Double currentLng;
+    private float bearing;
+    private float speedKmh;
     private long locationUpdatedAt;
     private int etaMinutes; // <= 0 when not computed
     private boolean locationSharingAuthorized;
@@ -180,6 +182,8 @@ public class AmbulanceRequest implements Serializable {
         map.put("acceptedByAuthorityUid", acceptedByAuthorityUid != null ? acceptedByAuthorityUid : "");
         if (currentLat != null) map.put("currentLat", currentLat);
         if (currentLng != null) map.put("currentLng", currentLng);
+        map.put("bearing", bearing);
+        map.put("speedKmh", speedKmh);
         map.put("locationUpdatedAt", locationUpdatedAt);
         map.put("etaMinutes", etaMinutes);
         map.put("locationSharingAuthorized", locationSharingAuthorized);
@@ -221,6 +225,8 @@ public class AmbulanceRequest implements Serializable {
         req.setAcceptedByAuthorityUid((String) map.get("acceptedByAuthorityUid"));
         if (map.get("currentLat") instanceof Number) req.setCurrentLat(((Number) map.get("currentLat")).doubleValue());
         if (map.get("currentLng") instanceof Number) req.setCurrentLng(((Number) map.get("currentLng")).doubleValue());
+        if (map.get("bearing") instanceof Number) req.setBearing(((Number) map.get("bearing")).floatValue());
+        if (map.get("speedKmh") instanceof Number) req.setSpeedKmh(((Number) map.get("speedKmh")).floatValue());
         if (map.get("locationUpdatedAt") instanceof Number) req.setLocationUpdatedAt(((Number) map.get("locationUpdatedAt")).longValue());
         if (map.get("etaMinutes") instanceof Number) req.setEtaMinutes(((Number) map.get("etaMinutes")).intValue());
         if (map.get("locationSharingAuthorized") instanceof Boolean) {
@@ -305,6 +311,12 @@ public class AmbulanceRequest implements Serializable {
 
     public Double getCurrentLng() { return currentLng; }
     public void setCurrentLng(Double currentLng) { this.currentLng = currentLng; }
+
+    public float getBearing() { return bearing; }
+    public void setBearing(float bearing) { this.bearing = bearing; }
+
+    public float getSpeedKmh() { return speedKmh; }
+    public void setSpeedKmh(float speedKmh) { this.speedKmh = speedKmh; }
 
     public long getLocationUpdatedAt() { return locationUpdatedAt; }
     public void setLocationUpdatedAt(long locationUpdatedAt) { this.locationUpdatedAt = locationUpdatedAt; }

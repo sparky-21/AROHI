@@ -122,6 +122,27 @@ public class HospitalBillAdapter extends RecyclerView.Adapter<HospitalBillAdapte
                 binding.tvBillDate.setText("");
             }
 
+            // Payment Action Hint
+            if (status == PaymentStatus.PENDING) {
+                binding.layoutBillActionHint.setVisibility(android.view.View.VISIBLE);
+                binding.layoutBillActionHint.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.pale_mint));
+                binding.tvBillActionIcon.setText("💳");
+                binding.tvBillActionText.setText("bKash, Nagad, Card, Cash Counter");
+                binding.tvBillActionText.setTextColor(ContextCompat.getColor(context, R.color.primary_moss_green));
+                binding.tvBillActionArrow.setText("Pay Now →");
+                binding.tvBillActionArrow.setTextColor(ContextCompat.getColor(context, R.color.primary_moss_green));
+            } else if (status == PaymentStatus.SUCCESSFUL) {
+                binding.layoutBillActionHint.setVisibility(android.view.View.VISIBLE);
+                binding.layoutBillActionHint.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.surface_subtle));
+                binding.tvBillActionIcon.setText("🧾");
+                binding.tvBillActionText.setText("Receipt Available • Paid " + (bill.getPaymentGateway() != null ? bill.getPaymentGateway() : ""));
+                binding.tvBillActionText.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
+                binding.tvBillActionArrow.setText("View Receipt →");
+                binding.tvBillActionArrow.setTextColor(ContextCompat.getColor(context, R.color.primary_moss_green));
+            } else {
+                binding.layoutBillActionHint.setVisibility(android.view.View.GONE);
+            }
+
             binding.getRoot().setOnClickListener(v -> listener.onBillClick(bill));
         }
     }

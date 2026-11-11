@@ -63,6 +63,9 @@ public class RolePortalActivity extends BaseActivity {
     private ProfileRepository profileRepository;
     private AuthRepository authRepository;
     private SecureMessagingRepository messagingRepository;
+    private com.arohi.healthcare.services.EmergencyAlertManager emergencyAlertManager;
+    private com.arohi.healthcare.services.EmergencyAlertManager.AuthorityMonitorHandle authorityAlertHandle;
+    private String lastHandledAlertId = "";
     private ListenerRegistration unreadConversationsListener;
     private UserAccount currentAccount;
     private int currentTabId = -1;
@@ -84,6 +87,7 @@ public class RolePortalActivity extends BaseActivity {
         profileRepository = new ProfileRepository(this);
         authRepository = new AuthRepository(this);
         messagingRepository = new SecureMessagingRepository(this);
+        emergencyAlertManager = new com.arohi.healthcare.services.EmergencyAlertManager(this);
 
         currentAccount = sessionManager.getCurrentSessionAccount();
         if (currentAccount == null) {
@@ -94,6 +98,11 @@ public class RolePortalActivity extends BaseActivity {
         setupTopHeader(currentAccount);
         setupBottomNavigationForRole(currentAccount.getUserRoleEnum());
         attachUnreadMessagesMonitor();
+
+        binding.btnHeaderEmergencyAlert.setOnClickListener(v -> triggerEmergencyAlert());
+        if (currentAccount.getUserRoleEnum() == UserRole.ADMIN) {
+            attachAuthorityEmergencyMonitor();
+        }
 
         binding.btnHeaderRefresh.setOnClickListener(v -> refreshHeaderAndCurrentTab(true));
         binding.btnHeaderCommunityFeed.setOnClickListener(v -> {
@@ -447,6 +456,11 @@ public class RolePortalActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        com.arohi.healthcare.utils.EmergencyAlertSoundHelper.stopEmergencyBeepAlert();
+        if (authorityAlertHandle != null) {
+            authorityAlertHandle.detach();
+            authorityAlertHandle = null;
+        }
         if (unreadConversationsListener != null) {
             unreadConversationsListener.remove();
             unreadConversationsListener = null;
@@ -518,5 +532,180 @@ public class RolePortalActivity extends BaseActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    // =========================================================================
+    // EMERGENCY ALERT & SOUND SYSTEM ORCHESTRATION
+    // =========================================================================
+
+    public void triggerEmergencyAlert() {
+        if (currentAccount == null) return;
+        UserRole role = currentAccount.getUserRoleEnum();
+        if (role == UserRole.PATIENT) {
+            showPatientEmergencyDialog();
+        } else if (role == UserRole.DOCTOR || role == UserRole.NURSE) {
+            showStaffEmergencyDialog();
+        } else if (role == UserRole.ADMIN) {
+            UiStateHelper.showSuccess(binding.getRoot(), "Hospital Authority Monitoring Active — Listening for clinical emergency broadcasts.");
+        }
+    }
+
+    public void showPatientEmergencyDialog() {
+        if (isFinishing()) return;
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        com.arohi.healthcare.databinding.DialogPatientEmergencyBinding b =
+                com.arohi.healthcare.databinding.DialogPatientEmergencyBinding.inflate(getLayoutInflater());
+        sheet.setContentView(b.getRoot());
+
+        b.btnPatientEmergencyClose.setOnClickListener(v -> sheet.dismiss());
+
+        // 1. Send Urgent Alert to Doctor's Inbox
+        b.cardEmergencySendDoctor.setOnClickListener(v -> {
+            sheet.dismiss();
+            emergencyAlertManager.sendPatientEmergencyAlertToDoctor(currentAccount, null,
+                    "Immediate clinical review requested by patient.",
+                    new AuthCallback<String>() {
+                        @Override
+                        public void onSuccess(String doctorName) {
+                            UiStateHelper.showSuccess(binding.getRoot(),
+                                    "🚨 Urgent Emergency message delivered to " + doctorName + "'s inbox!");
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            UiStateHelper.showError(binding.getRoot(), message);
+                        }
+                    });
+        });
+
+        // 2. Call Family Member / Emergency Contact
+        b.cardEmergencyCallFamily.setOnClickListener(v -> {
+            sheet.dismiss();
+            profileRepository.loadPatientProfile(currentAccount.getUid(), new AuthCallback<com.arohi.healthcare.models.PatientProfile>() {
+                @Override
+                public void onSuccess(com.arohi.healthcare.models.PatientProfile profile) {
+                    String phone = profile != null ? profile.getEmergencyContactPhone() : "";
+                    if (phone == null || phone.trim().isEmpty()) {
+                        phone = "999";
+                    }
+                    startActivity(new Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:" + phone.trim())));
+                }
+
+                @Override
+                public void onError(String message) {
+                    startActivity(new Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:999")));
+                }
+            });
+        });
+
+        // 3. Call Doctor
+        b.cardEmergencyCallDoctor.setOnClickListener(v -> {
+            sheet.dismiss();
+            startActivity(new Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:+8801700000000")));
+        });
+
+        // 4. Request Emergency Ambulance
+        b.btnEmergencyAmbulanceDispatch.setOnClickListener(v -> {
+            sheet.dismiss();
+            startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(this)
+                    .putExtra("extra_category", "AMBULANCE"));
+        });
+
+        sheet.show();
+    }
+
+    public void showStaffEmergencyDialog() {
+        if (isFinishing()) return;
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        com.arohi.healthcare.databinding.DialogStaffEmergencyBinding b =
+                com.arohi.healthcare.databinding.DialogStaffEmergencyBinding.inflate(getLayoutInflater());
+        sheet.setContentView(b.getRoot());
+
+        b.btnStaffEmergencyClose.setOnClickListener(v -> sheet.dismiss());
+
+        b.btnStaffBroadcastEmergency.setOnClickListener(v -> {
+            String selectedType = "Code Blue (Cardiac Arrest)";
+            if (b.rbResuscitation.isChecked()) selectedType = "Critical Resuscitation / Trauma";
+            else if (b.rbIcuMassCasualty.isChecked()) selectedType = "Mass Casualty / ICU Emergency";
+            else if (b.rbUrgentClinical.isChecked()) selectedType = "Urgent Clinical & Security Support";
+
+            String loc = b.etStaffEmergencyLocation.getText() != null
+                    ? b.etStaffEmergencyLocation.getText().toString().trim() : "";
+            if (loc.isEmpty()) {
+                loc = "Ward / Floor Location: Immediate clinical area";
+            }
+
+            sheet.dismiss();
+            String hospitalId = (currentAccount != null && currentAccount.getHospitalId() != null && !currentAccount.getHospitalId().trim().isEmpty())
+                    ? currentAccount.getHospitalId() : sessionManager.getSelectedHospitalId();
+            if (hospitalId == null || hospitalId.isEmpty()) hospitalId = "hosp_arohi_central";
+
+            emergencyAlertManager.sendStaffEmergencyAlertToAuthority(currentAccount, hospitalId,
+                    selectedType, loc, new AuthCallback<com.arohi.healthcare.models.EmergencyHospitalAlert>() {
+                        @Override
+                        public void onSuccess(com.arohi.healthcare.models.EmergencyHospitalAlert result) {
+                            UiStateHelper.showSuccess(binding.getRoot(),
+                                    "🚨 Emergency broadcasted to Hospital Authority & Group Chat!");
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            UiStateHelper.showError(binding.getRoot(), message);
+                        }
+                    });
+        });
+
+        sheet.show();
+    }
+
+    private void attachAuthorityEmergencyMonitor() {
+        String hospitalId = sessionManager.getSelectedHospitalId();
+        if (hospitalId == null || hospitalId.isEmpty()) hospitalId = "hosp_arohi_central";
+
+        authorityAlertHandle = emergencyAlertManager.attachAuthorityAlertMonitor(hospitalId, alert -> {
+            if (alert != null && !alert.isAcknowledged()) {
+                if (!alert.getAlertId().equals(lastHandledAlertId)) {
+                    lastHandledAlertId = alert.getAlertId();
+                    runOnUiThread(() -> showAuthorityIncomingEmergencyAlarm(alert));
+                }
+            }
+        });
+    }
+
+    private void showAuthorityIncomingEmergencyAlarm(@NonNull com.arohi.healthcare.models.EmergencyHospitalAlert alert) {
+        if (isFinishing()) return;
+
+        // Start continuous loud emergency beep alarm
+        com.arohi.healthcare.utils.EmergencyAlertSoundHelper.playEmergencyBeepAlert(this);
+
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        sheet.setCancelable(false);
+        com.arohi.healthcare.databinding.DialogAuthorityEmergencyAlarmBinding b =
+                com.arohi.healthcare.databinding.DialogAuthorityEmergencyAlarmBinding.inflate(getLayoutInflater());
+        sheet.setContentView(b.getRoot());
+
+        b.tvAuthorityAlertSender.setText("Triggered by: " + alert.getSenderName() + " (" + alert.getSenderRole() + ")");
+        b.tvAuthorityAlertType.setText("Type: " + alert.getEmergencyType());
+        b.tvAuthorityAlertLocation.setText("Location: " + alert.getWardOrRoom());
+        b.tvAuthorityAlertMessage.setText(alert.getMessage());
+
+        b.btnAuthorityAcknowledge.setOnClickListener(v -> {
+            com.arohi.healthcare.utils.EmergencyAlertSoundHelper.stopEmergencyBeepAlert();
+            emergencyAlertManager.acknowledgeAlert(alert.getHospitalId(), alert.getAlertId(), currentAccount);
+            sheet.dismiss();
+            UiStateHelper.showSuccess(binding.getRoot(), "Emergency Alert Acknowledged & Beep Silenced.");
+        });
+
+        b.btnAuthorityOpenGroupChat.setOnClickListener(v -> {
+            com.arohi.healthcare.utils.EmergencyAlertSoundHelper.stopEmergencyBeepAlert();
+            emergencyAlertManager.acknowledgeAlert(alert.getHospitalId(), alert.getAlertId(), currentAccount);
+            sheet.dismiss();
+            startActivity(AuthorityCommunicationActivity.newIntent(this, alert.getHospitalId(), sessionManager.getSelectedHospitalCode()));
+        });
+
+        sheet.show();
     }
 }

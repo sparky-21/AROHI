@@ -480,6 +480,8 @@ public class SessionManager {
             o.put("address", nonNull(d.getAddress()));
             o.put("bioNotes", nonNull(d.getBioNotes()));
             o.put("createdAt", d.getCreatedAt());
+            o.put("averageRating", d.getAverageRating());
+            o.put("totalRatings", d.getTotalRatings());
             root.put(d.getUid(), o);
             prefs.edit().putString(KEY_DOCTORS_REGISTRY_JSON, root.toString()).apply();
         } catch (JSONException ignored) {
@@ -533,6 +535,8 @@ public class SessionManager {
         d.setAddress(o.optString("address", ""));
         d.setBioNotes(o.optString("bioNotes", ""));
         d.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+        d.setAverageRating(o.optDouble("averageRating", 0.0));
+        d.setTotalRatings(o.optInt("totalRatings", 0));
         return d;
     }
 
@@ -558,6 +562,8 @@ public class SessionManager {
             o.put("address", nonNull(n.getAddress()));
             o.put("bioNotes", nonNull(n.getBioNotes()));
             o.put("createdAt", n.getCreatedAt());
+            o.put("averageRating", n.getAverageRating());
+            o.put("totalRatings", n.getTotalRatings());
             root.put(n.getUid(), o);
             prefs.edit().putString(KEY_NURSES_REGISTRY_JSON, root.toString()).apply();
         } catch (JSONException ignored) {
@@ -586,6 +592,8 @@ public class SessionManager {
             n.setAddress(o.optString("address", ""));
             n.setBioNotes(o.optString("bioNotes", ""));
             n.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
+            n.setAverageRating(o.optDouble("averageRating", 0.0));
+            n.setTotalRatings(o.optInt("totalRatings", 0));
             return n;
         } catch (JSONException e) {
             return null;

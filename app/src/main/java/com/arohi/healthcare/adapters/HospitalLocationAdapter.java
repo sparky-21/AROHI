@@ -21,6 +21,7 @@ public class HospitalLocationAdapter extends RecyclerView.Adapter<HospitalLocati
 
     public interface OnLocationSelectListener {
         void onLocationSelected(@NonNull HospitalLocation location);
+        void onShowDirectionsClicked(@NonNull HospitalLocation location);
     }
 
     private final List<HospitalLocation> items = new ArrayList<>();
@@ -86,7 +87,7 @@ public class HospitalLocationAdapter extends RecyclerView.Adapter<HospitalLocati
                 binding.cardLocationRoot.setStrokeWidth(1);
             }
 
-            binding.btnViewDirections.setOnClickListener(v -> listener.onLocationSelected(loc));
+            binding.btnViewDirections.setOnClickListener(v -> listener.onShowDirectionsClicked(loc));
             binding.cardLocationRoot.setOnClickListener(v -> listener.onLocationSelected(loc));
         }
     }

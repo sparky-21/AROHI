@@ -78,6 +78,15 @@ public class BillingCheckoutActivity extends BaseActivity {
             return;
         }
 
+        // Only patients are allowed to make payments — block other roles
+        com.arohi.healthcare.models.UserAccount currentUser = sessionManager.getCurrentSessionAccount();
+        if (currentUser != null && currentUser.getUserRoleEnum() != null
+                && currentUser.getUserRoleEnum() != com.arohi.healthcare.models.UserRole.PATIENT) {
+            Toast.makeText(this, "Only patients can make payments. Admins can track bills from the dashboard.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         setupUI();
         loadBillDetails();
     }
@@ -100,6 +109,9 @@ public class BillingCheckoutActivity extends BaseActivity {
         binding.cardGatewayCash.setOnClickListener(v -> selectGateway(PaymentGatewayType.CASH_COUNTER));
 
         binding.btnExecutePayment.setOnClickListener(v -> executeCheckoutPayment());
+
+        // Select bKash by default
+        selectGateway(PaymentGatewayType.BKASH);
     }
 
     private void selectGateway(PaymentGatewayType type) {
@@ -122,12 +134,32 @@ public class BillingCheckoutActivity extends BaseActivity {
         binding.cardGatewayNagad.setStrokeWidth(type == PaymentGatewayType.NAGAD ? 4 : 2);
         binding.cardGatewayCard.setStrokeWidth(type == PaymentGatewayType.CARD_SSLCOMMERZ ? 4 : 2);
         binding.cardGatewayCash.setStrokeWidth(type == PaymentGatewayType.CASH_COUNTER ? 4 : 2);
+
+        if (currentBill != null && !PaymentStatus.SUCCESSFUL.name().equalsIgnoreCase(currentBill.getStatus())) {
+            binding.btnExecutePayment.setText(String.format(Locale.US, "Pay ৳ %.2f via %s",
+                    currentBill.getTotalAmountBdt(), selectedGateway.getShortName()));
+        }
     }
 
     private void loadBillDetails() {
         billingRepository.getBillById(hospitalId, billId, new AuthCallback<HospitalBill>() {
             @Override
             public void onSuccess(HospitalBill bill) {
+                com.arohi.healthcare.models.UserAccount currentUser = sessionManager.getCurrentSessionAccount();
+                if (currentUser != null && currentUser.getUid() != null) {
+                    boolean isOwner = currentUser.getUid().equalsIgnoreCase(bill.getPatientUid())
+                            || (bill.getPatientArohiId() != null && currentUser.getUid().equalsIgnoreCase(bill.getPatientArohiId()))
+                            || (currentUser.getArohiId() != null && (currentUser.getArohiId().equalsIgnoreCase(bill.getPatientUid())
+                                    || currentUser.getArohiId().equalsIgnoreCase(bill.getPatientArohiId())));
+
+                    if (!isOwner) {
+                        Toast.makeText(BillingCheckoutActivity.this,
+                                "You can only pay your own bills.", Toast.LENGTH_LONG).show();
+                        finish();
+                        return;
+                    }
+                }
+
                 currentBill = bill;
                 bindBillData(bill);
             }

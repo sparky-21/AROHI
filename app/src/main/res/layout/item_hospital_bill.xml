@@ -120,6 +120,47 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Payment Action Hint Row -->
+        <LinearLayout
+            android:id="@+id/layoutBillActionHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_badge_pill"
+            android:backgroundTint="@color/pale_mint"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="6dp">
+
+            <TextView
+                android:id="@+id/tvBillActionIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💳"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvBillActionText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:text="Pay via bKash, Nagad, Card or Cash"
+                android:textColor="@color/primary_moss_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvBillActionArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pay Now →"
+                android:textColor="@color/primary_moss_green"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

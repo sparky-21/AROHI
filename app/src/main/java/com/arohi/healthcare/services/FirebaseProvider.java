@@ -53,4 +53,33 @@ public final class FirebaseProvider {
         }
         return FirebaseStorage.getInstance();
     }
+
+    private static boolean rtdbPersistenceConfigured = false;
+    public static final String DEFAULT_RTDB_URL = "https://arohi-694a5-default-rtdb.firebaseio.com";
+
+    public static com.google.firebase.database.FirebaseDatabase getDatabase(Context context) {
+        if (!isFirebaseConfigured(context)) {
+            return null;
+        }
+        try {
+            com.google.firebase.database.FirebaseDatabase db;
+            try {
+                db = com.google.firebase.database.FirebaseDatabase.getInstance();
+            } catch (Exception noUrlEx) {
+                // Fallback to project default RTDB instance URL
+                db = com.google.firebase.database.FirebaseDatabase.getInstance(DEFAULT_RTDB_URL);
+            }
+            if (!rtdbPersistenceConfigured && db != null) {
+                try {
+                    db.setPersistenceEnabled(true);
+                } catch (Exception ignored) {
+                    // Persistence must be set before any other database reference usage
+                }
+                rtdbPersistenceConfigured = true;
+            }
+            return db;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

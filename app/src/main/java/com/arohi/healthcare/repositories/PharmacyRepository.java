@@ -34,11 +34,13 @@ public class PharmacyRepository {
     private final Context appContext;
     private final SessionManager sessionManager;
     private final FirebaseFirestore firestore;
+    private final com.arohi.healthcare.services.LiveTrackingRealtimeManager realtimeManager;
 
     public PharmacyRepository(@NonNull Context context) {
         this.appContext = context.getApplicationContext();
         this.sessionManager = new SessionManager(this.appContext);
         this.firestore = FirebaseFirestore.getInstance();
+        this.realtimeManager = new com.arohi.healthcare.services.LiveTrackingRealtimeManager(this.appContext);
     }
 
     public SessionManager getSessionManager() {
@@ -302,6 +304,36 @@ public class PharmacyRepository {
             order.setLiveLng(liveLng);
             order.setLocationUpdatedAt(System.currentTimeMillis());
             order.setLocationSharingActive(true);
+
+            // Push to Firebase Realtime Database
+            com.arohi.healthcare.models.LiveTelemetryPayload payload = new com.arohi.healthcare.models.LiveTelemetryPayload(
+                    orderId,
+                    "PHARMACY",
+                    order.getHospitalId() != null ? order.getHospitalId() : "hosp_arohi_central",
+                    order.getDeliveryPartnerUid(),
+                    order.getDeliveryPartnerName(),
+                    order.getDeliveryPartnerPhone(),
+                    liveLat,
+                    liveLng,
+                    0f,
+                    0f,
+                    15,
+                    newStatus,
+                    true
+            );
+            realtimeManager.publishPharmacyTelemetry(
+                    order.getHospitalId() != null ? order.getHospitalId() : "hosp_arohi_central",
+                    orderId,
+                    payload,
+                    null
+            );
+        } else if (PharmacyOrder.STATUS_DELIVERED.equalsIgnoreCase(newStatus)
+                || PharmacyOrder.STATUS_CANCELLED.equalsIgnoreCase(newStatus)) {
+            order.setLocationSharingActive(false);
+            realtimeManager.stopPharmacyTracking(
+                    order.getHospitalId() != null ? order.getHospitalId() : "hosp_arohi_central",
+                    orderId
+            );
         }
         order.recordTrackingEvent(newStatus, staffUid,
                 partnerName != null && !partnerName.isEmpty() ? partnerName : "Pharmacy Staff",
@@ -330,5 +362,56 @@ public class PharmacyRepository {
                 .set(order.toMap())
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(e -> callback.onSuccess(null));
+    }
+
+    /**
+     * Ingestion point for delivery rider telemetry directly to Realtime Database and local cache.
+     */
+    public void publishAuthorizedRiderTelemetry(@NonNull String orderId,
+                                                @NonNull String riderUid,
+                                                double latitude,
+                                                double longitude,
+                                                float bearing,
+                                                float speed,
+                                                int etaMinutes,
+                                                @NonNull AuthCallback<Void> callback) {
+        PharmacyOrder order = sessionManager.getPharmacyOrderLocal(orderId);
+        if (order == null) {
+            callback.onError("Pharmacy order not found: " + orderId);
+            return;
+        }
+        if (PharmacyOrder.STATUS_DELIVERED.equalsIgnoreCase(order.getStatus())
+                || PharmacyOrder.STATUS_CANCELLED.equalsIgnoreCase(order.getStatus())) {
+            order.setLocationSharingActive(false);
+            callback.onError("Delivery already finished; rider telemetry rejected.");
+            return;
+        }
+        order.setLiveLat(latitude);
+        order.setLiveLng(longitude);
+        order.setLocationUpdatedAt(System.currentTimeMillis());
+        order.setLocationSharingActive(true);
+        sessionManager.savePharmacyOrderLocal(order);
+
+        com.arohi.healthcare.models.LiveTelemetryPayload payload = new com.arohi.healthcare.models.LiveTelemetryPayload(
+                orderId,
+                "PHARMACY",
+                order.getHospitalId() != null ? order.getHospitalId() : "hosp_arohi_central",
+                riderUid,
+                order.getDeliveryPartnerName(),
+                order.getDeliveryPartnerPhone(),
+                latitude,
+                longitude,
+                bearing,
+                speed,
+                etaMinutes,
+                order.getStatus(),
+                true
+        );
+        realtimeManager.publishPharmacyTelemetry(
+                order.getHospitalId() != null ? order.getHospitalId() : "hosp_arohi_central",
+                orderId,
+                payload,
+                callback
+        );
     }
 }

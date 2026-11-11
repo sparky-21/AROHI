@@ -33,11 +33,13 @@ public class AmbulanceTrackingRepository {
     private final Context appContext;
     private final UnifiedTrackingRepository trackingRepository;
     private final FirebaseFirestore firestore;
+    private final com.arohi.healthcare.services.LiveTrackingRealtimeManager realtimeManager;
 
     public AmbulanceTrackingRepository(@NonNull Context context) {
         this.appContext = context.getApplicationContext();
         this.trackingRepository = new UnifiedTrackingRepository(this.appContext);
         this.firestore = FirebaseProvider.getFirestore(this.appContext);
+        this.realtimeManager = new com.arohi.healthcare.services.LiveTrackingRealtimeManager(this.appContext);
     }
 
     public void createAmbulanceRequest(@NonNull String hospitalId,
@@ -206,6 +208,9 @@ public class AmbulanceTrackingRepository {
         trackingRepository.saveAmbulanceRequest(req, new AuthCallback<AmbulanceRequest>() {
             @Override
             public void onSuccess(AmbulanceRequest saved) {
+                if (saved.isTerminal()) {
+                    realtimeManager.stopAmbulanceTracking(hospitalId, saved.getRequestId());
+                }
                 TrackingNotificationDispatcher.dispatchTrackingUpdate(
                         appContext,
                         saved.getPatientUid(),
@@ -261,6 +266,24 @@ public class AmbulanceTrackingRepository {
         req.setLocationUpdatedAt(System.currentTimeMillis());
         if (etaMinutes > 0) req.setEtaMinutes(etaMinutes);
         req.setUpdatedAt(System.currentTimeMillis());
+
+        // Publish live telemetry directly to Firebase Realtime Database
+        com.arohi.healthcare.models.LiveTelemetryPayload payload = new com.arohi.healthcare.models.LiveTelemetryPayload(
+                requestId,
+                "AMBULANCE",
+                hospitalId,
+                driverUid,
+                req.getDriverName(),
+                req.getDriverPhone(),
+                latitude,
+                longitude,
+                req.getBearing(),
+                req.getSpeedKmh(),
+                req.getEtaMinutes(),
+                req.getStatus(),
+                true
+        );
+        realtimeManager.publishAmbulanceTelemetry(hospitalId, requestId, payload, null);
 
         trackingRepository.saveAmbulanceRequest(req, callback);
     }

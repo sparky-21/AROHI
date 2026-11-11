@@ -527,6 +527,70 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <!-- Nurse Emergency SOS Alert Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardNurseEmergencyAlert"
+            style="@style/Widget.AROHI.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/status_emergency_bg"
+            app:strokeColor="@color/status_emergency"
+            app:strokeWidth="1.5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_md">
+
+                <TextView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_badge_pill"
+                    android:backgroundTint="@color/white"
+                    android:gravity="center"
+                    android:text="🚨"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Trigger Ward Emergency Alert"
+                        android:textAppearance="@style/TextAppearance.AROHI.TitleMedium"
+                        android:textColor="@color/status_emergency"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Broadcast urgent Code Blue or resuscitation alert to Hospital Authority."
+                        android:textAppearance="@style/TextAppearance.AROHI.Caption"
+                        android:textColor="@color/text_primary"
+                        android:textSize="11.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/status_emergency" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Phase 14: Nurse Care & OT Tracking Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardNurseUnifiedTracking"

@@ -89,9 +89,12 @@ public class DoctorDiscoveryAdapter extends RecyclerView.Adapter<DoctorDiscovery
             String verStatus = "VERIFIED".equalsIgnoreCase(doctor.getVerificationStatus())
                     ? "Verified Specialist"
                     : "Pending Admin Verification";
+            String ratingStr = doctor.getTotalRatings() > 0
+                    ? String.format(java.util.Locale.US, " • ★ %.1f (%d)", doctor.getAverageRating(), doctor.getTotalRatings())
+                    : "";
 
             binding.tvDocCardName.setText(name);
-            binding.tvDocCardIdAndDept.setText(docId + " • " + dept + " • " + verStatus);
+            binding.tvDocCardIdAndDept.setText(docId + " • " + dept + " • " + verStatus + ratingStr);
             binding.tvDocCardSpecialtyBadge.setText(specialty);
             binding.tvDocCardQualifications.setText(
                     "Qualifications: " + quals + " • Experience: " + exp + " Year" + (exp == 1 ? "" : "s"));

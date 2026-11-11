@@ -64,8 +64,11 @@ public class AdminOperationsFragment extends Fragment {
 
     // Adapters
     private OperationAdapter operationAdapter;
+    private OTRoomAdapter otRoomAdapter;
     private NurseBedAdapter bedAdapter;
     private HospitalServiceAdapter serviceAdapter;
+
+    private boolean isViewingOtSuites = false;
 
     private final List<OTRoom> allOtRooms = new ArrayList<>();
     private final List<Operation> allOperations = new ArrayList<>();
@@ -93,6 +96,18 @@ public class AdminOperationsFragment extends Fragment {
         setupTabButtons();
 
         binding.btnAdminScheduleOpQuick.setOnClickListener(v -> showScheduleOperationDialog(null));
+        binding.btnToggleOtView.setOnClickListener(v -> {
+            isViewingOtSuites = !isViewingOtSuites;
+            if (isViewingOtSuites) {
+                binding.btnToggleOtView.setText("View Surgeries");
+                binding.rvAdminOperations.setAdapter(otRoomAdapter);
+                binding.tvEmptyOpsState.setVisibility(allOtRooms.isEmpty() ? View.VISIBLE : View.GONE);
+            } else {
+                binding.btnToggleOtView.setText("OT Suites");
+                binding.rvAdminOperations.setAdapter(operationAdapter);
+                binding.tvEmptyOpsState.setVisibility(allOperations.isEmpty() ? View.VISIBLE : View.GONE);
+            }
+        });
 
         switchTab("OT");
     }
@@ -107,6 +122,47 @@ public class AdminOperationsFragment extends Fragment {
             @Override
             public void onViewChecklist(@NonNull Operation operation) {
                 showChecklistDialog(operation);
+            }
+        });
+
+        otRoomAdapter = new OTRoomAdapter(new OTRoomAdapter.OnOTRoomActionListener() {
+            @Override
+            public void onSetAvailable(@NonNull OTRoom room) {
+                operationsRepository.updateOTRoomStatus(room.getRoomId(), OTRoom.STATUS_AVAILABLE, new AuthCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        if (binding == null) return;
+                        UiStateHelper.showSuccess(binding.getRoot(), room.getRoomName() + " is now Available.");
+                        loadOtAndOperationsData();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (binding == null) return;
+                        UiStateHelper.showError(binding.getRoot(), message);
+                    }
+                });
+            }
+
+            @Override
+            public void onSetSanitize(@NonNull OTRoom room) {
+                String nextStatus = OTRoom.STATUS_SANITIZATION.equalsIgnoreCase(room.getStatus())
+                        ? OTRoom.STATUS_AVAILABLE
+                        : OTRoom.STATUS_SANITIZATION;
+                operationsRepository.updateOTRoomStatus(room.getRoomId(), nextStatus, new AuthCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        if (binding == null) return;
+                        UiStateHelper.showSuccess(binding.getRoot(), room.getRoomName() + " set to " + nextStatus + ".");
+                        loadOtAndOperationsData();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (binding == null) return;
+                        UiStateHelper.showError(binding.getRoot(), message);
+                    }
+                });
             }
         });
 
@@ -182,12 +238,14 @@ public class AdminOperationsFragment extends Fragment {
         if ("OT".equals(tabKey)) {
             binding.layoutOtActionsRow.setVisibility(View.VISIBLE);
             binding.btnAdminScheduleOpQuick.setVisibility(View.VISIBLE);
+            binding.btnToggleOtView.setVisibility(View.VISIBLE);
             binding.tvAdminOpsSubtitle.setText("Operation Theatres (OT), Surgical Schedules & Conflict Detection");
-            binding.rvAdminOperations.setAdapter(operationAdapter);
+            binding.rvAdminOperations.setAdapter(isViewingOtSuites ? otRoomAdapter : operationAdapter);
             loadOtAndOperationsData();
         } else if ("BEDS".equals(tabKey)) {
             binding.layoutOtActionsRow.setVisibility(View.VISIBLE);
             binding.btnAdminScheduleOpQuick.setVisibility(View.GONE);
+            binding.btnToggleOtView.setVisibility(View.GONE);
             binding.tvAdminOpsSubtitle.setText("Inpatient Wards, Bed Status (Available, Occupied, Cleaning) & Patient Admissions");
             binding.rvAdminOperations.setAdapter(bedAdapter);
             loadBedsData();
@@ -200,6 +258,25 @@ public class AdminOperationsFragment extends Fragment {
     }
 
     private void loadOtAndOperationsData() {
+        operationsRepository.loadOTRooms(new AuthCallback<List<OTRoom>>() {
+            @Override
+            public void onSuccess(List<OTRoom> rooms) {
+                if (binding == null) return;
+                allOtRooms.clear();
+                allOtRooms.addAll(rooms);
+                if (otRoomAdapter != null) {
+                    otRoomAdapter.submitList(allOtRooms);
+                }
+                updateOtSummaryText();
+                if (isViewingOtSuites) {
+                    binding.tvEmptyOpsState.setVisibility(allOtRooms.isEmpty() ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onError(String message) {}
+        });
+
         operationsRepository.loadOperations(new AuthCallback<List<Operation>>() {
             @Override
             public void onSuccess(List<Operation> operations) {
@@ -207,16 +284,10 @@ public class AdminOperationsFragment extends Fragment {
                 allOperations.clear();
                 allOperations.addAll(operations);
                 operationAdapter.submitList(allOperations);
-
-                int scheduled = 0;
-                for (Operation op : operations) {
-                    if (!Operation.STATUS_COMPLETED.equalsIgnoreCase(op.getStatus())
-                            && !Operation.STATUS_CANCELLED.equalsIgnoreCase(op.getStatus())) {
-                        scheduled++;
-                    }
+                updateOtSummaryText();
+                if (!isViewingOtSuites) {
+                    binding.tvEmptyOpsState.setVisibility(operations.isEmpty() ? View.VISIBLE : View.GONE);
                 }
-                binding.tvAdminOpsSummary.setText("4 OT Suites • " + scheduled + " Active/Scheduled Surgeries");
-                binding.tvEmptyOpsState.setVisibility(operations.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override
@@ -225,6 +296,24 @@ public class AdminOperationsFragment extends Fragment {
                 UiStateHelper.showError(binding.getRoot(), message);
             }
         });
+    }
+
+    private void updateOtSummaryText() {
+        if (binding == null) return;
+        int scheduled = 0;
+        for (Operation op : allOperations) {
+            if (!Operation.STATUS_COMPLETED.equalsIgnoreCase(op.getStatus())
+                    && !Operation.STATUS_CANCELLED.equalsIgnoreCase(op.getStatus())) {
+                scheduled++;
+            }
+        }
+        int availableOt = 0;
+        for (OTRoom r : allOtRooms) {
+            if (r.isAvailable()) availableOt++;
+        }
+        int totalRooms = allOtRooms.isEmpty() ? 4 : allOtRooms.size();
+        binding.tvAdminOpsSummary.setText(totalRooms + " OT Suites (" + availableOt + " Available) • "
+                + scheduled + " Active/Scheduled");
     }
 
     private void loadBedsData() {
@@ -301,27 +390,43 @@ public class AdminOperationsFragment extends Fragment {
         // 1. OT Room dropdown (dynamically loaded OT Suites + defaults)
         final List<OTRoom> roomOptions = new ArrayList<>();
         final List<String> otRoomLabels = new ArrayList<>();
-        if (!allOtRooms.isEmpty()) {
-            for (OTRoom r : allOtRooms) {
-                roomOptions.add(r);
-                otRoomLabels.add(r.getRoomName());
-            }
-        } else {
-            String[] defaults = new String[]{
-                    "OT Suite 1 - Cardiac Surgery (Floor 3)",
-                    "OT Suite 2 - General & Laparoscopic (Floor 3)",
-                    "OT Suite 3 - Orthopedic & Trauma (Floor 3)",
-                    "OT Suite 4 - Neuro & Micro-Surgery (Floor 3)"
-            };
-            for (int i = 0; i < defaults.length; i++) {
-                otRoomLabels.add(defaults[i]);
-            }
+
+        List<OTRoom> availableRooms = new ArrayList<>(allOtRooms);
+        if (availableRooms.isEmpty()) {
+            availableRooms = operationsRepository.getLocalOTRooms();
         }
+
+        for (OTRoom r : availableRooms) {
+            roomOptions.add(r);
+            String statusBadge = r.isAvailable() ? " [Available]" : " [" + r.getStatus() + "]";
+            otRoomLabels.add(r.getRoomName() + statusBadge);
+        }
+
+        if (roomOptions.isEmpty()) {
+            OTRoom r1 = new OTRoom("ot_01", "OT Suite 1 - Cardiac Surgery", "Floor 3", "Cardiothoracic", OTRoom.STATUS_AVAILABLE, "");
+            OTRoom r2 = new OTRoom("ot_02", "OT Suite 2 - General & Laparoscopic", "Floor 3", "General", OTRoom.STATUS_AVAILABLE, "");
+            OTRoom r3 = new OTRoom("ot_03", "OT Suite 3 - Orthopedic & Trauma", "Floor 3", "Orthopedic", OTRoom.STATUS_AVAILABLE, "");
+            OTRoom r4 = new OTRoom("ot_04", "OT Suite 4 - Neuro & Micro-Surgery", "Floor 3", "Neurosurgery", OTRoom.STATUS_AVAILABLE, "");
+            roomOptions.add(r1); otRoomLabels.add(r1.getRoomName() + " [Available]");
+            roomOptions.add(r2); otRoomLabels.add(r2.getRoomName() + " [Available]");
+            roomOptions.add(r3); otRoomLabels.add(r3.getRoomName() + " [Available]");
+            roomOptions.add(r4); otRoomLabels.add(r4.getRoomName() + " [Available]");
+        }
+
         ArrayAdapter<String> otAdapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_dropdown_item_1line, otRoomLabels);
         dBinding.actvSelectOtRoom.setAdapter(otAdapter);
+
+        // Pre-select first AVAILABLE room by default
+        int defaultIndex = 0;
+        for (int i = 0; i < roomOptions.size(); i++) {
+            if (roomOptions.get(i).isAvailable()) {
+                defaultIndex = i;
+                break;
+            }
+        }
         if (!otRoomLabels.isEmpty()) {
-            dBinding.actvSelectOtRoom.setText(otRoomLabels.get(otRoomLabels.size() > 1 ? 1 : 0), false);
+            dBinding.actvSelectOtRoom.setText(otRoomLabels.get(defaultIndex), false);
         }
 
         // 2. Date picker
@@ -436,13 +541,29 @@ public class AdminOperationsFragment extends Fragment {
             }
             dBinding.tilProcedureName.setError(null);
 
-            String otRoom = dBinding.actvSelectOtRoom.getText().toString();
-            String otRoomId = "ot_02";
+            String selectedOtText = dBinding.actvSelectOtRoom.getText().toString();
+            String otRoomId = "ot_01";
+            String otRoom = selectedOtText;
+
             for (OTRoom r : roomOptions) {
-                if (otRoom.equals(r.getRoomName())) {
+                if (selectedOtText.contains(r.getRoomName()) || selectedOtText.contains(r.getRoomId())) {
                     otRoomId = r.getRoomId();
+                    otRoom = r.getRoomName();
                     break;
                 }
+            }
+            if (selectedOtText.contains("Suite 1") || selectedOtText.contains("Cardiac")) {
+                otRoomId = "ot_01";
+                otRoom = "OT Suite 1 - Cardiac Surgery";
+            } else if (selectedOtText.contains("Suite 2") || selectedOtText.contains("General")) {
+                otRoomId = "ot_02";
+                otRoom = "OT Suite 2 - General & Laparoscopic";
+            } else if (selectedOtText.contains("Suite 3") || selectedOtText.contains("Orthopedic")) {
+                otRoomId = "ot_03";
+                otRoom = "OT Suite 3 - Orthopedic & Trauma";
+            } else if (selectedOtText.contains("Suite 4") || selectedOtText.contains("Neuro")) {
+                otRoomId = "ot_04";
+                otRoom = "OT Suite 4 - Neuro & Micro-Surgery";
             }
             String date = dBinding.etOpDate.getText().toString();
             String time = dBinding.actvOpTime.getText().toString();

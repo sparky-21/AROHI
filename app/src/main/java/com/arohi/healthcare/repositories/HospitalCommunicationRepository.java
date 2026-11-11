@@ -20,13 +20,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.SetOptions;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Phase 12 Hospital Authority Communication Hub Repository.
@@ -252,11 +255,61 @@ public class HospitalCommunicationRepository {
                     .collection("messages")
                     .document(message.getMessageId())
                     .set(message.toMap())
-                    .addOnSuccessListener(aVoid -> callback.onSuccess(message))
+                    .addOnSuccessListener(aVoid -> {
+                        Map<String, Object> update = new HashMap<>();
+                        update.put("lastMessageText", message.getText());
+                        update.put("lastMessageSenderName", message.getSenderName());
+                        update.put("lastMessageTimestamp", message.getTimestamp());
+                        firestore.collection("hospitals")
+                                .document(hospitalId)
+                                .collection("conversations")
+                                .document(conversationId)
+                                .set(update, SetOptions.merge());
+                        callback.onSuccess(message);
+                    })
                     .addOnFailureListener(e -> callback.onSuccess(message));
         } else {
             callback.onSuccess(message);
         }
+    }
+
+    /**
+     * Attaches a real-time Firestore listener for live chat messages in a staff conversation.
+     */
+    public ListenerRegistration attachMessagesListener(String hospitalId, String conversationId,
+                                                       AuthCallback<List<StaffMessage>> callback) {
+        if (firestore == null || hospitalId == null || conversationId == null) {
+            callback.onSuccess(getLocalMessages(conversationId));
+            return null;
+        }
+
+        return firestore.collection("hospitals")
+                .document(hospitalId)
+                .collection("conversations")
+                .document(conversationId)
+                .collection("messages")
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        callback.onSuccess(getLocalMessages(conversationId));
+                        return;
+                    }
+                    List<StaffMessage> list = new ArrayList<>();
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            StaffMessage m = doc.toObject(StaffMessage.class);
+                            if (m != null) {
+                                list.add(m);
+                            }
+                        }
+                    }
+                    if (list.isEmpty()) {
+                        list = getLocalMessages(conversationId);
+                    } else {
+                        saveLocalMessages(conversationId, list);
+                    }
+                    callback.onSuccess(list);
+                });
     }
 
     /**

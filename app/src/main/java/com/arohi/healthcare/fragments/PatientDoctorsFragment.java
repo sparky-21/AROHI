@@ -12,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,7 +32,9 @@ import com.arohi.healthcare.models.AppNotification;
 import com.arohi.healthcare.models.ConsultationRequest;
 import com.arohi.healthcare.models.ConversationThread;
 import com.arohi.healthcare.models.DoctorProfile;
+import com.arohi.healthcare.models.NurseProfile;
 import com.arohi.healthcare.models.PatientProfile;
+import com.arohi.healthcare.models.StaffRating;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.DoctorDiscoveryAndRequestRepository;
@@ -40,6 +44,9 @@ import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.arohi.healthcare.database.FirestoreCollections;
+import com.arohi.healthcare.services.FirebaseProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Phase 3 Patient Doctor Discovery, Consultation Requests & Secure Messaging Hub:
@@ -201,6 +209,7 @@ public class PatientDoctorsFragment extends Fragment {
         binding.btnReqFilterAccepted.setOnClickListener(v -> setRequestFilter(ConsultationRequest.STATUS_ACCEPTED));
 
         binding.btnPatientNotificationsAlert.setOnClickListener(v -> showPatientNotificationsDialog());
+        binding.btnRateNurse.setOnClickListener(v -> showSelectNurseToRateDialog());
     }
 
     private void switchMode(int mode) {
@@ -431,6 +440,9 @@ public class PatientDoctorsFragment extends Fragment {
     private void showDoctorProfileDialog(@NonNull DoctorProfile doctor,
                                          @Nullable ConsultationRequest existing) {
         String stateText = existing != null ? existing.getStatus() : "Not Requested";
+        String ratingText = doctor.getTotalRatings() > 0
+                ? String.format(Locale.US, "★ %.1f (%d ratings)", doctor.getAverageRating(), doctor.getTotalRatings())
+                : "No ratings yet";
         String details = "Doctor Name: " + notEmpty(doctor.getFullName(), "Dr. Specialist") + "\n"
                 + "AROHI ID: " + notEmpty(doctor.getArohiId(), "AROHI-DOC") + "\n"
                 + "BMDC License: " + notEmpty(doctor.getMedicalLicenseNumber(), "Verified") + " (Verified)\n"
@@ -439,6 +451,7 @@ public class PatientDoctorsFragment extends Fragment {
                 + "Qualifications: " + notEmpty(doctor.getQualifications(), "MBBS") + "\n"
                 + "Clinical Experience: " + doctor.getExperienceYears() + " Years\n"
                 + "Consultation Fee: " + String.format("%.0f", doctor.getConsultationFeeBdt()) + " BDT\n"
+                + "Rating: " + ratingText + "\n"
                 + "Availability Schedule: " + notEmpty(doctor.getAvailabilitySchedule(), "Sun - Thu, 5:00 PM - 9:00 PM") + "\n"
                 + "Chamber Address: " + notEmpty(doctor.getAddress(), "AROHI Hospital") + "\n"
                 + "Bio: " + notEmpty(doctor.getBioNotes(), "Verified Specialist at AROHI") + "\n\n"
@@ -455,6 +468,8 @@ public class PatientDoctorsFragment extends Fragment {
                             doctor.getUid(),
                             doctor.getFullName(),
                             "Verified Connection • " + notEmpty(doctor.getSpecialty(), "Medicine")));
+            builder.setNeutralButton("⭐ Rate Doctor", (d, w) ->
+                    showRateStaffDialog(doctor.getUid(), doctor.getFullName(), "DOCTOR"));
         } else if (existing == null || existing.isDeclined() || existing.isCancelled()) {
             builder.setPositiveButton("Request Consultation", (d, w) -> showSendRequestDialog(doctor));
         }
@@ -546,11 +561,16 @@ public class PatientDoctorsFragment extends Fragment {
                 + "Request Status: " + notEmpty(req.getStatus(), "Pending") + "\n"
                 + "Last Updated: " + timeStr;
 
-        new AlertDialog.Builder(requireContext())
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setTitle("Consultation Request Details")
                 .setMessage(info)
-                .setPositiveButton("Close", null)
-                .show();
+                .setPositiveButton("Close", null);
+
+        if (req.isAccepted()) {
+            builder.setNeutralButton("⭐ Rate Doctor", (d, w) ->
+                    showRateStaffDialog(req.getDoctorUid(), req.getDoctorName(), "DOCTOR"));
+        }
+        builder.show();
     }
 
     private void confirmCancelPendingRequest(@NonNull ConsultationRequest req) {
@@ -616,6 +636,247 @@ public class PatientDoctorsFragment extends Fragment {
             @Override
             public void onError(String message) {
                 // Ignore
+            }
+        });
+    }
+
+    private void showRateStaffDialog(@NonNull String staffUid,
+                                     @NonNull String staffName,
+                                     @NonNull String staffRole) {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_rate_staff, null);
+        TextView tvName = dialogView.findViewById(R.id.tvRateStaffName);
+        TextView tvRole = dialogView.findViewById(R.id.tvRateStaffRole);
+        RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
+        TextView tvRatingLabel = dialogView.findViewById(R.id.tvRatingLabel);
+        EditText etComment = dialogView.findViewById(R.id.etRatingComment);
+        TextView tvCurrentRating = dialogView.findViewById(R.id.tvCurrentRating);
+
+        tvName.setText(staffName);
+        tvRole.setText(staffRole.equalsIgnoreCase("DOCTOR") ? "Verified Specialist" : "Hospital Nurse");
+
+        ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
+            int stars = Math.round(rating);
+            switch (stars) {
+                case 1: tvRatingLabel.setText("⭐ 1 Star - Poor"); break;
+                case 2: tvRatingLabel.setText("⭐⭐ 2 Stars - Fair"); break;
+                case 3: tvRatingLabel.setText("⭐⭐⭐ 3 Stars - Good"); break;
+                case 4: tvRatingLabel.setText("⭐⭐⭐⭐ 4 Stars - Very Good"); break;
+                case 5: tvRatingLabel.setText("⭐⭐⭐⭐⭐ 5 Stars - Excellent"); break;
+                default: tvRatingLabel.setText("Tap a star to rate"); break;
+            }
+        });
+
+        UserAccount currentAccount = sessionManager.getCurrentSessionAccount();
+        String currentPatientUid = currentAccount != null ? currentAccount.getUid() : "";
+        FirebaseFirestore db = FirebaseProvider.getFirestore(requireContext());
+
+        if (!currentPatientUid.isEmpty()) {
+            db.collection(FirestoreCollections.STAFF_RATINGS)
+                    .whereEqualTo("patientUid", currentPatientUid)
+                    .whereEqualTo("staffUid", staffUid)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(snap -> {
+                        if (snap != null && !snap.isEmpty()) {
+                            StaffRating existingRating = snap.getDocuments().get(0).toObject(StaffRating.class);
+                            if (existingRating != null) {
+                                ratingBar.setRating(existingRating.getRating());
+                                if (existingRating.getComment() != null) {
+                                    etComment.setText(existingRating.getComment());
+                                }
+                                tvCurrentRating.setVisibility(View.VISIBLE);
+                                tvCurrentRating.setText("Your previous rating: " + (int) existingRating.getRating() + " stars");
+                            }
+                        }
+                    });
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Rate " + (staffRole.equalsIgnoreCase("DOCTOR") ? "Doctor" : "Nurse"))
+                .setView(dialogView)
+                .setPositiveButton("Submit Rating", (dialog, which) -> {
+                    float ratingValue = ratingBar.getRating();
+                    if (ratingValue <= 0) {
+                        if (binding != null) {
+                            UiStateHelper.showError(binding.getRoot(), "Please select at least 1 star to rate.");
+                        }
+                        return;
+                    }
+
+                    String comment = etComment.getText() != null ? etComment.getText().toString().trim() : "";
+                    String patientName = currentAccount != null ? currentAccount.getFullName() : "Patient";
+                    String ratingDocId = currentPatientUid + "_" + staffUid;
+
+                    StaffRating ratingObj = new StaffRating(
+                            ratingDocId,
+                            currentPatientUid,
+                            patientName,
+                            staffUid,
+                            staffName,
+                            staffRole,
+                            ratingValue,
+                            comment
+                    );
+
+                    db.collection(FirestoreCollections.STAFF_RATINGS)
+                            .document(ratingDocId)
+                            .set(ratingObj.toMap())
+                            .addOnSuccessListener(unused -> {
+                                updateStaffAggregateRating(staffUid, staffRole);
+                                if (binding != null) {
+                                    UiStateHelper.showSuccess(binding.getRoot(),
+                                            "Rating submitted for " + staffName + "! Thank you for your feedback.");
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                if (binding != null) {
+                                    UiStateHelper.showError(binding.getRoot(),
+                                            "Failed to submit rating: " + e.getMessage());
+                                }
+                            });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void updateStaffAggregateRating(@NonNull String staffUid, @NonNull String staffRole) {
+        FirebaseFirestore db = FirebaseProvider.getFirestore(requireContext());
+        db.collection(FirestoreCollections.STAFF_RATINGS)
+                .whereEqualTo("staffUid", staffUid)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot == null || snapshot.isEmpty()) return;
+                    double sum = 0;
+                    int count = snapshot.size();
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : snapshot.getDocuments()) {
+                        Double r = doc.getDouble("rating");
+                        if (r != null) {
+                            sum += r;
+                        }
+                    }
+                    double avg = count > 0 ? (sum / count) : 0.0;
+                    avg = Math.round(avg * 10.0) / 10.0;
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("averageRating", avg);
+                    updates.put("totalRatings", count);
+
+                    String targetCollection = staffRole.equalsIgnoreCase("DOCTOR")
+                            ? FirestoreCollections.DOCTORS
+                            : FirestoreCollections.NURSES;
+
+                    final double finalAvg = avg;
+                    final int finalCount = count;
+                    db.collection(targetCollection).document(staffUid)
+                            .update(updates)
+                            .addOnSuccessListener(v -> {
+                                if (staffRole.equalsIgnoreCase("DOCTOR")) {
+                                    for (DoctorProfile d : allVerifiedDoctors) {
+                                        if (staffUid.equals(d.getUid())) {
+                                            d.setAverageRating(finalAvg);
+                                            d.setTotalRatings(finalCount);
+                                            break;
+                                        }
+                                    }
+                                    if (doctorAdapter != null) {
+                                        doctorAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            });
+                });
+    }
+
+    private void showSelectNurseToRateDialog() {
+        UserAccount currentAccount = sessionManager.getCurrentSessionAccount();
+        String currentPatientUid = currentAccount != null ? currentAccount.getUid() : "";
+        FirebaseFirestore db = FirebaseProvider.getFirestore(requireContext());
+
+        db.collection(FirestoreCollections.NURSES).get().addOnSuccessListener(nurseSnapshot -> {
+            if (nurseSnapshot == null || nurseSnapshot.isEmpty()) {
+                if (getContext() != null) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Rate Nurse")
+                            .setMessage("No nurses registered in the hospital database currently.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                }
+                return;
+            }
+
+            List<NurseProfile> nurseList = new ArrayList<>();
+            for (com.google.firebase.firestore.DocumentSnapshot doc : nurseSnapshot.getDocuments()) {
+                NurseProfile n = doc.toObject(NurseProfile.class);
+                if (n != null) {
+                    if (n.getUid() == null || n.getUid().isEmpty()) {
+                        n.setUid(doc.getId());
+                    }
+                    nurseList.add(n);
+                }
+            }
+
+            if (nurseList.isEmpty()) {
+                if (getContext() != null) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Rate Nurse")
+                            .setMessage("No nurses available to rate currently.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                }
+                return;
+            }
+
+            db.collection(FirestoreCollections.BEDS)
+                    .whereEqualTo("patientUid", currentPatientUid)
+                    .get()
+                    .addOnCompleteListener(bedTask -> {
+                        String assignedNurseUid = null;
+                        String assignedNurseName = null;
+                        if (bedTask.isSuccessful() && bedTask.getResult() != null && !bedTask.getResult().isEmpty()) {
+                            for (com.google.firebase.firestore.DocumentSnapshot bedDoc : bedTask.getResult().getDocuments()) {
+                                String nUid = bedDoc.getString("assignedNurseUid");
+                                String nName = bedDoc.getString("assignedNurseName");
+                                if (nUid != null && !nUid.isEmpty()) {
+                                    assignedNurseUid = nUid;
+                                    assignedNurseName = nName;
+                                    break;
+                                }
+                            }
+                        }
+
+                        String[] nurseNames = new String[nurseList.size()];
+                        for (int i = 0; i < nurseList.size(); i++) {
+                            NurseProfile np = nurseList.get(i);
+                            String rStr = np.getTotalRatings() > 0
+                                    ? String.format(Locale.US, " (★ %.1f)", np.getAverageRating())
+                                    : "";
+                            String prefix = (assignedNurseUid != null && assignedNurseUid.equals(np.getUid()))
+                                    ? "⭐ [Assigned to You] "
+                                    : "";
+                            nurseNames[i] = prefix + notEmpty(np.getFullName(), "Nurse") + " • "
+                                    + notEmpty(np.getPreferredWard(), "General Ward") + rStr;
+                        }
+
+                        final String finalAssignedNurseUid = assignedNurseUid;
+                        final String finalAssignedNurseName = assignedNurseName;
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
+                                .setTitle("Select Nurse to Rate")
+                                .setItems(nurseNames, (dialog, which) -> {
+                                    NurseProfile selected = nurseList.get(which);
+                                    showRateStaffDialog(selected.getUid(), selected.getFullName(), "NURSE");
+                                })
+                                .setNegativeButton("Cancel", null);
+
+                        if (finalAssignedNurseUid != null && finalAssignedNurseName != null) {
+                            builder.setNeutralButton("Rate My Assigned Nurse", (d, w) -> {
+                                showRateStaffDialog(finalAssignedNurseUid, finalAssignedNurseName, "NURSE");
+                            });
+                        }
+                        builder.show();
+                    });
+        }).addOnFailureListener(e -> {
+            if (binding != null) {
+                UiStateHelper.showError(binding.getRoot(), "Failed to load nurses: " + e.getMessage());
             }
         });
     }

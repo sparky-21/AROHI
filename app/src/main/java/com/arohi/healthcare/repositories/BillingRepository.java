@@ -17,6 +17,7 @@ import com.arohi.healthcare.models.PaymentTransaction;
 import com.arohi.healthcare.models.PharmacyOrder;
 import com.arohi.healthcare.models.RefundRequest;
 import com.arohi.healthcare.models.TrackingCategory;
+import com.arohi.healthcare.database.FirestoreCollections;
 import com.arohi.healthcare.payment.PaymentGateway;
 import com.arohi.healthcare.payment.PaymentGatewayFactory;
 import com.arohi.healthcare.services.FirebaseProvider;
@@ -95,16 +96,43 @@ public class BillingRepository {
         saveLocalBills(bill.getHospitalId(), localBills);
 
         // Sync with Firestore collection: /hospitals/{hospitalId}/bills/{billId}
+        // and mirror to root collection "hospitalBills" for cross-hospital patient lookup
         if (firestore != null) {
-            firestore.collection("hospitals")
+            Map<String, Object> billMap = bill.toMap();
+            firestore.collection(FirestoreCollections.HOSPITALS)
                     .document(bill.getHospitalId())
                     .collection("bills")
                     .document(bill.getBillId())
-                    .set(bill.toMap())
-                    .addOnSuccessListener(aVoid -> callback.onSuccess(bill))
-                    .addOnFailureListener(e -> callback.onSuccess(bill));
+                    .set(billMap)
+                    .addOnSuccessListener(aVoid -> {
+                        firestore.collection(FirestoreCollections.HOSPITAL_BILLS)
+                                .document(bill.getBillId())
+                                .set(billMap);
+                        callback.onSuccess(bill);
+                    })
+                    .addOnFailureListener(e -> {
+                        firestore.collection(FirestoreCollections.HOSPITAL_BILLS)
+                                .document(bill.getBillId())
+                                .set(billMap);
+                        callback.onSuccess(bill);
+                    });
         } else {
             callback.onSuccess(bill);
+        }
+
+        // Notify patient of new bill
+        if (bill.getPatientUid() != null && !bill.getPatientUid().trim().isEmpty()) {
+            TrackingNotificationDispatcher.dispatchTrackingUpdate(
+                    context,
+                    bill.getPatientUid(),
+                    "",
+                    "AROHI Billing",
+                    TrackingCategory.PAYMENT,
+                    bill.getBillId(),
+                    "New Bill Issued: " + bill.getBillNumber(),
+                    String.format(Locale.US, "A new bill for ৳ %.2f has been issued for %s.",
+                            bill.getTotalAmountBdt(), bill.getCategory())
+            );
         }
     }
 
@@ -141,6 +169,7 @@ public class BillingRepository {
 
     /**
      * Retrieves all bills associated with a patient across their hospital care.
+     * Matches on both Firebase UID and AROHI ID across all hospitals.
      */
     public void getPatientBills(String patientUid, AuthCallback<List<HospitalBill>> callback) {
         if (patientUid == null || patientUid.trim().isEmpty()) {
@@ -149,44 +178,305 @@ public class BillingRepository {
         }
 
         String activeHospitalId = sessionManager.getSelectedHospitalId();
-        List<HospitalBill> hospitalBills = getLocalBills(activeHospitalId);
-        if (hospitalBills.isEmpty()) {
-            hospitalBills = generateSeedBills(activeHospitalId, sessionManager.getSelectedHospitalCode());
-            saveLocalBills(activeHospitalId, hospitalBills);
-        }
 
-        List<HospitalBill> patientList = new ArrayList<>();
-        for (HospitalBill b : hospitalBills) {
-            // In demo/session, match patient UID or show seeded patient bills for test account
-            if (patientUid.equalsIgnoreCase(b.getPatientUid()) || "current_user".equalsIgnoreCase(b.getPatientUid())) {
-                patientList.add(b);
+        // Also get the current user's AROHI ID for cross-matching
+        String currentArohiId = null;
+        if (sessionManager.getCurrentSessionAccount() != null) {
+            currentArohiId = sessionManager.getCurrentSessionAccount().getArohiId();
+        }
+        final String arohiId = currentArohiId;
+
+        if (firestore != null) {
+            // First, query root hospitalBills collection to find all bills for this patient across all hospitals
+            firestore.collection(FirestoreCollections.HOSPITAL_BILLS)
+                    .get()
+                    .addOnSuccessListener(rootSnapshot -> {
+                        List<HospitalBill> patientList = new ArrayList<>();
+                        Set<String> seenBillIds = new HashSet<>();
+
+                        for (DocumentSnapshot doc : rootSnapshot.getDocuments()) {
+                            HospitalBill bill = parseBillFromDocument(doc);
+                            if (bill != null && matchesPatient(bill, patientUid, arohiId)) {
+                                patientList.add(bill);
+                                seenBillIds.add(bill.getBillId());
+                            }
+                        }
+
+                        // Also query hospital subcollection to ensure legacy/unmirrored bills are found
+                        if (activeHospitalId != null && !activeHospitalId.isEmpty()) {
+                            firestore.collection(FirestoreCollections.HOSPITALS)
+                                    .document(activeHospitalId)
+                                    .collection("bills")
+                                    .get()
+                                    .addOnSuccessListener(hospSnapshot -> {
+                                        for (DocumentSnapshot doc : hospSnapshot.getDocuments()) {
+                                            HospitalBill bill = parseBillFromDocument(doc);
+                                            if (bill != null && !seenBillIds.contains(bill.getBillId())
+                                                    && matchesPatient(bill, patientUid, arohiId)) {
+                                                patientList.add(bill);
+                                                seenBillIds.add(bill.getBillId());
+                                            }
+                                        }
+
+                                        mergeLocalBills(activeHospitalId, patientList, seenBillIds, patientUid, arohiId);
+                                        cachePatientBillsLocally(activeHospitalId, patientList);
+                                        callback.onSuccess(patientList);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        mergeLocalBills(activeHospitalId, patientList, seenBillIds, patientUid, arohiId);
+                                        cachePatientBillsLocally(activeHospitalId, patientList);
+                                        callback.onSuccess(patientList);
+                                    });
+                        } else {
+                            mergeLocalBills(activeHospitalId, patientList, seenBillIds, patientUid, arohiId);
+                            cachePatientBillsLocally(activeHospitalId, patientList);
+                            callback.onSuccess(patientList);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Fallback: try active hospital subcollection directly
+                        if (activeHospitalId != null && !activeHospitalId.isEmpty()) {
+                            firestore.collection(FirestoreCollections.HOSPITALS)
+                                    .document(activeHospitalId)
+                                    .collection("bills")
+                                    .get()
+                                    .addOnSuccessListener(querySnapshot -> {
+                                        List<HospitalBill> patientList = new ArrayList<>();
+                                        Set<String> seenBillIds = new HashSet<>();
+
+                                        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                                            HospitalBill bill = parseBillFromDocument(doc);
+                                            if (bill != null && matchesPatient(bill, patientUid, arohiId)) {
+                                                patientList.add(bill);
+                                                seenBillIds.add(bill.getBillId());
+                                            }
+                                        }
+
+                                        mergeLocalBills(activeHospitalId, patientList, seenBillIds, patientUid, arohiId);
+                                        cachePatientBillsLocally(activeHospitalId, patientList);
+                                        callback.onSuccess(patientList);
+                                    })
+                                    .addOnFailureListener(e2 -> {
+                                        List<HospitalBill> patientList = getPatientBillsLocal(activeHospitalId, patientUid, arohiId);
+                                        callback.onSuccess(patientList);
+                                    });
+                        } else {
+                            List<HospitalBill> patientList = getPatientBillsLocal(activeHospitalId, patientUid, arohiId);
+                            callback.onSuccess(patientList);
+                        }
+                    });
+        } else {
+            List<HospitalBill> patientList = getPatientBillsLocal(activeHospitalId, patientUid, arohiId);
+            callback.onSuccess(patientList);
+        }
+    }
+
+    private void cachePatientBillsLocally(String defaultHospitalId, List<HospitalBill> bills) {
+        if (bills == null) return;
+        for (HospitalBill b : bills) {
+            String hId = (b.getHospitalId() != null && !b.getHospitalId().isEmpty()) ? b.getHospitalId() : defaultHospitalId;
+            updateBillLocally(hId, b);
+        }
+    }
+
+    private void mergeLocalBills(String hospitalId, List<HospitalBill> targetList, Set<String> seenIds,
+                                String patientUid, String arohiId) {
+        if (hospitalId != null && !hospitalId.isEmpty()) {
+            List<HospitalBill> localBills = getLocalBills(hospitalId);
+            for (HospitalBill b : localBills) {
+                if (!seenIds.contains(b.getBillId()) && matchesPatient(b, patientUid, arohiId)) {
+                    targetList.add(b);
+                    seenIds.add(b.getBillId());
+                }
             }
         }
-
-        if (patientList.isEmpty()) {
-            patientList.addAll(hospitalBills); // Provide all hospital bills for demonstration if fresh account
-        }
-
-        callback.onSuccess(patientList);
     }
 
     /**
-     * Retrieves a single bill by ID with multi-tenant hospital verification.
+     * Checks if a bill belongs to the given patient by matching Firebase UID or AROHI ID.
+     */
+    private boolean matchesPatient(HospitalBill bill, String firebaseUid, String arohiId) {
+        if (firebaseUid != null && firebaseUid.equalsIgnoreCase(bill.getPatientUid())) {
+            return true;
+        }
+        if (firebaseUid != null && bill.getPatientArohiId() != null
+                && firebaseUid.equalsIgnoreCase(bill.getPatientArohiId())) {
+            return true;
+        }
+        if (arohiId != null && !arohiId.isEmpty()) {
+            if (arohiId.equalsIgnoreCase(bill.getPatientUid())
+                    || arohiId.equalsIgnoreCase(bill.getPatientArohiId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Local-only patient bill retrieval with dual-ID matching.
+     */
+    private List<HospitalBill> getPatientBillsLocal(String hospitalId, String firebaseUid, String arohiId) {
+        List<HospitalBill> hospitalBills = getLocalBills(hospitalId);
+        List<HospitalBill> patientList = new ArrayList<>();
+        for (HospitalBill b : hospitalBills) {
+            if (matchesPatient(b, firebaseUid, arohiId)) {
+                patientList.add(b);
+            }
+        }
+        return patientList;
+    }
+
+    /**
+     * Parses a HospitalBill from a Firestore DocumentSnapshot.
+     */
+    @SuppressWarnings("unchecked")
+    private HospitalBill parseBillFromDocument(DocumentSnapshot doc) {
+        try {
+            String billId = doc.getString("billId");
+            String billNumber = doc.getString("billNumber");
+            String hospitalId = doc.getString("hospitalId");
+            String hospitalCode = doc.getString("hospitalCode");
+            String pUid = doc.getString("patientUid");
+            String pName = doc.getString("patientName");
+            String pArohiId = doc.getString("patientArohiId");
+            String catStr = doc.getString("category");
+
+            BillCategory cat = BillCategory.HOSPITAL_SERVICE;
+            if (catStr != null) {
+                try { cat = BillCategory.valueOf(catStr); } catch (Exception ignored) {}
+            }
+
+            HospitalBill bill = new HospitalBill(
+                    billId != null ? billId : doc.getId(),
+                    billNumber != null ? billNumber : "",
+                    hospitalId != null ? hospitalId : "",
+                    hospitalCode != null ? hospitalCode : "",
+                    pUid != null ? pUid : "",
+                    pName != null ? pName : "Patient",
+                    pArohiId != null ? pArohiId : "",
+                    cat
+            );
+
+            String status = doc.getString("status");
+            if (status != null) bill.setStatus(status);
+
+            String notes = doc.getString("notes");
+            if (notes != null) bill.setNotes(notes);
+
+            // Parse items
+            List<Map<String, Object>> items = (List<Map<String, Object>>) doc.get("items");
+            if (items != null) {
+                for (Map<String, Object> itemMap : items) {
+                    String itemId = itemMap.get("itemId") != null ? itemMap.get("itemId").toString() : "";
+                    String desc = itemMap.get("description") != null ? itemMap.get("description").toString() : "";
+                    int qty = 1;
+                    double price = 0;
+                    try {
+                        Object qtyObj = itemMap.get("quantity");
+                        if (qtyObj != null) qty = ((Number) qtyObj).intValue();
+                        Object priceObj = itemMap.get("unitPriceBdt");
+                        if (priceObj != null) price = ((Number) priceObj).doubleValue();
+                    } catch (Exception ignored) {}
+                    bill.addItem(new BillItem(itemId, desc, qty, price));
+                }
+            }
+
+            return bill;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves a single bill by ID with multi-tenant hospital verification and Firestore query fallback.
      */
     public void getBillById(String hospitalId, String billId, AuthCallback<HospitalBill> callback) {
-        if (hospitalId == null || billId == null) {
-            callback.onError("Invalid parameters.");
+        if (billId == null || billId.trim().isEmpty()) {
+            callback.onError("Invalid bill ID.");
             return;
         }
 
-        List<HospitalBill> list = getLocalBills(hospitalId);
-        for (HospitalBill b : list) {
-            if (billId.equalsIgnoreCase(b.getBillId())) {
-                callback.onSuccess(b);
-                return;
+        String targetHospitalId = (hospitalId != null && !hospitalId.trim().isEmpty())
+                ? hospitalId : sessionManager.getSelectedHospitalId();
+
+        // 1. Check local cache first
+        if (targetHospitalId != null && !targetHospitalId.isEmpty()) {
+            List<HospitalBill> list = getLocalBills(targetHospitalId);
+            for (HospitalBill b : list) {
+                if (billId.equalsIgnoreCase(b.getBillId())) {
+                    callback.onSuccess(b);
+                    return;
+                }
             }
         }
-        callback.onError("Bill not found in hospital records.");
+
+        // 2. Query Firestore root collection "hospitalBills"
+        if (firestore != null) {
+            firestore.collection(FirestoreCollections.HOSPITAL_BILLS)
+                    .document(billId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc != null && doc.exists()) {
+                            HospitalBill bill = parseBillFromDocument(doc);
+                            if (bill != null) {
+                                String hId = (bill.getHospitalId() != null && !bill.getHospitalId().isEmpty())
+                                        ? bill.getHospitalId() : targetHospitalId;
+                                updateBillLocally(hId, bill);
+                                callback.onSuccess(bill);
+                                return;
+                            }
+                        }
+
+                        // 3. Fallback: Query hospital subcollection
+                        if (targetHospitalId != null && !targetHospitalId.isEmpty()) {
+                            firestore.collection(FirestoreCollections.HOSPITALS)
+                                    .document(targetHospitalId)
+                                    .collection("bills")
+                                    .document(billId)
+                                    .get()
+                                    .addOnSuccessListener(hospDoc -> {
+                                        if (hospDoc != null && hospDoc.exists()) {
+                                            HospitalBill bill = parseBillFromDocument(hospDoc);
+                                            if (bill != null) {
+                                                updateBillLocally(targetHospitalId, bill);
+                                                callback.onSuccess(bill);
+                                                return;
+                                            }
+                                        }
+                                        callback.onError("Bill not found in hospital records.");
+                                    })
+                                    .addOnFailureListener(e -> callback.onError("Bill not found in hospital records."));
+                        } else {
+                            callback.onError("Bill not found in hospital records.");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // If root query failed, try hospital subcollection
+                        if (targetHospitalId != null && !targetHospitalId.isEmpty()) {
+                            firestore.collection(FirestoreCollections.HOSPITALS)
+                                    .document(targetHospitalId)
+                                    .collection("bills")
+                                    .document(billId)
+                                    .get()
+                                    .addOnSuccessListener(hospDoc -> {
+                                        if (hospDoc != null && hospDoc.exists()) {
+                                            HospitalBill bill = parseBillFromDocument(hospDoc);
+                                            if (bill != null) {
+                                                updateBillLocally(targetHospitalId, bill);
+                                                callback.onSuccess(bill);
+                                                return;
+                                            }
+                                        }
+                                        callback.onError("Bill not found in hospital records.");
+                                    })
+                                    .addOnFailureListener(err -> callback.onError("Bill not found in hospital records."));
+                        } else {
+                            callback.onError("Bill not found in hospital records.");
+                        }
+                    });
+        } else {
+            callback.onError("Bill not found in hospital records.");
+        }
     }
 
     /**
@@ -591,18 +881,24 @@ public class BillingRepository {
         } catch (Exception ignored) {}
     }
 
-    private void updateBillLocally(String hospitalId, HospitalBill updated) {
+    public void updateBillLocally(String hospitalId, HospitalBill updated) {
+        if (hospitalId == null || updated == null) return;
         List<HospitalBill> bills = getLocalBills(hospitalId);
+        boolean found = false;
         for (int i = 0; i < bills.size(); i++) {
             if (updated.getBillId().equalsIgnoreCase(bills.get(i).getBillId())) {
                 bills.set(i, updated);
+                found = true;
                 break;
             }
+        }
+        if (!found) {
+            bills.add(0, updated);
         }
         saveLocalBills(hospitalId, bills);
     }
 
-    private HospitalBill getLocalBillById(String hospitalId, String billId) {
+    public HospitalBill getLocalBillById(String hospitalId, String billId) {
         for (HospitalBill b : getLocalBills(hospitalId)) {
             if (billId.equalsIgnoreCase(b.getBillId())) return b;
         }
@@ -819,10 +1115,19 @@ public class BillingRepository {
         List<HospitalBill> seeds = new ArrayList<>();
         String code = hospitalCode != null ? hospitalCode : "SQH";
 
+        // Assign seed bills to the currently logged-in patient so they appear only for that user
+        com.arohi.healthcare.models.UserAccount currentUser = sessionManager.getCurrentSessionAccount();
+        String seedPatientUid = (currentUser != null && currentUser.getUid() != null)
+                ? currentUser.getUid() : "seed_demo_patient";
+        String seedPatientName = (currentUser != null && currentUser.getFullName() != null)
+                ? currentUser.getFullName() : "Demo Patient";
+        String seedPatientArohiId = (currentUser != null && currentUser.getArohiId() != null)
+                ? currentUser.getArohiId() : "AROHI-PAT-DEMO";
+
         // 1. Doctor Consultation Bill (Pending)
         HospitalBill b1 = new HospitalBill(
                 "bill_001", "BILL-" + code + "-202611-1001", hospitalId, code,
-                "current_user", "Sadia Islam", "AROHI-PAT-A1B2C3D4", BillCategory.CONSULTATION
+                seedPatientUid, seedPatientName, seedPatientArohiId, BillCategory.CONSULTATION
         );
         b1.setDoctorName("Dr. Raisa Ahmed (Cardiology)");
         b1.addItem(new BillItem("itm_01", "Specialist OPD Consultation Fee", 1, 1200.0));
@@ -834,7 +1139,7 @@ public class BillingRepository {
         // 2. Pharmacy Order Bill (Paid)
         HospitalBill b2 = new HospitalBill(
                 "bill_002", "BILL-" + code + "-202611-1002", hospitalId, code,
-                "current_user", "Sadia Islam", "AROHI-PAT-A1B2C3D4", BillCategory.PHARMACY
+                seedPatientUid, seedPatientName, seedPatientArohiId, BillCategory.PHARMACY
         );
         b2.addItem(new BillItem("itm_03", "Tab. Rosuvastatin 10mg (30 tabs)", 1, 450.0));
         b2.addItem(new BillItem("itm_04", "Tab. Bisoprolol 5mg (30 tabs)", 1, 360.0));
@@ -849,7 +1154,7 @@ public class BillingRepository {
         // 3. Laboratory Diagnostic Bill (Pending)
         HospitalBill b3 = new HospitalBill(
                 "bill_003", "BILL-" + code + "-202611-1003", hospitalId, code,
-                "current_user", "Sadia Islam", "AROHI-PAT-A1B2C3D4", BillCategory.LAB_TEST
+                seedPatientUid, seedPatientName, seedPatientArohiId, BillCategory.LAB_TEST
         );
         b3.addItem(new BillItem("itm_06", "Complete Blood Count (CBC) with ESR", 1, 550.0));
         b3.addItem(new BillItem("itm_07", "Serum Creatinine & Electrolytes", 1, 850.0));
@@ -860,7 +1165,7 @@ public class BillingRepository {
         // 4. Surgical & Operation Bill (Paid)
         HospitalBill b4 = new HospitalBill(
                 "bill_004", "BILL-" + code + "-202611-1004", hospitalId, code,
-                "current_user", "Sadia Islam", "AROHI-PAT-A1B2C3D4", BillCategory.OPERATION
+                seedPatientUid, seedPatientName, seedPatientArohiId, BillCategory.OPERATION
         );
         b4.addItem(new BillItem("itm_09", "Laparoscopic Cholecystectomy Surgeon Fee", 1, 35000.0));
         b4.addItem(new BillItem("itm_10", "Operation Theatre (OT) & Equipment Charge", 1, 15000.0));

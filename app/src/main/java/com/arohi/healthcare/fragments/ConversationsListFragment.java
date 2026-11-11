@@ -72,7 +72,9 @@ public class ConversationsListFragment extends Fragment {
             boolean isDoctor = account.getUserRoleEnum() == UserRole.DOCTOR;
             binding.btnOpenStaffGroup.setText(isDoctor ? "🩺 All Doctors Channel" : "💉 All Nurses Channel");
             binding.btnOpenStaffGroup.setOnClickListener(v -> {
-                String hospId = sessionManager.getSelectedHospitalId();
+                String hospId = (account.getHospitalId() != null && !account.getHospitalId().trim().isEmpty())
+                        ? account.getHospitalId() : sessionManager.getSelectedHospitalId();
+                if (hospId == null || hospId.isEmpty()) hospId = "hosp_arohi_central";
                 String hospCode = sessionManager.getSelectedHospitalCode();
                 String groupType = isDoctor ? com.arohi.healthcare.models.StaffConversation.TYPE_GROUP_DOCTORS
                         : com.arohi.healthcare.models.StaffConversation.TYPE_GROUP_NURSES;

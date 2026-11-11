@@ -69,6 +69,29 @@ public class DigitalReceiptActivity extends BaseActivity {
 
         if (receipt == null && hospitalId != null && billId != null) {
             receipt = billingRepository.getLocalReceiptByBillId(hospitalId, billId);
+            if (receipt == null) {
+                // Synthesize receipt from paid bill records if receipt object was not cached
+                com.arohi.healthcare.models.HospitalBill bill = billingRepository.getLocalBillById(hospitalId, billId);
+                if (bill != null && com.arohi.healthcare.models.PaymentStatus.SUCCESSFUL.name().equalsIgnoreCase(bill.getStatus())) {
+                    receipt = new PaymentReceipt(
+                            bill.getReceiptNumber() != null ? bill.getReceiptNumber() : "RCP-" + bill.getBillNumber(),
+                            bill.getBillId(),
+                            bill.getBillNumber(),
+                            bill.getTransactionId() != null ? bill.getTransactionId() : "TXN_ONLINE",
+                            hospitalId,
+                            sessionManager.getSelectedHospitalName(),
+                            bill.getPatientName(),
+                            bill.getPatientArohiId(),
+                            bill.getPaymentGateway() != null ? bill.getPaymentGateway() : "DIGITAL",
+                            bill.getTotalAmountBdt()
+                    );
+                    receipt.setSubtotalBdt(bill.getSubtotalBdt());
+                    receipt.setVatBdt(bill.getVatBdt());
+                    receipt.setDiscountBdt(bill.getDiscountBdt());
+                    receipt.setCategory(bill.getCategory());
+                    receipt.setTimestamp(bill.getPaidAt() > 0 ? bill.getPaidAt() : bill.getCreatedAt());
+                }
+            }
         }
 
         setupUI();

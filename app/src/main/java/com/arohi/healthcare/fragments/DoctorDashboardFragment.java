@@ -62,6 +62,66 @@ public class DoctorDashboardFragment extends Fragment {
             }
         });
 
+        binding.cardDoctorIdentity.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_profile);
+            }
+        });
+
+        binding.bannerDoctorVerification.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_profile);
+            }
+        });
+
+        binding.cardDocTodayAppointments.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_schedule);
+            }
+        });
+
+        binding.cardDocPendingRequests.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_patients);
+            }
+        });
+
+        binding.cardDocAcceptedPatients.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_patients);
+            }
+        });
+
+        binding.cardDocUpcomingOperations.setOnClickListener(v -> {
+            android.content.Intent opIntent = com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(requireContext());
+            opIntent.putExtra("extra_category", "OPERATION");
+            startActivity(opIntent);
+        });
+
+        binding.cardDocPendingReports.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_patients);
+            }
+        });
+
+        binding.cardDocFollowUpReminders.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_schedule);
+            }
+        });
+
+        binding.cardDoctorRecentActivity.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_patients);
+            }
+        });
+
+        binding.cardDoctorEmergencyAlert.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).showStaffEmergencyDialog();
+            }
+        });
+
         binding.cardDoctorUnifiedTracking.setOnClickListener(v -> {
             startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(requireContext()));
         });

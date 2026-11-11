@@ -34,8 +34,8 @@ public class OTRoom implements Serializable {
         this.roomName = roomName;
         this.floor = floor;
         this.specialties = specialties;
-        this.status = status;
-        this.available = STATUS_AVAILABLE.equalsIgnoreCase(status);
+        this.status = (status != null && !status.trim().isEmpty()) ? status.trim() : STATUS_AVAILABLE;
+        this.available = STATUS_AVAILABLE.equalsIgnoreCase(this.status);
         this.equipmentNotes = equipmentNotes;
     }
 
@@ -66,8 +66,8 @@ public class OTRoom implements Serializable {
 
     public String getStatus() { return status; }
     public void setStatus(String status) {
-        this.status = status;
-        this.available = STATUS_AVAILABLE.equalsIgnoreCase(status);
+        this.status = (status != null && !status.trim().isEmpty()) ? status.trim() : STATUS_AVAILABLE;
+        this.available = STATUS_AVAILABLE.equalsIgnoreCase(this.status);
     }
 
     public boolean isAvailable() { return available; }

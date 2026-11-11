@@ -51,9 +51,19 @@
         </LinearLayout>
 
         <ImageButton
+            android:id="@+id/btnCreateBill"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Create Bill"
+            android:src="@drawable/ic_add"
+            app:tint="@color/primary_moss_green" />
+
+        <ImageButton
             android:id="@+id/btnBillingRefresh"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Refresh"
             android:src="@drawable/ic_refresh"

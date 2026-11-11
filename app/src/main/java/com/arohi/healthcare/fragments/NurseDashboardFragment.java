@@ -62,6 +62,11 @@ public class NurseDashboardFragment extends Fragment {
         binding.cardNurseMedicationSchedules.setOnClickListener(v -> switchTab(R.id.nav_nurse_tasks));
         binding.cardNurseProcedures.setOnClickListener(v -> switchTab(R.id.nav_nurse_tasks));
         binding.cardNurseOperationAssistance.setOnClickListener(v -> switchTab(R.id.nav_nurse_schedule));
+        binding.cardNurseEmergencyAlert.setOnClickListener(v -> {
+            if (getActivity() instanceof RolePortalActivity) {
+                ((RolePortalActivity) getActivity()).showStaffEmergencyDialog();
+            }
+        });
         binding.cardNurseUnifiedTracking.setOnClickListener(v -> {
             startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(requireContext()));
         });

@@ -43,8 +43,20 @@ public class GoogleHospitalMapFragment extends Fragment {
     private boolean isNavigating = false;
     private int currentNavStep = 0;
 
+    public static final String ARG_DESTINATION_NAME = "arg_destination_name";
+
     public static GoogleHospitalMapFragment newInstance() {
         return new GoogleHospitalMapFragment();
+    }
+
+    public static GoogleHospitalMapFragment newInstance(@Nullable String destinationName) {
+        GoogleHospitalMapFragment f = new GoogleHospitalMapFragment();
+        if (destinationName != null && !destinationName.trim().isEmpty()) {
+            Bundle args = new Bundle();
+            args.putString(ARG_DESTINATION_NAME, destinationName.trim());
+            f.setArguments(args);
+        }
+        return f;
     }
 
     @Nullable
@@ -89,6 +101,23 @@ public class GoogleHospitalMapFragment extends Fragment {
         for (int i = 0; i < allNodeList.size(); i++) {
             if ("RECEPTION".equals(allNodeList.get(i).getId())) selectedStartIndex = i;
             if ("ICU".equals(allNodeList.get(i).getId())) selectedDestIndex = i;
+        }
+
+        // Check if a specific target destination was passed in fragment arguments
+        if (getArguments() != null && getArguments().containsKey(ARG_DESTINATION_NAME)) {
+            String target = getArguments().getString(ARG_DESTINATION_NAME);
+            if (target != null && !target.trim().isEmpty()) {
+                String cleanTarget = target.toLowerCase(Locale.ROOT).trim();
+                for (int i = 0; i < allNodeList.size(); i++) {
+                    HospitalNode n = allNodeList.get(i);
+                    String name = n.getName().toLowerCase(Locale.ROOT);
+                    String id = n.getId().toLowerCase(Locale.ROOT);
+                    if (name.contains(cleanTarget) || cleanTarget.contains(name) || id.contains(cleanTarget)) {
+                        selectedDestIndex = i;
+                        break;
+                    }
+                }
+            }
         }
 
         binding.spinnerStartLocation.setSelection(selectedStartIndex);

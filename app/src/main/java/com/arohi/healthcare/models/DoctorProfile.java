@@ -24,6 +24,8 @@ public class DoctorProfile {
     private String address;
     private String bioNotes;
     private long createdAt;
+    private double averageRating;
+    private int totalRatings;
 
     public DoctorProfile() {
         // Required empty constructor for Firestore
@@ -68,6 +70,8 @@ public class DoctorProfile {
         map.put("address", address != null ? address : "");
         map.put("bioNotes", bioNotes != null ? bioNotes : "");
         map.put("createdAt", createdAt);
+        map.put("averageRating", averageRating);
+        map.put("totalRatings", totalRatings);
         return map;
     }
 
@@ -209,6 +213,22 @@ public class DoctorProfile {
 
     public void setConsultationFeeBdt(double consultationFeeBdt) {
         this.consultationFee = consultationFeeBdt;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public int getTotalRatings() {
+        return totalRatings;
+    }
+
+    public void setTotalRatings(int totalRatings) {
+        this.totalRatings = totalRatings;
     }
 
     public void setUpdatedAt(long updatedAt) {

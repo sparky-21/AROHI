@@ -81,6 +81,22 @@
             android:textSize="8.5sp"
             android:textStyle="bold" />
 
+        <!-- Emergency Alert SOS Trigger -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnHeaderEmergencyAlert"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:backgroundTint="@color/status_emergency"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="0dp"
+            android:text="🚨 SOS"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp" />
+
         <ImageButton
             android:id="@+id/btnHeaderCommunityFeed"
             android:layout_width="30dp"
