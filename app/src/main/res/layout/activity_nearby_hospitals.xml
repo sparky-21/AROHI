@@ -257,10 +257,9 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <!-- Google Map Fragment View -->
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/mapNearbyFragment"
-                android:name="com.google.android.gms.maps.SupportMapFragment"
+            <!-- Free OpenStreetMap Interactive View (OSMDroid - No API Key Needed) -->
+            <org.osmdroid.views.MapView
+                android:id="@+id/osmMapNearby"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 

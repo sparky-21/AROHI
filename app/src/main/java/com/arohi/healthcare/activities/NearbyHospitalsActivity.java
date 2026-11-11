@@ -3,7 +3,9 @@ package com.arohi.healthcare.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -15,7 +17,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -25,41 +26,38 @@ import com.arohi.healthcare.databinding.ActivityNearbyHospitalsBinding;
 import com.arohi.healthcare.models.Hospital;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.HospitalNetworkRepository;
+import com.arohi.healthcare.services.OverpassHospitalService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.MapEventsOverlay;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * Phase 11 — Global Hospital Discovery & Nearby Hospital Finder using Google Maps SDK.
- * Features foreground location permission handling, live distance calculations,
- * dual synchronized Map/List views, manual area search, Google Maps directions navigation,
- * and a graceful demo mode fallback when Maps API credentials are not configured.
+ * Phase 11 — Global Hospital Discovery & Nearby Hospital Finder using Free OpenStreetMap (OSMDroid)
+ * and OpenStreetMap Overpass API for zero-cost, zero-API-key external hospital lookup.
+ * Retains Google Maps app deep-linking for external turn-by-turn navigation.
  */
-public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyCallback,
-        NearbyHospitalAdapter.OnNearbyHospitalClickListener {
+public class NearbyHospitalsActivity extends BaseActivity implements NearbyHospitalAdapter.OnNearbyHospitalClickListener {
 
     private ActivityNearbyHospitalsBinding binding;
     private HospitalNetworkRepository repository;
     private FusedLocationProviderClient fusedLocationClient;
 
-    private GoogleMap googleMap;
     private NearbyHospitalAdapter listAdapter;
+    private MyLocationNewOverlay myLocationOverlay;
 
     private final List<Hospital> allHospitals = new ArrayList<>();
     private final List<Hospital> displayedHospitals = new ArrayList<>();
@@ -68,6 +66,7 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
     private double userLatitude = 0.0;
     private double userLongitude = 0.0;
     private boolean isListViewMode = false;
+    private boolean overpassLoadedForLocation = false;
     private Hospital selectedHospital = null;
 
     // Default center: Dhaka central health corridor
@@ -81,6 +80,7 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
 
                 if ((fineGranted != null && fineGranted) || (coarseGranted != null && coarseGranted)) {
                     binding.cardLocationPermissionWarning.setVisibility(View.GONE);
+                    enableMyLocationOverlay();
                     fetchUserLocation();
                 } else {
                     handleLocationPermissionDenied();
@@ -98,23 +98,18 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
 
         initViews();
         setupSearchAndFilters();
-        initGoogleMap();
+        initOpenStreetMap();
         checkAndRequestLocationPermission();
         loadHospitalData();
     }
 
     private void initViews() {
         binding.toolbarNearby.setNavigationOnClickListener(v -> finish());
+        binding.layoutDemoModeBanner.setVisibility(View.GONE);
 
-        // Toggle View Mode (Map vs List)
         binding.btnToggleViewMode.setOnClickListener(v -> toggleViewMode());
+        binding.btnRefreshLocation.setOnClickListener(v -> checkAndRequestLocationPermission());
 
-        // Refresh Location
-        binding.btnRefreshLocation.setOnClickListener(v -> {
-            checkAndRequestLocationPermission();
-        });
-
-        // Open in official Google Maps App
         binding.btnOpenGoogleMapsApp.setOnClickListener(v -> {
             String query = binding.etSearchArea.getText() != null ? binding.etSearchArea.getText().toString() : "";
             openInGoogleMapsApp(query);
@@ -125,12 +120,8 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             openInGoogleMapsApp(query);
         });
 
-        // Location Permission Warning Card Actions
-        binding.btnRetryLocationPermission.setOnClickListener(v -> {
-            requestLocationPermissionWithRationale();
-        });
+        binding.btnRetryLocationPermission.setOnClickListener(v -> requestLocationPermissionWithRationale());
 
-        // Setup Recycler View for List View
         listAdapter = new NearbyHospitalAdapter(this);
         binding.rvNearbyHospitals.setLayoutManager(new LinearLayoutManager(this));
         binding.rvNearbyHospitals.setAdapter(listAdapter);
@@ -151,29 +142,38 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         });
     }
 
-    private void initGoogleMap() {
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapNearbyFragment);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
+    private void initOpenStreetMap() {
+        binding.osmMapNearby.setTileSource(TileSourceFactory.MAPNIK);
+        binding.osmMapNearby.setMultiTouchControls(true);
+        binding.osmMapNearby.getController().setZoom(12.5);
+        binding.osmMapNearby.getController().setCenter(new GeoPoint(DEFAULT_DHAKA_LAT, DEFAULT_DHAKA_LNG));
 
-        // Check if API key is provided in manifest
-        checkMapsApiKeyConfigured();
+        MapEventsOverlay eventsOverlay = new MapEventsOverlay(new MapEventsReceiver() {
+            @Override
+            public boolean singleTapConfirmedHelper(GeoPoint p) {
+                binding.cardSelectedHospitalInfo.setVisibility(View.GONE);
+                return false;
+            }
+
+            @Override
+            public boolean longPressHelper(GeoPoint p) {
+                return false;
+            }
+        });
+        binding.osmMapNearby.getOverlays().add(eventsOverlay);
     }
 
-    private void checkMapsApiKeyConfigured() {
-        try {
-            Bundle metaData = getPackageManager().getApplicationInfo(getPackageName(),
-                    PackageManager.GET_META_DATA).metaData;
-            String apiKey = metaData != null ? metaData.getString("com.google.android.geo.API_KEY") : "";
-            if (apiKey == null || apiKey.trim().isEmpty() || apiKey.contains("YOUR_KEY")) {
-                binding.layoutDemoModeBanner.setVisibility(View.VISIBLE);
-            } else {
-                binding.layoutDemoModeBanner.setVisibility(View.GONE);
-            }
-        } catch (Exception e) {
-            binding.layoutDemoModeBanner.setVisibility(View.VISIBLE);
+    private void enableMyLocationOverlay() {
+        boolean hasFine = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean hasCoarse = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        if (!hasFine && !hasCoarse) return;
+
+        if (myLocationOverlay == null) {
+            myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), binding.osmMapNearby);
+            myLocationOverlay.enableMyLocation();
+            binding.osmMapNearby.getOverlays().add(myLocationOverlay);
         }
     }
 
@@ -185,6 +185,7 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
 
         if (hasFine || hasCoarse) {
             binding.cardLocationPermissionWarning.setVisibility(View.GONE);
+            enableMyLocationOverlay();
             fetchUserLocation();
         } else {
             requestLocationPermissionWithRationale();
@@ -196,15 +197,12 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.permission_location_rationale_title)
                     .setMessage(R.string.permission_location_rationale_message)
-                    .setPositiveButton(R.string.btn_grant_location, (dialog, which) -> {
-                        locationPermissionLauncher.launch(new String[]{
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION
-                        });
-                    })
-                    .setNegativeButton(R.string.btn_manual_search, (dialog, which) -> {
-                        handleLocationPermissionDenied();
-                    })
+                    .setPositiveButton(R.string.btn_grant_location, (dialog, which) ->
+                            locationPermissionLauncher.launch(new String[]{
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                            }))
+                    .setNegativeButton(R.string.btn_manual_search, (dialog, which) -> handleLocationPermissionDenied())
                     .show();
         } else {
             locationPermissionLauncher.launch(new String[]{
@@ -217,9 +215,9 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
     private void handleLocationPermissionDenied() {
         binding.cardLocationPermissionWarning.setVisibility(View.VISIBLE);
         binding.tvNearbyStatusSummary.setText(getString(R.string.permission_location_denied_title)
-                + " — Showing default region hospitals");
-        // Center around default region (Dhaka)
+                + " — Showing OpenStreetMap regional hospitals");
         updateHospitalDistancesAndSort();
+        fetchExternalOsmHospitalsOnce(DEFAULT_DHAKA_LAT, DEFAULT_DHAKA_LNG);
     }
 
     private void fetchUserLocation() {
@@ -237,12 +235,6 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
                 return;
             }
 
-            if (googleMap != null) {
-                try {
-                    googleMap.setMyLocationEnabled(true);
-                } catch (SecurityException ignored) {}
-            }
-
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                     .addOnSuccessListener(this, location -> {
                         binding.progressBarLocating.setVisibility(View.GONE);
@@ -251,22 +243,22 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
                             userLongitude = location.getLongitude();
                             onUserLocationAcquired();
                         } else {
-                            // Fallback to last known location
                             fusedLocationClient.getLastLocation().addOnSuccessListener(this, lastLoc -> {
                                 if (lastLoc != null) {
                                     userLatitude = lastLoc.getLatitude();
                                     userLongitude = lastLoc.getLongitude();
                                     onUserLocationAcquired();
                                 } else {
-                                    binding.tvNearbyStatusSummary.setText("Using regional hospital coordinates");
+                                    binding.tvNearbyStatusSummary.setText("Using regional hospital coordinates (OpenStreetMap)");
                                     updateHospitalDistancesAndSort();
+                                    fetchExternalOsmHospitalsOnce(DEFAULT_DHAKA_LAT, DEFAULT_DHAKA_LNG);
                                 }
                             });
                         }
                     })
                     .addOnFailureListener(this, e -> {
                         binding.progressBarLocating.setVisibility(View.GONE);
-                        binding.tvNearbyStatusSummary.setText("Using regional hospital coordinates");
+                        binding.tvNearbyStatusSummary.setText("Using regional hospital coordinates (OpenStreetMap)");
                         updateHospitalDistancesAndSort();
                     });
         } catch (SecurityException e) {
@@ -277,18 +269,38 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
 
     private void onUserLocationAcquired() {
         binding.tvNearbyStatusSummary.setText(String.format(Locale.getDefault(),
-                "Your Location: %.4f, %.4f • Sorted by proximity", userLatitude, userLongitude));
+                "Your Location: %.4f, %.4f • Sorted by proximity (OSM)", userLatitude, userLongitude));
 
-        if (googleMap != null) {
-            LatLng userLatLng = new LatLng(userLatitude, userLongitude);
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(userLatLng)
-                    .zoom(12.5f)
-                    .build();
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        }
+        binding.osmMapNearby.getController().animateTo(new GeoPoint(userLatitude, userLongitude));
+        binding.osmMapNearby.getController().setZoom(13.0);
 
         updateHospitalDistancesAndSort();
+        fetchExternalOsmHospitalsOnce(userLatitude, userLongitude);
+    }
+
+    private void fetchExternalOsmHospitalsOnce(double lat, double lng) {
+        if (overpassLoadedForLocation) return;
+        overpassLoadedForLocation = true;
+
+        OverpassHospitalService.fetchNearbyExternalHospitals(lat, lng, 8000, externalList -> {
+            if (externalList == null || externalList.isEmpty() || isFinishing()) return;
+            runOnUiThread(() -> {
+                for (Hospital ext : externalList) {
+                    boolean duplicate = false;
+                    for (Hospital existing : allHospitals) {
+                        if (existing.getHospitalName() != null && ext.getHospitalName() != null
+                                && existing.getHospitalName().equalsIgnoreCase(ext.getHospitalName())) {
+                            duplicate = true;
+                            break;
+                        }
+                    }
+                    if (!duplicate) {
+                        allHospitals.add(ext);
+                    }
+                }
+                updateHospitalDistancesAndSort();
+            });
+        });
     }
 
     private void loadHospitalData() {
@@ -360,11 +372,9 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             return Double.compare(d1, d2);
         });
 
-        displayedHospitals.clear();
-        displayedHospitals.addAll(allHospitals);
-        renderFilteredResults();
+        String currentQuery = binding.etSearchArea.getText() != null ? binding.etSearchArea.getText().toString() : "";
+        filterHospitals(currentQuery);
 
-        // If no hospital is currently selected, select the first one to show bottom details immediately
         if (selectedHospital == null && !displayedHospitals.isEmpty()) {
             onHospitalClick(displayedHospitals.get(0));
         }
@@ -381,61 +391,14 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             }
         }
 
-        // Update list adapter
         listAdapter.updateData(displayedHospitals, userLatitude, userLongitude);
-
-        // Update Map Markers
         renderMapMarkers();
-    }
-
-    @Override
-    public void onMapReady(@NonNull GoogleMap map) {
-        this.googleMap = map;
-
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
-        googleMap.getUiSettings().setCompassEnabled(true);
-        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-        // Center initially on Dhaka health hub
-        LatLng initialCenter = new LatLng(DEFAULT_DHAKA_LAT, DEFAULT_DHAKA_LNG);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialCenter, 11f));
-
-        googleMap.setOnMarkerClickListener(marker -> {
-            Object tag = marker.getTag();
-            if (tag instanceof Hospital) {
-                onHospitalClick((Hospital) tag);
-            }
-            return false;
-        });
-
-        googleMap.setOnMapClickListener(latLng -> {
-            binding.cardSelectedHospitalInfo.setVisibility(View.GONE);
-        });
-
-        // If location was already acquired before map completed loading
-        if (userLatitude != 0.0 && userLongitude != 0.0) {
-            try {
-                googleMap.setMyLocationEnabled(true);
-            } catch (SecurityException ignored) {}
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(userLatitude, userLongitude), 12.5f));
-        } else if (!displayedHospitals.isEmpty()) {
-            Hospital first = displayedHospitals.get(0);
-            HospitalNetworkRepository.ensureHospitalCoordinates(first);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(first.getLatitude(), first.getLongitude()), 12.5f));
-        }
-
-        renderMapMarkers();
-        if (selectedHospital == null && !displayedHospitals.isEmpty()) {
-            onHospitalClick(displayedHospitals.get(0));
-        }
     }
 
     private void renderMapMarkers() {
-        if (googleMap == null) return;
-
-        googleMap.clear();
+        for (Marker old : mapMarkers) {
+            binding.osmMapNearby.getOverlays().remove(old);
+        }
         mapMarkers.clear();
 
         double refLat = (userLatitude != 0.0) ? userLatitude : DEFAULT_DHAKA_LAT;
@@ -445,27 +408,35 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             HospitalNetworkRepository.ensureHospitalCoordinates(h);
             if (h.getLatitude() == 0.0 && h.getLongitude() == 0.0) continue;
 
-            LatLng pos = new LatLng(h.getLatitude(), h.getLongitude());
-
-            float markerColor = h.isVerified()
-                    ? BitmapDescriptorFactory.HUE_AZURE
-                    : BitmapDescriptorFactory.HUE_RED;
-
-            String snippet = h.isVerified() ? "AROHI Verified Hospital" : "Accredited Facility";
+            Marker marker = new Marker(binding.osmMapNearby);
+            marker.setPosition(new GeoPoint(h.getLatitude(), h.getLongitude()));
+            marker.setTitle(h.getHospitalName());
             double km = h.calculateDistanceKm(refLat, refLng);
+            String snippet = h.isVerified() ? "AROHI Verified Hospital" : "External OSM Facility";
             if (km >= 0) snippet += String.format(Locale.getDefault(), " • %.1f km", km);
+            marker.setSnippet(snippet);
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-            Marker marker = googleMap.addMarker(new MarkerOptions()
-                    .position(pos)
-                    .title(h.getHospitalName())
-                    .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(markerColor)));
-
-            if (marker != null) {
-                marker.setTag(h);
-                mapMarkers.add(marker);
+            Drawable icon = ContextCompat.getDrawable(this, R.drawable.ic_location_pin);
+            if (icon != null) {
+                Drawable tinted = icon.mutate();
+                int tint = h.isVerified()
+                        ? ContextCompat.getColor(this, R.color.primary_moss_green)
+                        : Color.parseColor("#C94B4B");
+                tinted.setColorFilter(tint, PorterDuff.Mode.SRC_IN);
+                marker.setIcon(tinted);
             }
+
+            marker.setOnMarkerClickListener((m, mapView) -> {
+                onHospitalClick(h);
+                m.showInfoWindow();
+                return true;
+            });
+
+            binding.osmMapNearby.getOverlays().add(marker);
+            mapMarkers.add(marker);
         }
+        binding.osmMapNearby.invalidate();
     }
 
     private void toggleViewMode() {
@@ -486,19 +457,13 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         }
     }
 
-    // =========================================================================
-    // HOSPITAL SELECTION & ACTIONS
-    // =========================================================================
-
     @Override
     public void onHospitalClick(@NonNull Hospital hospital) {
         this.selectedHospital = hospital;
 
-        // Populate bottom detail card
         binding.tvCardHospitalName.setText(hospital.getHospitalName());
         binding.tvCardHospitalAddress.setText(hospital.getAddress() != null ? hospital.getAddress() : hospital.getCity());
 
-        // Distance
         if (userLatitude != 0.0 && userLongitude != 0.0 && hospital.getLatitude() != 0.0) {
             double km = hospital.calculateDistanceKm(userLatitude, userLongitude);
             if (km >= 0) {
@@ -511,18 +476,20 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             binding.tvCardDistanceBadge.setVisibility(View.GONE);
         }
 
-        // Verification & Beds
         if (hospital.isVerified()) {
             binding.tvCardVerificationBadge.setText("✓ " + getString(R.string.label_verified_arohi));
             binding.tvCardVerificationBadge.setTextColor(ContextCompat.getColor(this, R.color.status_verified));
+            binding.btnCardSelectHospital.setVisibility(View.VISIBLE);
         } else {
             binding.tvCardVerificationBadge.setText(getString(R.string.label_external_facility));
             binding.tvCardVerificationBadge.setTextColor(ContextCompat.getColor(this, R.color.status_warning));
+            binding.btnCardSelectHospital.setVisibility(View.GONE);
         }
 
-        binding.tvCardBeds.setText(getString(R.string.label_operational_beds, hospital.getTotalBeds()));
+        binding.tvCardBeds.setText(hospital.getTotalBeds() > 0
+                ? getString(R.string.label_operational_beds, hospital.getTotalBeds())
+                : "Public Directory Entry");
 
-        // Departments
         if (hospital.getSupportedDepartments() != null && !hospital.getSupportedDepartments().isEmpty()) {
             StringBuilder sb = new StringBuilder();
             int count = 0;
@@ -538,9 +505,7 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             binding.tvCardDepartments.setVisibility(View.GONE);
         }
 
-        // Actions
         binding.btnCardDirections.setOnClickListener(v -> onDirectionsClick(hospital));
-
         binding.btnCardCallHotline.setOnClickListener(v -> {
             if (hospital.getEmergencyHotline() != null && !hospital.getEmergencyHotline().trim().isEmpty()) {
                 Intent dialIntent = new Intent(Intent.ACTION_DIAL,
@@ -550,18 +515,16 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
                 Toast.makeText(this, "Emergency hotline not listed for this facility.", Toast.LENGTH_SHORT).show();
             }
         });
-
         binding.btnCardSelectHospital.setOnClickListener(v -> onSelectHospitalClick(hospital));
-
         binding.cardSelectedHospitalInfo.setVisibility(View.VISIBLE);
 
-        // Center map on clicked hospital
-        if (googleMap != null && hospital.getLatitude() != 0.0 && hospital.getLongitude() != 0.0) {
+        if (hospital.getLatitude() != 0.0 && hospital.getLongitude() != 0.0) {
             if (isListViewMode) {
-                toggleViewMode(); // Switch back to map to show position
+                toggleViewMode();
             }
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(hospital.getLatitude(), hospital.getLongitude()), 14.5f));
+            binding.osmMapNearby.getController().animateTo(
+                    new GeoPoint(hospital.getLatitude(), hospital.getLongitude()));
+            binding.osmMapNearby.getController().setZoom(15.0);
         }
     }
 
@@ -572,7 +535,6 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             return;
         }
 
-        // Try standard Google Maps Navigation Intent
         String uriString = String.format(Locale.ENGLISH, "google.navigation:q=%f,%f&mode=d",
                 hospital.getLatitude(), hospital.getLongitude());
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriString));
@@ -581,12 +543,10 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         if (mapIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(mapIntent);
         } else {
-            // Fallback to browser Google Maps directions
             String webUri = String.format(Locale.ENGLISH,
-                    "https://www.google.com/maps/dir/?api=1&destination=%f,%f",
+                    "https://www.openstreetmap.org/directions?to=%f,%f",
                     hospital.getLatitude(), hospital.getLongitude());
-            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webUri));
-            startActivity(webIntent);
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(webUri)));
         }
     }
 
@@ -595,33 +555,23 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         repository.selectHospital(hospital);
         Toast.makeText(this, "Selected: " + hospital.getHospitalName() + " (" + hospital.getHospitalCode() + ")",
                 Toast.LENGTH_SHORT).show();
-
-        // Proceed to Authentication / Role selection flow
-        Intent intent = new Intent(this, RoleSelectionActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(this, RoleSelectionActivity.class));
     }
 
-    /**
-     * Directly switches from AROHI into the official Google Maps application on the user's phone.
-     * Searches nearby hospitals or navigates to the selected hospital without needing an API key.
-     */
     public void openInGoogleMapsApp(String query) {
         Uri uri;
         double lat = (userLatitude != 0.0) ? userLatitude : DEFAULT_DHAKA_LAT;
         double lng = (userLongitude != 0.0) ? userLongitude : DEFAULT_DHAKA_LNG;
 
         if (selectedHospital != null && selectedHospital.getLatitude() != 0.0) {
-            // Open specific selected hospital directly in Google Maps
             String label = Uri.encode(selectedHospital.getHospitalName());
             uri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f(%s)",
                     selectedHospital.getLatitude(), selectedHospital.getLongitude(),
                     selectedHospital.getLatitude(), selectedHospital.getLongitude(), label));
         } else if (query != null && !query.trim().isEmpty()) {
-            // Search user's specific query in Google Maps
             uri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%s",
                     lat, lng, Uri.encode(query + " hospital")));
         } else {
-            // Search all hospitals near user in Google Maps
             uri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%s",
                     lat, lng, Uri.encode("hospitals near me")));
         }
@@ -632,24 +582,21 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         if (mapIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(mapIntent);
         } else {
-            // Fallback to browser Google Maps
-            String webUrl;
-            if (selectedHospital != null && selectedHospital.getLatitude() != 0.0) {
-                webUrl = String.format(Locale.ENGLISH, "https://www.google.com/maps/search/?api=1&query=%f,%f",
-                        selectedHospital.getLatitude(), selectedHospital.getLongitude());
-            } else {
-                webUrl = String.format(Locale.ENGLISH, "https://www.google.com/maps/search/hospitals+near+me/@%f,%f,14z",
-                        lat, lng);
-            }
+            String webUrl = String.format(Locale.ENGLISH,
+                    "https://www.openstreetmap.org/#map=14/%f/%f", lat, lng);
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(webUrl)));
         }
     }
 
-    private void showMapsConfigDialog() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.demo_maps_dialog_title)
-                .setMessage(R.string.demo_maps_dialog_body)
-                .setPositiveButton("OK", null)
-                .show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        binding.osmMapNearby.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        binding.osmMapNearby.onPause();
     }
 }

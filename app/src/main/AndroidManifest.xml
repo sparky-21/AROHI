@@ -16,11 +16,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AROHI">
 
-        <!-- Google Maps API Key Meta-Data -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
-
         <!-- 1. Splash Screen (Launcher) -->
         <activity
             android:name=".activities.SplashActivity"

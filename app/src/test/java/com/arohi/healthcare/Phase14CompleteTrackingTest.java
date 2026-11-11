@@ -12,10 +12,12 @@ import com.arohi.healthcare.models.UnifiedTrackingItem;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
+import com.arohi.healthcare.services.OverpassHospitalService;
 
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -160,5 +162,19 @@ public class Phase14CompleteTrackingTest {
         );
         patient.setHospitalId("hosp_square_dhk");
         assertEquals("hosp_square_dhk", patient.getHospitalId());
+    }
+
+    @Test
+    public void testOverpassExternalHospitalCreationMarksUnverified() {
+        com.arohi.healthcare.models.Hospital ext = OverpassHospitalService.createExternalHospital(
+                101L, "Public General OSM Clinic", 23.7805, 90.4179,
+                "Gulshan 1, Dhaka", "Dhaka", "+8801700000111", true
+        );
+        assertEquals("osm_101", ext.getHospitalId());
+        assertEquals("Public General OSM Clinic", ext.getHospitalName());
+        assertFalse("External OSM listing must remain verified=false", ext.isVerified());
+        assertEquals(23.7805, ext.getLatitude(), 0.0001);
+        assertEquals("+8801700000111", ext.getEmergencyHotline());
+        assertTrue(OverpassHospitalService.parseOverpassResponse("").isEmpty());
     }
 }

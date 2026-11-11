@@ -2,8 +2,9 @@ package com.arohi.healthcare.activities;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.arohi.healthcare.R;
 import com.arohi.healthcare.database.FirestoreCollections;
@@ -21,19 +23,15 @@ import com.arohi.healthcare.repositories.AmbulanceTrackingRepository;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.services.FirebaseProvider;
 import com.arohi.healthcare.utils.SessionManager;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
+
 /**
- * Phase 14 Shared Google Maps Live Telemetry Screen.
+ * Phase 14 Live Telemetry Map Screen powered by Free OpenStreetMap (OSMDroid — zero API key).
  * Supports:
  * 1. Ambulance Dispatch Live GPS Tracking
  * 2. Pharmacy Home Delivery Partner Live GPS Tracking
@@ -42,7 +40,7 @@ import com.google.firebase.firestore.ListenerRegistration;
  * - Zero fake live coordinates: only renders moving partner/ambulance markers when authorized telemetry exists.
  * - Automatically detaches telemetry updates and clears active marker when session ends.
  */
-public class LiveTrackingMapActivity extends BaseActivity implements OnMapReadyCallback {
+public class LiveTrackingMapActivity extends BaseActivity {
 
     public static final String EXTRA_MODE = "extra_mode";
     public static final String MODE_AMBULANCE = "AMBULANCE";
@@ -50,10 +48,12 @@ public class LiveTrackingMapActivity extends BaseActivity implements OnMapReadyC
     public static final String EXTRA_RECORD_ID = "extra_record_id";
     public static final String EXTRA_HOSPITAL_ID = "extra_hospital_id";
 
+    private static final double DEFAULT_DHAKA_LAT = 23.7937;
+    private static final double DEFAULT_DHAKA_LNG = 90.4043;
+
     private ActivityLiveTrackingMapBinding binding;
     private SessionManager sessionManager;
     private AmbulanceTrackingRepository ambulanceRepo;
-    private GoogleMap googleMap;
     private Marker activeVehicleMarker;
     private Marker destinationMarker;
     private ListenerRegistration realtimeListener;
@@ -110,38 +110,15 @@ public class LiveTrackingMapActivity extends BaseActivity implements OnMapReadyC
             }
         });
 
-        setupMapOrFallback();
+        initOpenStreetMap();
         bindInitialRecordAndListen();
     }
 
-    private void setupMapOrFallback() {
-        if (!hasValidMapsApiKey()) {
-            binding.layoutMapConfigFallback.setVisibility(View.VISIBLE);
-            return;
-        }
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.liveTrackingMapFragment);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-    }
-
-    private boolean hasValidMapsApiKey() {
-        try {
-            ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-            if (ai.metaData == null) return false;
-            String key = ai.metaData.getString("com.google.android.geo.API_KEY", "");
-            return key != null && !key.trim().isEmpty() && !"null".equalsIgnoreCase(key.trim());
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void onMapReady(@NonNull GoogleMap map) {
-        this.googleMap = map;
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
-        bindInitialRecord();
+    private void initOpenStreetMap() {
+        binding.osmMapLiveTracking.setTileSource(TileSourceFactory.MAPNIK);
+        binding.osmMapLiveTracking.setMultiTouchControls(true);
+        binding.osmMapLiveTracking.getController().setZoom(13.5);
+        binding.osmMapLiveTracking.getController().setCenter(new GeoPoint(DEFAULT_DHAKA_LAT, DEFAULT_DHAKA_LNG));
     }
 
     private void bindInitialRecordAndListen() {
@@ -213,22 +190,25 @@ public class LiveTrackingMapActivity extends BaseActivity implements OnMapReadyC
             clearVehicleMarker();
         } else if (req.hasActiveLiveTelemetry()) {
             binding.bannerTelemetryNotice.setVisibility(View.GONE);
-            updateMapMarker(req.getCurrentLat(), req.getCurrentLng(),
+            updateVehicleMarker(req.getCurrentLat(), req.getCurrentLng(),
                     "Ambulance " + req.getVehicleNumber(),
                     "Status: " + req.getStatus(),
-                    BitmapDescriptorFactory.HUE_RED);
+                    Color.parseColor("#C94B4B"));
         } else {
             binding.bannerTelemetryNotice.setVisibility(View.VISIBLE);
             binding.tvTelemetryNoticeText.setText(R.string.tracking_map_no_telemetry);
             clearVehicleMarker();
-            if (req.getPickupLat() != null && req.getPickupLng() != null && googleMap != null) {
-                LatLng pickup = new LatLng(req.getPickupLat(), req.getPickupLng());
-                if (destinationMarker != null) destinationMarker.remove();
-                destinationMarker = googleMap.addMarker(new MarkerOptions()
-                        .position(pickup)
-                        .title("Pickup Location")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pickup, 14f));
+            if (req.getPickupLat() != null && req.getPickupLng() != null) {
+                GeoPoint pickup = new GeoPoint(req.getPickupLat(), req.getPickupLng());
+                if (destinationMarker != null) {
+                    binding.osmMapLiveTracking.getOverlays().remove(destinationMarker);
+                }
+                destinationMarker = createTintedMarker(pickup, "Pickup Location", req.getPickupAddress(),
+                        ContextCompat.getColor(this, R.color.primary_moss_green));
+                binding.osmMapLiveTracking.getOverlays().add(destinationMarker);
+                binding.osmMapLiveTracking.getController().animateTo(pickup);
+                binding.osmMapLiveTracking.getController().setZoom(14.5);
+                binding.osmMapLiveTracking.invalidate();
             }
         }
     }
@@ -263,10 +243,10 @@ public class LiveTrackingMapActivity extends BaseActivity implements OnMapReadyC
             clearVehicleMarker();
         } else if (order.hasActiveLiveLocation()) {
             binding.bannerTelemetryNotice.setVisibility(View.GONE);
-            updateMapMarker(order.getLiveLat(), order.getLiveLng(),
+            updateVehicleMarker(order.getLiveLat(), order.getLiveLng(),
                     "Delivery Partner: " + order.getDeliveryPartnerName(),
                     "Order #" + order.getOrderId() + " (" + order.getStatus() + ")",
-                    BitmapDescriptorFactory.HUE_AZURE);
+                    ContextCompat.getColor(this, R.color.primary_moss_green));
         } else {
             binding.bannerTelemetryNotice.setVisibility(View.VISIBLE);
             binding.tvTelemetryNoticeText.setText(R.string.tracking_map_no_telemetry);
@@ -274,28 +254,56 @@ public class LiveTrackingMapActivity extends BaseActivity implements OnMapReadyC
         }
     }
 
-    private void updateMapMarker(Double lat, Double lng, String title, String snippet, float hue) {
-        if (googleMap == null || lat == null || lng == null) return;
-        LatLng pos = new LatLng(lat, lng);
+    private void updateVehicleMarker(Double lat, Double lng, String title, String snippet, int tintColor) {
+        if (lat == null || lng == null) return;
+        GeoPoint pos = new GeoPoint(lat, lng);
         if (activeVehicleMarker == null) {
-            activeVehicleMarker = googleMap.addMarker(new MarkerOptions()
-                    .position(pos)
-                    .title(title)
-                    .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(hue)));
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f));
+            activeVehicleMarker = createTintedMarker(pos, title, snippet, tintColor);
+            binding.osmMapLiveTracking.getOverlays().add(activeVehicleMarker);
+            binding.osmMapLiveTracking.getController().animateTo(pos);
+            binding.osmMapLiveTracking.getController().setZoom(15.5);
         } else {
             activeVehicleMarker.setPosition(pos);
             activeVehicleMarker.setTitle(title);
             activeVehicleMarker.setSnippet(snippet);
+            binding.osmMapLiveTracking.getController().animateTo(pos);
         }
+        binding.osmMapLiveTracking.invalidate();
+    }
+
+    private Marker createTintedMarker(GeoPoint pos, String title, String snippet, int tintColor) {
+        Marker m = new Marker(binding.osmMapLiveTracking);
+        m.setPosition(pos);
+        m.setTitle(title);
+        m.setSnippet(snippet);
+        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        Drawable icon = ContextCompat.getDrawable(this, R.drawable.ic_location_pin);
+        if (icon != null) {
+            Drawable tinted = icon.mutate();
+            tinted.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
+            m.setIcon(tinted);
+        }
+        return m;
     }
 
     private void clearVehicleMarker() {
         if (activeVehicleMarker != null) {
-            activeVehicleMarker.remove();
+            binding.osmMapLiveTracking.getOverlays().remove(activeVehicleMarker);
             activeVehicleMarker = null;
+            binding.osmMapLiveTracking.invalidate();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        binding.osmMapLiveTracking.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        binding.osmMapLiveTracking.onPause();
     }
 
     @Override

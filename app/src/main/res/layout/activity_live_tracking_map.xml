@@ -95,52 +95,16 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Map Container -->
+    <!-- Map Container (Free OpenStreetMap via OSMDroid - Zero API Key) -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <fragment
-            android:id="@+id/liveTrackingMapFragment"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        <org.osmdroid.views.MapView
+            android:id="@+id/osmMapLiveTracking"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
-        <LinearLayout
-            android:id="@+id/layoutMapConfigFallback"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/surface_background"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="28dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🗺️"
-                android:textSize="38sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Google Maps API Key Required"
-                android:textColor="@color/accent_heading"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="center"
-                android:text="Configure MAPS_API_KEY in local.properties to display Google Maps tiles. Telemetry metadata below remains synced."
-                android:textColor="@color/text_secondary"
-                android:textSize="12.5sp" />
-        </LinearLayout>
     </FrameLayout>
 
     <!-- Bottom Driver / Partner Info Sheet -->

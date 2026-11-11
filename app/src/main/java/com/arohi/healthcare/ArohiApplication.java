@@ -45,6 +45,18 @@ public class ArohiApplication extends Application {
             Log.w(TAG, "Failed initializing theme or locale on application start: " + e.getMessage());
         }
 
+        // Initialize OpenStreetMap (OSMDroid) with compliant User-Agent & private cache path
+        try {
+            org.osmdroid.config.Configuration.getInstance().load(
+                    this, getSharedPreferences("arohi_osmdroid_prefs", Context.MODE_PRIVATE));
+            org.osmdroid.config.Configuration.getInstance().setUserAgentValue(getPackageName());
+            org.osmdroid.config.Configuration.getInstance().setOsmdroidBasePath(getCacheDir());
+            org.osmdroid.config.Configuration.getInstance().setOsmdroidTileCache(
+                    new java.io.File(getCacheDir(), "osmdroid_tiles"));
+        } catch (Exception e) {
+            Log.w(TAG, "OSMDroid config init skipped: " + e.getMessage());
+        }
+
         // Global Uncaught Exception Handler
         final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {

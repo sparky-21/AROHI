@@ -69,8 +69,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-messaging'
 
-    // Google Play Services: Maps & Location
-    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    // OpenStreetMap (OSMDroid - Free, Zero API Key) & Location Services
+    implementation 'org.osmdroid:osmdroid-android:6.1.20'
     implementation 'com.google.android.gms:play-services-location:21.2.0'
 
     // Unit Testing
