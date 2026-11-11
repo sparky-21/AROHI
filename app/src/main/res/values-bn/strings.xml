@@ -667,4 +667,29 @@
     <string name="btn_request_refund">রিফান্ড অনুরোধ করুন</string>
     <string name="billing_sandbox_banner_title">স্যান্ডবক্স / টেস্ট মোড — গেটওয়ে ক্রেডেনশিয়াল সেট করা নেই</string>
     <string name="billing_sandbox_banner_subtitle">কোনো প্রকৃত টাকা কাটা হবে না। বিকাশ, নগদ ও SSLCommerz সিমুলেটেড কলব্যাক ও সার্ভার স্বাক্ষর যাচাই করে। কার্ডের তথ্য কখনো সংরক্ষণ করা হয় না।</string>
+
+    <!-- Phase 14: AROHI Complete Tracking System -->
+    <string name="tracking_hub_title">সেবা ও কেয়ার ট্র্যাকিং</string>
+    <string name="tracking_hub_subtitle">হাসপাতাল-ভিত্তিক রিয়েল-টাইম অগ্রগতি</string>
+    <string name="tracking_dashboard_card_title">সমন্বিত সেবা ও অর্ডার ট্র্যাকিং</string>
+    <string name="tracking_dashboard_card_subtitle">ফার্মেসি ডেলিভারি, অ্যাপয়েন্টমেন্ট, ওটি অগ্রগতি, পেমেন্ট ও অ্যাম্বুলেন্স ট্র্যাক করুন</string>
+    <string name="tracking_filter_all">সকল</string>
+    <string name="tracking_filter_pharmacy">ফার্মেসি</string>
+    <string name="tracking_filter_appointments">অ্যাপয়েন্টমেন্ট</string>
+    <string name="tracking_filter_operations">অপারেশন</string>
+    <string name="tracking_filter_payments">পেমেন্ট</string>
+    <string name="tracking_filter_ambulance">অ্যাম্বুলেন্স</string>
+    <string name="tracking_empty_title">এখনও কোনো ট্র্যাকিং তথ্য নেই</string>
+    <string name="tracking_empty_subtitle">এই হাসপাতালের সক্রিয় ফার্মেসি অর্ডার, অ্যাপয়েন্টমেন্ট, ওটি, বিল বা অ্যাম্বুলেন্স অনুরোধ এখানে দেখা যাবে।</string>
+    <string name="tracking_timeline_title">অবস্থার সময়রেখা ও ধাপসমূহ</string>
+    <string name="tracking_live_gps_badge">লাইভ জিপিএস</string>
+    <string name="tracking_awaiting_telemetry">লাইভ জিপিএস সংকেতের অপেক্ষায়</string>
+    <string name="tracking_btn_view_timeline">বিস্তারিত সময়রেখা দেখুন</string>
+    <string name="tracking_btn_live_map">লাইভ জিপিএস ম্যাপ</string>
+    <string name="tracking_btn_advance_stage">ধাপ আপডেট করুন</string>
+    <string name="tracking_btn_request_ambulance">জরুরি অ্যাম্বুলেন্স অনুরোধ</string>
+    <string name="tracking_map_title">লাইভ টেলিমেট্রি ট্র্যাকিং ম্যাপ</string>
+    <string name="tracking_map_no_telemetry">অনুমোদিত লাইভ জিপিএস সংকেতের অপেক্ষায় — এখনও ড্রাইভার/পার্টনার অ্যাপ থেকে অবস্থান আসেনি। ভুয়া অবস্থান দেখানো হয় না।</string>
+    <string name="tracking_map_session_ended">ট্র্যাকিং সেশন শেষ হয়েছে — জিপিএস অবস্থান শেয়ারিং বন্ধ করা হয়েছে।</string>
+    <string name="tracking_btn_call_partner">ড্রাইভার / পার্টনারকে কল করুন</string>
 </resources>

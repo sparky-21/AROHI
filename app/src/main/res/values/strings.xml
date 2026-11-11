@@ -667,4 +667,29 @@
     <string name="btn_request_refund">Request Refund</string>
     <string name="billing_sandbox_banner_title">SANDBOX / TEST MODE — Gateway Credentials Not Configured</string>
     <string name="billing_sandbox_banner_subtitle">No real money is charged. Simulated bKash, Nagad &amp; SSLCommerz callbacks verify idempotency and server signature validation. Raw card info is never stored.</string>
+
+    <!-- Phase 14: AROHI Complete Tracking System -->
+    <string name="tracking_hub_title">Care &amp; Service Tracking</string>
+    <string name="tracking_hub_subtitle">Hospital-Scoped Real-Time Progress</string>
+    <string name="tracking_dashboard_card_title">Unified Care &amp; Service Tracking</string>
+    <string name="tracking_dashboard_card_subtitle">Track pharmacy delivery, appointments, OT progress, payments &amp; ambulance dispatch</string>
+    <string name="tracking_filter_all">All</string>
+    <string name="tracking_filter_pharmacy">Pharmacy</string>
+    <string name="tracking_filter_appointments">Appointments</string>
+    <string name="tracking_filter_operations">Operations</string>
+    <string name="tracking_filter_payments">Payments</string>
+    <string name="tracking_filter_ambulance">Ambulance</string>
+    <string name="tracking_empty_title">No tracking records yet</string>
+    <string name="tracking_empty_subtitle">Active pharmacy orders, appointments, OT procedures, bills, or ambulance dispatches in this hospital will appear here.</string>
+    <string name="tracking_timeline_title">Status Timeline &amp; Milestones</string>
+    <string name="tracking_live_gps_badge">Live GPS</string>
+    <string name="tracking_awaiting_telemetry">Awaiting live telemetry</string>
+    <string name="tracking_btn_view_timeline">View Full Timeline</string>
+    <string name="tracking_btn_live_map">Live GPS Map</string>
+    <string name="tracking_btn_advance_stage">Advance Stage</string>
+    <string name="tracking_btn_request_ambulance">Request Emergency Ambulance</string>
+    <string name="tracking_map_title">Live Telemetry Tracking Map</string>
+    <string name="tracking_map_no_telemetry">Awaiting Authorized Live GPS Feed — No coordinates received from external driver/partner app yet. Live positions are never fabricated.</string>
+    <string name="tracking_map_session_ended">Tracking Session Ended — Authorized GPS location sharing has stopped.</string>
+    <string name="tracking_btn_call_partner">Call Driver / Partner</string>
 </resources>

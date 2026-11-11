@@ -11,8 +11,12 @@ import java.util.Map;
  */
 public class Appointment {
 
+    public static final String STATUS_REQUESTED = "Requested";
     public static final String STATUS_PENDING = "Pending";
     public static final String STATUS_CONFIRMED = "Confirmed";
+    public static final String STATUS_CHECKED_IN = "Checked In";
+    public static final String STATUS_WAITING = "Waiting";
+    public static final String STATUS_IN_CONSULTATION = "In Consultation";
     public static final String STATUS_RESCHEDULED = "Rescheduled";
     public static final String STATUS_CANCELLED = "Cancelled";
     public static final String STATUS_COMPLETED = "Completed";
@@ -22,6 +26,7 @@ public class Appointment {
     public static final String TYPE_FOLLOW_UP = "Follow-up Consultation";
 
     private String appointmentId;
+    private String hospitalId;
     private String patientUid;
     private String patientId;
     private String patientName;
@@ -42,13 +47,20 @@ public class Appointment {
     private String doctorNotes;
     private String cancellationReason;
     private String status;
+    private int queuePosition; // <= 0 when queue telemetry is unavailable
+    private int estimatedWaitMinutes; // <= 0 when queue wait estimate is unavailable
     private long scheduledTimestamp;
     private long createdAt;
     private long updatedAt;
+    private java.util.List<TrackingStatusEvent> trackingHistory;
 
     public Appointment() {
+        this.hospitalId = "hosp_arohi_central";
         this.status = STATUS_PENDING;
         this.consultationType = TYPE_IN_PERSON;
+        this.queuePosition = -1;
+        this.estimatedWaitMinutes = -1;
+        this.trackingHistory = new java.util.ArrayList<>();
         long now = System.currentTimeMillis();
         this.createdAt = now;
         this.updatedAt = now;
@@ -81,6 +93,7 @@ public class Appointment {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("appointmentId", appointmentId);
+        map.put("hospitalId", hospitalId != null ? hospitalId : "hosp_arohi_central");
         map.put("patientUid", patientUid);
         map.put("patientId", patientId);
         map.put("patientName", patientName);
@@ -99,10 +112,68 @@ public class Appointment {
         map.put("doctorNotes", doctorNotes);
         map.put("cancellationReason", cancellationReason);
         map.put("status", status);
+        map.put("queuePosition", queuePosition);
+        map.put("estimatedWaitMinutes", estimatedWaitMinutes);
         map.put("scheduledTimestamp", scheduledTimestamp);
         map.put("createdAt", createdAt);
         map.put("updatedAt", updatedAt);
+        java.util.List<Map<String, Object>> historyList = new java.util.ArrayList<>();
+        if (trackingHistory != null) {
+            for (TrackingStatusEvent ev : trackingHistory) {
+                historyList.add(ev.toMap());
+            }
+        }
+        map.put("trackingHistory", historyList);
         return map;
+    }
+
+    public int getStatusStepIndex() {
+        if (STATUS_PENDING.equalsIgnoreCase(status) || STATUS_REQUESTED.equalsIgnoreCase(status)
+                || STATUS_RESCHEDULED.equalsIgnoreCase(status)) return 0;
+        if (STATUS_CONFIRMED.equalsIgnoreCase(status)) return 1;
+        if (STATUS_CHECKED_IN.equalsIgnoreCase(status)) return 2;
+        if (STATUS_WAITING.equalsIgnoreCase(status)) return 3;
+        if (STATUS_IN_CONSULTATION.equalsIgnoreCase(status)) return 4;
+        if (STATUS_COMPLETED.equalsIgnoreCase(status)) return 5;
+        return -1;
+    }
+
+    public boolean isValidTransition(String nextStatus) {
+        if (nextStatus == null) return false;
+        if (STATUS_CANCELLED.equalsIgnoreCase(nextStatus) || STATUS_RESCHEDULED.equalsIgnoreCase(nextStatus)) {
+            return isActive();
+        }
+        if (STATUS_PENDING.equalsIgnoreCase(status) || STATUS_REQUESTED.equalsIgnoreCase(status)
+                || STATUS_RESCHEDULED.equalsIgnoreCase(status)) {
+            return STATUS_CONFIRMED.equalsIgnoreCase(nextStatus);
+        }
+        if (STATUS_CONFIRMED.equalsIgnoreCase(status)) {
+            return STATUS_CHECKED_IN.equalsIgnoreCase(nextStatus)
+                    || STATUS_COMPLETED.equalsIgnoreCase(nextStatus);
+        }
+        if (STATUS_CHECKED_IN.equalsIgnoreCase(status)) {
+            return STATUS_WAITING.equalsIgnoreCase(nextStatus);
+        }
+        if (STATUS_WAITING.equalsIgnoreCase(status)) {
+            return STATUS_IN_CONSULTATION.equalsIgnoreCase(nextStatus);
+        }
+        if (STATUS_IN_CONSULTATION.equalsIgnoreCase(status)) {
+            return STATUS_COMPLETED.equalsIgnoreCase(nextStatus);
+        }
+        return false;
+    }
+
+    public void recordTrackingEvent(String statusLabel, String actorUid, String actorName,
+                                    String actorRole, String note) {
+        if (trackingHistory == null) trackingHistory = new java.util.ArrayList<>();
+        trackingHistory.add(new TrackingStatusEvent(
+                statusLabel, System.currentTimeMillis(), actorUid, actorName, actorRole, note
+        ));
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public boolean hasLiveQueueData() {
+        return queuePosition > 0 && !isCancelled() && !isCompleted();
     }
 
     public boolean isPending() {
@@ -132,6 +203,9 @@ public class Appointment {
     // Getters and Setters
     public String getAppointmentId() { return appointmentId; }
     public void setAppointmentId(String appointmentId) { this.appointmentId = appointmentId; }
+
+    public String getHospitalId() { return hospitalId; }
+    public void setHospitalId(String hospitalId) { this.hospitalId = hospitalId; }
 
     public String getPatientUid() { return patientUid; }
     public void setPatientUid(String patientUid) { this.patientUid = patientUid; }
@@ -195,4 +269,15 @@ public class Appointment {
 
     public long getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+
+    public int getQueuePosition() { return queuePosition; }
+    public void setQueuePosition(int queuePosition) { this.queuePosition = queuePosition; }
+
+    public int getEstimatedWaitMinutes() { return estimatedWaitMinutes; }
+    public void setEstimatedWaitMinutes(int estimatedWaitMinutes) { this.estimatedWaitMinutes = estimatedWaitMinutes; }
+
+    public java.util.List<TrackingStatusEvent> getTrackingHistory() { return trackingHistory; }
+    public void setTrackingHistory(java.util.List<TrackingStatusEvent> trackingHistory) {
+        this.trackingHistory = trackingHistory != null ? trackingHistory : new java.util.ArrayList<>();
+    }
 }

@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".ArohiApplication"
@@ -150,6 +151,27 @@
             android:name=".activities.PatientBillingHistoryActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- 20. Phase 14 Unified Care & Service Tracking Activity -->
+        <activity
+            android:name=".activities.UnifiedTrackingActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 21. Phase 14 Live GPS Telemetry Map Activity -->
+        <activity
+            android:name=".activities.LiveTrackingMapActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Phase 14 Firebase Cloud Messaging Receiver -->
+        <service
+            android:name=".services.ArohiFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <!-- 14. FileProvider for Exported PDF Prescriptions and Diagnostic Reports -->
         <provider

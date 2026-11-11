@@ -13,12 +13,15 @@ public class Operation implements Serializable {
 
     public static final String STATUS_SCHEDULED = "Scheduled";
     public static final String STATUS_PREPARATION = "Preparation";
+    public static final String STATUS_SHIFTED_TO_OT = "Patient Shifted to OT";
     public static final String STATUS_IN_PROGRESS = "In Progress";
     public static final String STATUS_COMPLETED = "Completed";
+    public static final String STATUS_RECOVERY = "Recovery";
     public static final String STATUS_FOLLOW_UP = "Follow-up";
     public static final String STATUS_CANCELLED = "Cancelled";
 
     private String operationId;
+    private String hospitalId;
     private String procedureName;
     private String department;
     private String otRoomId;
@@ -57,10 +60,15 @@ public class Operation implements Serializable {
 
     private long createdAt;
     private long updatedAt;
+    private java.util.List<String> authorizedFamilyUids;
+    private java.util.List<TrackingStatusEvent> trackingHistory;
 
     public Operation() {
+        this.hospitalId = "hosp_arohi_central";
         this.status = STATUS_SCHEDULED;
         this.estimatedDurationMinutes = 90;
+        this.authorizedFamilyUids = new java.util.ArrayList<>();
+        this.trackingHistory = new java.util.ArrayList<>();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
@@ -87,14 +95,77 @@ public class Operation implements Serializable {
         this.doctorSpecialty = doctorSpecialty;
         this.nurseUid = nurseUid;
         this.nurseName = nurseName;
+        this.hospitalId = "hosp_arohi_central";
         this.status = STATUS_SCHEDULED;
+        this.authorizedFamilyUids = new java.util.ArrayList<>();
+        this.trackingHistory = new java.util.ArrayList<>();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
+        recordTrackingEvent(STATUS_SCHEDULED, doctorUid, doctorName, "DOCTOR", "Operation scheduled in " + otRoomName);
+    }
+
+    public int getStatusStepIndex() {
+        if (STATUS_SCHEDULED.equalsIgnoreCase(status)) return 0;
+        if (STATUS_PREPARATION.equalsIgnoreCase(status)) return 1;
+        if (STATUS_SHIFTED_TO_OT.equalsIgnoreCase(status)) return 2;
+        if (STATUS_IN_PROGRESS.equalsIgnoreCase(status)) return 3;
+        if (STATUS_COMPLETED.equalsIgnoreCase(status)) return 4;
+        if (STATUS_RECOVERY.equalsIgnoreCase(status)) return 5;
+        if (STATUS_FOLLOW_UP.equalsIgnoreCase(status)) return 6;
+        return -1;
+    }
+
+    public boolean isValidTransition(String nextStatus) {
+        if (nextStatus == null) return false;
+        if (STATUS_CANCELLED.equalsIgnoreCase(nextStatus)) {
+            return STATUS_SCHEDULED.equalsIgnoreCase(status) || STATUS_PREPARATION.equalsIgnoreCase(status);
+        }
+        if (STATUS_SCHEDULED.equalsIgnoreCase(status)) return STATUS_PREPARATION.equalsIgnoreCase(nextStatus);
+        if (STATUS_PREPARATION.equalsIgnoreCase(status)) {
+            return STATUS_SHIFTED_TO_OT.equalsIgnoreCase(nextStatus)
+                    || STATUS_IN_PROGRESS.equalsIgnoreCase(nextStatus);
+        }
+        if (STATUS_SHIFTED_TO_OT.equalsIgnoreCase(status)) return STATUS_IN_PROGRESS.equalsIgnoreCase(nextStatus);
+        if (STATUS_IN_PROGRESS.equalsIgnoreCase(status)) return STATUS_COMPLETED.equalsIgnoreCase(nextStatus);
+        if (STATUS_COMPLETED.equalsIgnoreCase(status)) {
+            return STATUS_RECOVERY.equalsIgnoreCase(nextStatus)
+                    || STATUS_FOLLOW_UP.equalsIgnoreCase(nextStatus);
+        }
+        if (STATUS_RECOVERY.equalsIgnoreCase(status)) return STATUS_FOLLOW_UP.equalsIgnoreCase(nextStatus);
+        return false;
+    }
+
+    public void recordTrackingEvent(String statusLabel, String actorUid, String actorName,
+                                    String actorRole, String note) {
+        if (trackingHistory == null) trackingHistory = new java.util.ArrayList<>();
+        trackingHistory.add(new TrackingStatusEvent(
+                statusLabel, System.currentTimeMillis(), actorUid, actorName, actorRole, note
+        ));
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public boolean isFamilyViewerAuthorized(String viewerUid) {
+        if (viewerUid == null || viewerUid.trim().isEmpty()) return false;
+        if (viewerUid.equals(patientUid)) return true;
+        return authorizedFamilyUids != null && authorizedFamilyUids.contains(viewerUid);
+    }
+
+    /**
+     * Privacy-safe summary exposed to explicitly authorized family members:
+     * exposes stage, OT room, surgeon, and schedule without sensitive surgical/post-op notes.
+     */
+    public String toFamilyPermittedSummary() {
+        return "Status: " + status
+                + " • Room: " + (otRoomName != null ? otRoomName : "OT")
+                + " • Lead Surgeon: " + (doctorName != null ? doctorName : "Assigned Specialist")
+                + " • Schedule: " + (operationDate != null ? operationDate : "")
+                + (operationTime != null ? " " + operationTime : "");
     }
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("operationId", operationId);
+        map.put("hospitalId", hospitalId != null ? hospitalId : "hosp_arohi_central");
         map.put("procedureName", procedureName);
         map.put("department", department);
         map.put("otRoomId", otRoomId);
@@ -122,11 +193,22 @@ public class Operation implements Serializable {
         map.put("surgicalNotes", surgicalNotes != null ? surgicalNotes : "");
         map.put("createdAt", createdAt);
         map.put("updatedAt", updatedAt);
+        map.put("authorizedFamilyUids", authorizedFamilyUids != null ? authorizedFamilyUids : new java.util.ArrayList<>());
+        java.util.List<Map<String, Object>> historyList = new java.util.ArrayList<>();
+        if (trackingHistory != null) {
+            for (TrackingStatusEvent ev : trackingHistory) {
+                historyList.add(ev.toMap());
+            }
+        }
+        map.put("trackingHistory", historyList);
         return map;
     }
 
     public String getOperationId() { return operationId; }
     public void setOperationId(String operationId) { this.operationId = operationId; }
+
+    public String getHospitalId() { return hospitalId; }
+    public void setHospitalId(String hospitalId) { this.hospitalId = hospitalId; }
 
     public String getProcedureName() { return procedureName; }
     public void setProcedureName(String procedureName) { this.procedureName = procedureName; }
@@ -208,4 +290,14 @@ public class Operation implements Serializable {
 
     public long getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+
+    public java.util.List<String> getAuthorizedFamilyUids() { return authorizedFamilyUids; }
+    public void setAuthorizedFamilyUids(java.util.List<String> authorizedFamilyUids) {
+        this.authorizedFamilyUids = authorizedFamilyUids != null ? authorizedFamilyUids : new java.util.ArrayList<>();
+    }
+
+    public java.util.List<TrackingStatusEvent> getTrackingHistory() { return trackingHistory; }
+    public void setTrackingHistory(java.util.List<TrackingStatusEvent> trackingHistory) {
+        this.trackingHistory = trackingHistory != null ? trackingHistory : new java.util.ArrayList<>();
+    }
 }

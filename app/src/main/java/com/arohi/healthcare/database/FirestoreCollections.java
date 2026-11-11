@@ -49,4 +49,8 @@ public final class FirestoreCollections {
     public static final String COMMUNITY_POSTS = "communityPosts";
     public static final String POST_COMMENTS = "postComments";
     public static final String PATIENT_JOURNEYS = "patientJourneys";
+
+    // Phase 14 Unified Tracking & Ambulance Telemetry
+    public static final String AMBULANCE_REQUESTS = "ambulanceRequests";
+    public static final String TRACKING_EVENTS = "trackingEvents";
 }

@@ -526,8 +526,10 @@ public class AdminOperationsFragment extends Fragment {
         String[] statuses = new String[]{
                 Operation.STATUS_SCHEDULED,
                 Operation.STATUS_PREPARATION,
+                Operation.STATUS_SHIFTED_TO_OT,
                 Operation.STATUS_IN_PROGRESS,
                 Operation.STATUS_COMPLETED,
+                Operation.STATUS_RECOVERY,
                 Operation.STATUS_FOLLOW_UP,
                 Operation.STATUS_CANCELLED
         };

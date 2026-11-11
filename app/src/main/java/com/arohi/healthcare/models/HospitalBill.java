@@ -43,6 +43,8 @@ public class HospitalBill implements Serializable {
     private long createdAt;
     private long paidAt;
     private String notes;
+    private String linkedEntityType; // APPOINTMENT, PHARMACY_ORDER, OPERATION, LAB_REQUEST, HOSPITAL_SERVICE
+    private String linkedEntityId;
 
     public HospitalBill() {
         this.items = new ArrayList<>();
@@ -118,6 +120,8 @@ public class HospitalBill implements Serializable {
         map.put("createdAt", createdAt);
         map.put("paidAt", paidAt);
         map.put("notes", notes != null ? notes : "");
+        map.put("linkedEntityType", linkedEntityType != null ? linkedEntityType : "");
+        map.put("linkedEntityId", linkedEntityId != null ? linkedEntityId : "");
         return map;
     }
 
@@ -196,4 +200,10 @@ public class HospitalBill implements Serializable {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getLinkedEntityType() { return linkedEntityType; }
+    public void setLinkedEntityType(String linkedEntityType) { this.linkedEntityType = linkedEntityType; }
+
+    public String getLinkedEntityId() { return linkedEntityId; }
+    public void setLinkedEntityId(String linkedEntityId) { this.linkedEntityId = linkedEntityId; }
 }

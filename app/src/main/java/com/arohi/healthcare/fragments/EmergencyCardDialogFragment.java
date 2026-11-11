@@ -1,25 +1,40 @@
 package com.arohi.healthcare.fragments;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.arohi.healthcare.activities.LiveTrackingMapActivity;
+import com.arohi.healthcare.activities.UnifiedTrackingActivity;
 import com.arohi.healthcare.database.FirestoreCollections;
 import com.arohi.healthcare.databinding.DialogEmergencyHealthCardBinding;
+import com.arohi.healthcare.models.AmbulanceRequest;
 import com.arohi.healthcare.models.EmergencyCardProfile;
 import com.arohi.healthcare.models.PatientProfile;
+import com.arohi.healthcare.models.TrackingCategory;
 import com.arohi.healthcare.models.UserAccount;
+import com.arohi.healthcare.repositories.AmbulanceTrackingRepository;
 import com.arohi.healthcare.repositories.AuthCallback;
 import com.arohi.healthcare.repositories.ProfileRepository;
 import com.arohi.healthcare.utils.SessionManager;
 import com.arohi.healthcare.utils.UiStateHelper;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
@@ -86,6 +101,20 @@ public class EmergencyCardDialogFragment extends DialogFragment {
         binding.btnCallHospitalAmbulance.setOnClickListener(v -> {
             Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:1066"));
             startActivity(dialIntent);
+        });
+
+        // Phase 14 Request Emergency Ambulance & Live Telemetry Tracking
+        binding.btnRequestAmbulanceDispatch.setOnClickListener(v -> showAmbulanceRequestDialog());
+        binding.btnTrackActiveAmbulance.setOnClickListener(v -> {
+            String hospId = sessionManager.getSelectedHospitalId();
+            String uid = currentAccount != null ? currentAccount.getUid() : "";
+            AmbulanceTrackingRepository ambRepo = new AmbulanceTrackingRepository(requireContext());
+            AmbulanceRequest active = ambRepo.getLatestActiveForPatient(hospId, uid);
+            if (active != null) {
+                startActivity(LiveTrackingMapActivity.newAmbulanceMapIntent(requireContext(), hospId, active.getRequestId()));
+            } else {
+                startActivity(UnifiedTrackingActivity.newIntent(requireContext(), TrackingCategory.AMBULANCE));
+            }
         });
 
         // Save Patient-Controlled Privacy Settings
@@ -198,6 +227,92 @@ public class EmergencyCardDialogFragment extends DialogFragment {
 
         bindProfileToUi();
         UiStateHelper.showSuccess(binding.getRoot(), "Emergency Card privacy preferences saved successfully.");
+    }
+
+    private void showAmbulanceRequestDialog() {
+        if (currentAccount == null || getContext() == null) return;
+
+        LinearLayout form = new LinearLayout(requireContext());
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(48, 24, 48, 12);
+
+        EditText etPickup = new EditText(requireContext());
+        etPickup.setHint("Pickup Street Address / Landmark");
+        if (currentAccount.getAddress() != null && !currentAccount.getAddress().isEmpty()) {
+            etPickup.setText(currentAccount.getAddress());
+        }
+        form.addView(etPickup);
+
+        Spinner spPriority = new Spinner(requireContext());
+        spPriority.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"CRITICAL", "HIGH", "STANDARD"}));
+        form.addView(spPriority);
+
+        EditText etNotes = new EditText(requireContext());
+        etNotes.setHint("Emergency symptoms / floor / gate notes");
+        form.addView(etNotes);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Request Hospital Ambulance Dispatch")
+                .setMessage("Sends request to " + sessionManager.getSelectedHospitalName() + " Dispatch Desk.")
+                .setView(form)
+                .setPositiveButton("Dispatch Request", (d, w) -> {
+                    String pickup = etPickup.getText().toString().trim();
+                    if (pickup.isEmpty()) pickup = "Current Patient Location (Shared on Dispatch)";
+                    String priority = spPriority.getSelectedItem().toString();
+                    String notes = etNotes.getText().toString().trim();
+                    submitAmbulanceWithOptionalLocation(pickup, priority, notes);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void submitAmbulanceWithOptionalLocation(String pickupAddress, String priority, String notes) {
+        String hospId = sessionManager.getSelectedHospitalId();
+        String hospName = sessionManager.getSelectedHospitalName();
+        AmbulanceTrackingRepository ambRepo = new AmbulanceTrackingRepository(requireContext());
+
+        boolean hasLoc = ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if (hasLoc) {
+            FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(requireActivity());
+            try {
+                client.getLastLocation().addOnSuccessListener(loc -> {
+                    Double lat = loc != null ? loc.getLatitude() : null;
+                    Double lng = loc != null ? loc.getLongitude() : null;
+                    dispatchAmbulance(ambRepo, hospId, hospName, pickupAddress, lat, lng, priority, notes);
+                }).addOnFailureListener(e ->
+                        dispatchAmbulance(ambRepo, hospId, hospName, pickupAddress, null, null, priority, notes));
+                return;
+            } catch (SecurityException ignored) {
+            }
+        }
+        dispatchAmbulance(ambRepo, hospId, hospName, pickupAddress, null, null, priority, notes);
+    }
+
+    private void dispatchAmbulance(AmbulanceTrackingRepository ambRepo, String hospId, String hospName,
+                                   String pickupAddress, Double lat, Double lng, String priority, String notes) {
+        ambRepo.createAmbulanceRequest(hospId, hospName, currentAccount, pickupAddress, lat, lng,
+                priority, notes, new AuthCallback<AmbulanceRequest>() {
+                    @Override
+                    public void onSuccess(AmbulanceRequest saved) {
+                        if (binding != null) {
+                            UiStateHelper.showSuccess(binding.getRoot(),
+                                    "Ambulance request #" + saved.getRequestId() + " sent to dispatch.");
+                        }
+                        if (isAdded()) {
+                            startActivity(LiveTrackingMapActivity.newAmbulanceMapIntent(
+                                    requireContext(), hospId, saved.getRequestId()));
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (binding != null) UiStateHelper.showError(binding.getRoot(), message);
+                    }
+                });
     }
 
     @Override

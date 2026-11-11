@@ -16,10 +16,12 @@ import com.arohi.healthcare.models.LaboratoryRequest;
 import com.arohi.healthcare.models.MedicalRecordEntry;
 import com.arohi.healthcare.models.PatientProfile;
 import com.arohi.healthcare.models.PrescriptionMedicine;
+import com.arohi.healthcare.models.TrackingCategory;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.services.FirebaseProvider;
+import com.arohi.healthcare.services.TrackingNotificationDispatcher;
 import com.arohi.healthcare.utils.SessionManager;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -299,6 +301,22 @@ public class ClinicalRepository {
                                         String doctorNotes,
                                         String cancellationReason,
                                         AuthCallback<Void> callback) {
+        updateAppointmentQueueAndStage(appointment, newStatus, appointment.getQueuePosition(),
+                appointment.getEstimatedWaitMinutes(), doctorNotes, cancellationReason, callback);
+    }
+
+    /**
+     * Phase 14 Appointment & Live Queue Stage Update.
+     * Supports Requested/Pending -> Confirmed -> Checked In -> Waiting -> In Consultation -> Completed
+     * with real queue position & wait estimate (only displayed when >= 1) and tracking notifications.
+     */
+    public void updateAppointmentQueueAndStage(@NonNull Appointment appointment,
+                                               @NonNull String newStatus,
+                                               int queuePosition,
+                                               int estimatedWaitMinutes,
+                                               String doctorNotes,
+                                               String cancellationReason,
+                                               AuthCallback<Void> callback) {
         UserAccount current = sessionManager.getCurrentSessionAccount();
         if (current == null) {
             callback.onError("Authentication error.");
@@ -306,9 +324,24 @@ public class ClinicalRepository {
         }
 
         long now = System.currentTimeMillis();
+        if (appointment.getHospitalId() == null || appointment.getHospitalId().trim().isEmpty()) {
+            appointment.setHospitalId(sessionManager.getSelectedHospitalId());
+        }
         appointment.setStatus(newStatus);
+        appointment.setQueuePosition(queuePosition);
+        appointment.setEstimatedWaitMinutes(estimatedWaitMinutes);
         if (doctorNotes != null) appointment.setDoctorNotes(doctorNotes.trim());
         if (cancellationReason != null) appointment.setCancellationReason(cancellationReason.trim());
+        appointment.recordTrackingEvent(
+                newStatus,
+                current.getUid(),
+                current.getFullName(),
+                current.getUserRoleEnum().getKey(),
+                queuePosition > 0
+                        ? "Status: " + newStatus + " • Queue #" + queuePosition
+                            + (estimatedWaitMinutes > 0 ? " (~" + estimatedWaitMinutes + " min wait)" : "")
+                        : "Appointment status changed to " + newStatus
+        );
         appointment.setUpdatedAt(now);
         sessionManager.saveAppointmentLocal(appointment);
 
@@ -347,6 +380,16 @@ public class ClinicalRepository {
                 appointment.getAppointmentId()
         );
         sessionManager.saveNotificationLocal(notif);
+        TrackingNotificationDispatcher.dispatchTrackingUpdate(
+                appContext,
+                recipientUid,
+                current.getUid(),
+                current.getFullName(),
+                TrackingCategory.APPOINTMENT,
+                appointment.getAppointmentId(),
+                notifTitle,
+                notifBody
+        );
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {
@@ -430,6 +473,16 @@ public class ClinicalRepository {
                 appointment.getAppointmentId()
         );
         sessionManager.saveNotificationLocal(notif);
+        TrackingNotificationDispatcher.dispatchTrackingUpdate(
+                appContext,
+                recipientUid,
+                current != null ? current.getUid() : "",
+                senderName,
+                TrackingCategory.APPOINTMENT,
+                appointment.getAppointmentId(),
+                notif.getTitle(),
+                notif.getBody()
+        );
 
         FirebaseFirestore db = FirebaseProvider.getFirestore(appContext);
         if (db == null) {

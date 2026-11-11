@@ -649,6 +649,17 @@ public class PharmacyFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle("AROHI Pharmacy Order Summary")
                 .setMessage(sb.toString())
+                .setNeutralButton("📍 Track Order / Map", (d, w) -> {
+                    if (order.isHomeDelivery()) {
+                        startActivity(com.arohi.healthcare.activities.LiveTrackingMapActivity.newPharmacyMapIntent(
+                                requireContext(),
+                                order.getHospitalId() != null ? order.getHospitalId() : sessionManager.getSelectedHospitalId(),
+                                order.getOrderId()));
+                    } else {
+                        startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(
+                                requireContext(), com.arohi.healthcare.models.TrackingCategory.PHARMACY));
+                    }
+                })
                 .setPositiveButton("Close", null)
                 .show();
     }
@@ -660,11 +671,12 @@ public class PharmacyFragment extends Fragment {
                 .create();
 
         dBinding.tvManageOrderId.setText("Order #" + order.getOrderId() + " • " + order.getPatientName());
-        dBinding.tvCurrentStatusLabel.setText("Current Status: " + order.getStatus());
+        dBinding.tvCurrentStatusLabel.setText("Current Status: " + order.getStatus() + " (" + order.getDeliveryType() + ")");
 
-        // Valid Next Statuses based on workflow: Received -> Verified -> Preparing -> Ready -> Collected
+        // Support both Pickup and 7-stage Home Delivery workflows
         List<String> nextStatuses = new ArrayList<>();
-        if (PharmacyOrder.STATUS_RECEIVED.equalsIgnoreCase(order.getStatus())) {
+        if (PharmacyOrder.STATUS_RECEIVED.equalsIgnoreCase(order.getStatus())
+                || PharmacyOrder.STATUS_PLACED.equalsIgnoreCase(order.getStatus())) {
             nextStatuses.add(PharmacyOrder.STATUS_VERIFIED);
             nextStatuses.add(PharmacyOrder.STATUS_CANCELLED);
         } else if (PharmacyOrder.STATUS_VERIFIED.equalsIgnoreCase(order.getStatus())) {
@@ -672,7 +684,17 @@ public class PharmacyFragment extends Fragment {
         } else if (PharmacyOrder.STATUS_PREPARING.equalsIgnoreCase(order.getStatus())) {
             nextStatuses.add(PharmacyOrder.STATUS_READY);
         } else if (PharmacyOrder.STATUS_READY.equalsIgnoreCase(order.getStatus())) {
-            nextStatuses.add(PharmacyOrder.STATUS_COLLECTED);
+            if (order.isHomeDelivery()) {
+                nextStatuses.add(PharmacyOrder.STATUS_DISPATCHED);
+                dBinding.layoutDeliveryDispatchInputs.setVisibility(View.VISIBLE);
+            } else {
+                nextStatuses.add(PharmacyOrder.STATUS_COLLECTED);
+            }
+        } else if (PharmacyOrder.STATUS_DISPATCHED.equalsIgnoreCase(order.getStatus())) {
+            nextStatuses.add(PharmacyOrder.STATUS_OUT_FOR_DELIVERY);
+            dBinding.layoutDeliveryDispatchInputs.setVisibility(View.VISIBLE);
+        } else if (PharmacyOrder.STATUS_OUT_FOR_DELIVERY.equalsIgnoreCase(order.getStatus())) {
+            nextStatuses.add(PharmacyOrder.STATUS_DELIVERED);
         } else {
             nextStatuses.add(order.getStatus() + " (Final)");
         }
@@ -692,8 +714,22 @@ public class PharmacyFragment extends Fragment {
 
             String notes = dBinding.etPharmacistNotes.getText() != null
                     ? dBinding.etPharmacistNotes.getText().toString().trim() : "";
+            String partnerName = dBinding.etDeliveryPartnerName.getText() != null
+                    ? dBinding.etDeliveryPartnerName.getText().toString().trim() : "";
+            String partnerPhone = dBinding.etDeliveryPartnerPhone.getText() != null
+                    ? dBinding.etDeliveryPartnerPhone.getText().toString().trim() : "";
+            String eta = dBinding.etDeliveryEta.getText() != null
+                    ? dBinding.etDeliveryEta.getText().toString().trim() : "";
 
-            pharmacyRepository.updateOrderStatus(order.getOrderId(), selectedNext, notes,
+            pharmacyRepository.updateDeliveryDispatchDetails(
+                    order.getOrderId(),
+                    selectedNext,
+                    partnerName,
+                    partnerPhone,
+                    eta,
+                    null,
+                    null,
+                    notes,
                     currentAccount != null ? currentAccount.getUid() : "staff",
                     new AuthCallback<Void>() {
                         @Override

@@ -90,6 +90,9 @@ public class AdminDashboardFragment extends Fragment {
             );
             startActivity(intent);
         });
+        binding.cardAdminUnifiedTracking.setOnClickListener(v -> {
+            startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(requireContext()));
+        });
         binding.btnPublishAnnouncement.setOnClickListener(v -> showPublishAnnouncementDialog());
         binding.tvViewAllStaffLink.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));
         binding.cardAdminDoctorsAndNurses.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));

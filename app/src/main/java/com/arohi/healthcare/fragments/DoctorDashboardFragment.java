@@ -61,6 +61,10 @@ public class DoctorDashboardFragment extends Fragment {
                 ((RolePortalActivity) getActivity()).switchToTab(R.id.nav_doctor_profile);
             }
         });
+
+        binding.cardDoctorUnifiedTracking.setOnClickListener(v -> {
+            startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(requireContext()));
+        });
     }
 
     private void bindVerificationBanner(@NonNull UserAccount account) {

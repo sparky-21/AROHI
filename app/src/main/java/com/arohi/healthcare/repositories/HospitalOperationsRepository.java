@@ -17,11 +17,14 @@ import com.arohi.healthcare.models.NursingTask;
 import com.arohi.healthcare.models.OTRoom;
 import com.arohi.healthcare.models.Operation;
 import com.arohi.healthcare.models.PatientProfile;
+import com.arohi.healthcare.models.TrackingCategory;
+import com.arohi.healthcare.models.TrackingStatusEvent;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
 import com.arohi.healthcare.models.VitalObservation;
 import com.arohi.healthcare.models.Ward;
+import com.arohi.healthcare.services.TrackingNotificationDispatcher;
 import com.arohi.healthcare.utils.SessionManager;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -245,7 +248,14 @@ public class HospitalOperationsRepository {
                 if (followUpDate != null && !followUpDate.isEmpty()) {
                     o.setFollowUpDate(followUpDate);
                 }
-                o.setUpdatedAt(System.currentTimeMillis());
+                UserAccount actor = sessionManager.getCurrentSessionAccount();
+                o.recordTrackingEvent(
+                        newStatus,
+                        actor != null ? actor.getUid() : "",
+                        actor != null ? actor.getFullName() : "OT Staff",
+                        actor != null ? actor.getUserRoleEnum().getKey() : "OT_TEAM",
+                        postOpNotes != null && !postOpNotes.isEmpty() ? postOpNotes : "Operation moved to " + newStatus
+                );
                 matched = o;
                 break;
             }
@@ -254,6 +264,35 @@ public class HospitalOperationsRepository {
 
         if (matched != null) {
             syncOperationToCalendar(matched);
+
+            // Phase 14: Privacy-safe notifications to patient and explicitly authorized family members
+            if (matched.getPatientUid() != null && !matched.getPatientUid().isEmpty()) {
+                TrackingNotificationDispatcher.dispatchTrackingUpdate(
+                        context,
+                        matched.getPatientUid(),
+                        matched.getDoctorUid(),
+                        matched.getDoctorName(),
+                        TrackingCategory.OPERATION,
+                        matched.getOperationId(),
+                        "Operation Progress: " + newStatus,
+                        matched.getProcedureName() + " in " + matched.getOtRoomName() + " is now: " + newStatus
+                );
+            }
+            if (matched.getAuthorizedFamilyUids() != null) {
+                for (String famUid : matched.getAuthorizedFamilyUids()) {
+                    if (famUid == null || famUid.trim().isEmpty()) continue;
+                    TrackingNotificationDispatcher.dispatchTrackingUpdate(
+                            context,
+                            famUid,
+                            matched.getDoctorUid(),
+                            "AROHI OT Desk",
+                            TrackingCategory.OPERATION,
+                            matched.getOperationId(),
+                            "Family OT Status: " + newStatus,
+                            matched.toFamilyPermittedSummary()
+                    );
+                }
+            }
 
             // Phase 7: Automatically update Journey Milestones on operation status changes
             EcosystemIntegrationRepository ecoRepo = new EcosystemIntegrationRepository(context);
@@ -304,6 +343,35 @@ public class HospitalOperationsRepository {
                 .addOnFailureListener(e -> {
                     if (callback != null) callback.onSuccess(null);
                 });
+    }
+
+    /**
+     * Phase 14: Grants or revokes explicit family member permission to view high-level OT progress.
+     */
+    public void authorizeFamilyViewer(@NonNull String operationId, @NonNull String familyUid, boolean authorize,
+                                      AuthCallback<Void> callback) {
+        List<Operation> list = getLocalOperations();
+        Operation matched = null;
+        for (Operation op : list) {
+            if (operationId.equals(op.getOperationId())) {
+                List<String> fam = op.getAuthorizedFamilyUids();
+                if (authorize) {
+                    if (!fam.contains(familyUid)) fam.add(familyUid);
+                } else {
+                    fam.remove(familyUid);
+                }
+                op.setAuthorizedFamilyUids(fam);
+                op.setUpdatedAt(System.currentTimeMillis());
+                matched = op;
+                break;
+            }
+        }
+        saveLocalOperations(list);
+        if (matched != null && firestore != null) {
+            firestore.collection("operations").document(operationId)
+                    .update("authorizedFamilyUids", matched.getAuthorizedFamilyUids());
+        }
+        if (callback != null) callback.onSuccess(null);
     }
 
     private boolean isTimeConflict(String time1, String time2) {
@@ -981,6 +1049,8 @@ public class HospitalOperationsRepository {
                             o.optString("doctorSpecialty"), o.optString("nurseUid"), o.optString("nurseName")
                     );
                     op.setStatus(o.optString("status", Operation.STATUS_SCHEDULED));
+                    String opHosp = o.optString("hospitalId", "");
+                    if (!opHosp.isEmpty()) op.setHospitalId(opHosp);
                     op.setNpoConfirmed(o.optBoolean("npoConfirmed"));
                     op.setAnesthesiaCleared(o.optBoolean("anesthesiaCleared"));
                     op.setConsentSigned(o.optBoolean("consentSigned"));
@@ -989,6 +1059,32 @@ public class HospitalOperationsRepository {
                     op.setPostOpNotes(o.optString("postOpNotes"));
                     op.setFollowUpDate(o.optString("followUpDate"));
                     op.setSurgicalNotes(o.optString("surgicalNotes"));
+                    JSONArray famArr = o.optJSONArray("authorizedFamilyUids");
+                    if (famArr != null) {
+                        List<String> famList = new ArrayList<>();
+                        for (int f = 0; f < famArr.length(); f++) {
+                            famList.add(famArr.optString(f));
+                        }
+                        op.setAuthorizedFamilyUids(famList);
+                    }
+                    JSONArray histArr = o.optJSONArray("trackingHistory");
+                    if (histArr != null) {
+                        List<TrackingStatusEvent> history = new ArrayList<>();
+                        for (int h = 0; h < histArr.length(); h++) {
+                            JSONObject ho = histArr.optJSONObject(h);
+                            if (ho != null) {
+                                history.add(new TrackingStatusEvent(
+                                        ho.optString("status"),
+                                        ho.optLong("timestamp", System.currentTimeMillis()),
+                                        ho.optString("updatedByUid"),
+                                        ho.optString("updatedByName"),
+                                        ho.optString("updatedByRole"),
+                                        ho.optString("notes")
+                                ));
+                            }
+                        }
+                        op.setTrackingHistory(history);
+                    }
                     list.add(op);
                 }
             } catch (Exception ignored) {}

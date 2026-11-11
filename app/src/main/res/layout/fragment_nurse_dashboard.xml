@@ -527,6 +527,68 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <!-- Phase 14: Nurse Care & OT Tracking Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardNurseUnifiedTracking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/arohi_border_subtle"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_badge_pill"
+                    android:backgroundTint="@color/pale_mint"
+                    android:gravity="center"
+                    android:text="📍"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-bold"
+                        android:text="@string/tracking_dashboard_card_title"
+                        android:textColor="@color/accent_heading"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/tracking_dashboard_card_subtitle"
+                        android:textColor="@color/primary_moss_green"
+                        android:textSize="11.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/primary_moss_green" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Duty Schedule & Nursing Profile Summary -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 
+import com.arohi.healthcare.models.Appointment;
 import com.arohi.healthcare.models.BillCategory;
 import com.arohi.healthcare.models.BillItem;
 import com.arohi.healthcare.models.HospitalBill;
@@ -13,10 +14,13 @@ import com.arohi.healthcare.models.PaymentGatewayType;
 import com.arohi.healthcare.models.PaymentReceipt;
 import com.arohi.healthcare.models.PaymentStatus;
 import com.arohi.healthcare.models.PaymentTransaction;
+import com.arohi.healthcare.models.PharmacyOrder;
 import com.arohi.healthcare.models.RefundRequest;
+import com.arohi.healthcare.models.TrackingCategory;
 import com.arohi.healthcare.payment.PaymentGateway;
 import com.arohi.healthcare.payment.PaymentGatewayFactory;
 import com.arohi.healthcare.services.FirebaseProvider;
+import com.arohi.healthcare.services.TrackingNotificationDispatcher;
 import com.arohi.healthcare.utils.SessionManager;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -315,6 +319,9 @@ public class BillingRepository {
                                             .set(receipt.toMap());
                                 }
 
+                                // Phase 14: Sync linked Appointment / Pharmacy Order & notify patient
+                                syncLinkedEntityOnVerifiedPayment(bill, transactionId);
+
                                 callback.onSuccess(receipt);
                             }
 
@@ -510,6 +517,8 @@ public class BillingRepository {
                     b.setCreatedAt(o.optLong("createdAt"));
                     b.setPaidAt(o.optLong("paidAt"));
                     b.setNotes(o.optString("notes"));
+                    b.setLinkedEntityType(o.optString("linkedEntityType"));
+                    b.setLinkedEntityId(o.optString("linkedEntityId"));
 
                     JSONArray itemsArr = o.optJSONArray("items");
                     if (itemsArr != null) {
@@ -560,6 +569,8 @@ public class BillingRepository {
                 o.put("createdAt", b.getCreatedAt());
                 o.put("paidAt", b.getPaidAt());
                 o.put("notes", b.getNotes());
+                o.put("linkedEntityType", b.getLinkedEntityType());
+                o.put("linkedEntityId", b.getLinkedEntityId());
 
                 if (b.getItems() != null) {
                     JSONArray itemsArr = new JSONArray();
@@ -738,6 +749,70 @@ public class BillingRepository {
         Set<String> set = new HashSet<>(getProcessedIdempotencyKeys());
         set.add(key);
         prefs.edit().putStringSet(KEY_PROCESSED_IDEMPOTENCY, set).apply();
+    }
+
+    /**
+     * Phase 14: Automatically confirms linked appointments or pharmacy orders once trusted
+     * backend gateway verification confirms SUCCESSFUL payment, and dispatches tracking alerts.
+     */
+    public void syncLinkedEntityOnVerifiedPayment(@NonNull HospitalBill bill, String transactionId) {
+        if (!PaymentStatus.SUCCESSFUL.name().equalsIgnoreCase(bill.getStatus())) return;
+
+        String entityType = bill.getLinkedEntityType();
+        String entityId = bill.getLinkedEntityId();
+
+        if (entityId != null && !entityId.trim().isEmpty()) {
+            if ("APPOINTMENT".equalsIgnoreCase(entityType)
+                    || "CONSULTATION".equalsIgnoreCase(entityType)) {
+                Appointment appt = sessionManager.getAppointmentLocal(entityId);
+                if (appt != null) {
+                    if (Appointment.STATUS_PENDING.equalsIgnoreCase(appt.getStatus())
+                            || Appointment.STATUS_REQUESTED.equalsIgnoreCase(appt.getStatus())) {
+                        appt.setStatus(Appointment.STATUS_CONFIRMED);
+                    }
+                    appt.recordTrackingEvent(
+                            appt.getStatus(),
+                            bill.getPatientUid(),
+                            bill.getPatientName(),
+                            "PAYMENT_WEBHOOK",
+                            "Payment verified (" + transactionId + "); booking confirmed."
+                    );
+                    sessionManager.saveAppointmentLocal(appt);
+                }
+            } else if ("PHARMACY_ORDER".equalsIgnoreCase(entityType)) {
+                PharmacyOrder order = sessionManager.getPharmacyOrderLocal(entityId);
+                if (order != null) {
+                    if (PharmacyOrder.STATUS_RECEIVED.equalsIgnoreCase(order.getStatus())
+                            || PharmacyOrder.STATUS_PLACED.equalsIgnoreCase(order.getStatus())) {
+                        order.setStatus(PharmacyOrder.STATUS_VERIFIED);
+                    }
+                    order.recordTrackingEvent(
+                            order.getStatus(),
+                            bill.getPatientUid(),
+                            bill.getPatientName(),
+                            "PAYMENT_WEBHOOK",
+                            "Payment verified (" + transactionId + "); pharmacy order cleared for preparation."
+                    );
+                    sessionManager.savePharmacyOrderLocal(order);
+                }
+            }
+        }
+
+        if (bill.getPatientUid() != null && !bill.getPatientUid().trim().isEmpty()) {
+            TrackingNotificationDispatcher.dispatchTrackingUpdate(
+                    context,
+                    bill.getPatientUid(),
+                    "",
+                    "AROHI Billing",
+                    TrackingCategory.PAYMENT,
+                    bill.getBillId(),
+                    "Payment Verified: " + bill.getBillNumber(),
+                    String.format(Locale.US, "Payment of ৳ %.2f verified via %s. Receipt %s issued.",
+                            bill.getTotalAmountBdt(),
+                            bill.getPaymentGateway() != null ? bill.getPaymentGateway() : "Gateway",
+                            bill.getReceiptNumber() != null ? bill.getReceiptNumber() : "")
+            );
+        }
     }
 
     private List<HospitalBill> generateSeedBills(String hospitalId, String hospitalCode) {

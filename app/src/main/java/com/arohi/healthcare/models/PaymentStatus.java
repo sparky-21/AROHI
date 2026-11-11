@@ -31,6 +31,14 @@ public enum PaymentStatus implements Serializable {
         return label;
     }
 
+    public boolean isTerminal() {
+        return this == SUCCESSFUL
+                || this == FAILED
+                || this == CANCELLED
+                || this == REFUNDED
+                || this == PARTIALLY_REFUNDED;
+    }
+
     public static PaymentStatus fromKey(String key) {
         if (key == null) return PENDING;
         for (PaymentStatus s : values()) {

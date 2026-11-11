@@ -508,6 +508,36 @@ service cloud.firestore {
         allow update: if isHospitalAdmin(hospitalId);
         allow delete: if false;
       }
+
+      // =========================================================================
+      // Phase 14: Ambulance Dispatch & Authorized Live Telemetry
+      // =========================================================================
+      match /ambulanceRequests/{requestId} {
+        allow read: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId)
+              || isHospitalStaffMember(hospitalId)
+              || resource.data.patientUid == request.auth.uid
+              || resource.data.driverUid == request.auth.uid);
+
+        allow create: if isSignedIn()
+          && request.resource.data.hospitalId == hospitalId
+          && request.resource.data.patientUid == request.auth.uid
+          && request.resource.data.status == 'Requested';
+
+        allow update: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && request.resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId)
+              || (resource.data.driverUid == request.auth.uid
+                  && resource.data.status != 'Completed'
+                  && resource.data.status != 'Cancelled')
+              || (resource.data.patientUid == request.auth.uid
+                  && request.resource.data.status == 'Cancelled'
+                  && (resource.data.status == 'Requested' || resource.data.status == 'Accepted')));
+
+        allow delete: if isSuperAdmin();
+      }
     }
 
     match /hospitalMemberships/{membershipId} {

@@ -69,6 +69,71 @@
             android:textSize="13sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Phase 14: Optional Delivery Partner Assignment (for Home Delivery) -->
+    <LinearLayout
+        android:id="@+id/layoutDeliveryDispatchInputs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxStrokeColor="@color/border_focused">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDeliveryPartnerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Delivery Partner Name (if dispatched)"
+                android:inputType="textPersonName"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                app:boxStrokeColor="@color/border_focused">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDeliveryPartnerPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Partner Phone"
+                    android:inputType="phone"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:boxStrokeColor="@color/border_focused">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDeliveryEta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="ETA (e.g. 30 min)"
+                    android:inputType="text"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

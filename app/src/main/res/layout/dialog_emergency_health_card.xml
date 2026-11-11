@@ -107,6 +107,37 @@
                     app:strokeColor="@color/status_emergency" />
             </LinearLayout>
 
+            <!-- Phase 14: Live Ambulance Request & Tracking Actions -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRequestAmbulanceDispatch"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/deep_forest_green"
+                    android:text="🚨 Request Ambulance"
+                    android:textColor="@color/white"
+                    android:textSize="11.5sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTrackActiveAmbulance"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="📍 Track Live"
+                    android:textColor="@color/primary_moss_green"
+                    android:textSize="11.5sp"
+                    app:strokeColor="@color/primary_moss_green" />
+            </LinearLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

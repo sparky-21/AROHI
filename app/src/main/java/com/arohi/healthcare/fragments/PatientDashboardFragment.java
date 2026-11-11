@@ -173,6 +173,11 @@ public class PatientDashboardFragment extends Fragment {
 
         binding.btnQuickEditProfile.setOnClickListener(v -> switchTab(R.id.nav_patient_profile));
 
+        // Phase 14 Unified Care & Service Tracking
+        binding.cardPatientUnifiedTracking.setOnClickListener(v -> {
+            startActivity(com.arohi.healthcare.activities.UnifiedTrackingActivity.newIntent(requireContext()));
+        });
+
         // Phase 13 Patient Billing & Receipts
         binding.cardPatientBillsAndPayments.setOnClickListener(v -> {
             Intent intent = com.arohi.healthcare.activities.PatientBillingHistoryActivity.newIntent(requireContext());

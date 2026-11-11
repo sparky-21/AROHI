@@ -28,6 +28,7 @@ import com.arohi.healthcare.models.SuperAdminAuthorization;
 import com.arohi.healthcare.models.Medicine;
 import com.arohi.healthcare.models.PharmacyOrder;
 import com.arohi.healthcare.models.PharmacyOrderItem;
+import com.arohi.healthcare.models.TrackingStatusEvent;
 import com.arohi.healthcare.models.UserAccount;
 import com.arohi.healthcare.models.UserRole;
 import com.arohi.healthcare.models.VerificationStatus;
@@ -1089,6 +1090,7 @@ public class SessionManager {
             JSONObject root = getJsonObject(KEY_APPOINTMENTS_REGISTRY_JSON);
             JSONObject o = new JSONObject();
             o.put("appointmentId", a.getAppointmentId());
+            o.put("hospitalId", nonNull(a.getHospitalId() != null ? a.getHospitalId() : getSelectedHospitalId()));
             o.put("patientUid", nonNull(a.getPatientUid()));
             o.put("patientId", nonNull(a.getPatientId()));
             o.put("patientName", nonNull(a.getPatientName()));
@@ -1107,9 +1109,12 @@ public class SessionManager {
             o.put("doctorNotes", nonNull(a.getDoctorNotes()));
             o.put("cancellationReason", nonNull(a.getCancellationReason()));
             o.put("status", nonNull(a.getStatus()));
+            o.put("queuePosition", a.getQueuePosition());
+            o.put("estimatedWaitMinutes", a.getEstimatedWaitMinutes());
             o.put("scheduledTimestamp", a.getScheduledTimestamp());
             o.put("createdAt", a.getCreatedAt());
             o.put("updatedAt", a.getUpdatedAt());
+            o.put("trackingHistory", serializeTrackingHistory(a.getTrackingHistory()));
             root.put(a.getAppointmentId(), o);
             prefs.edit().putString(KEY_APPOINTMENTS_REGISTRY_JSON, root.toString()).apply();
         } catch (JSONException ignored) {
@@ -1145,6 +1150,8 @@ public class SessionManager {
     private Appointment parseAppointment(JSONObject o) {
         Appointment a = new Appointment();
         a.setAppointmentId(o.optString("appointmentId", ""));
+        String apptHosp = o.optString("hospitalId", "");
+        if (!apptHosp.isEmpty()) a.setHospitalId(apptHosp);
         a.setPatientUid(o.optString("patientUid", ""));
         a.setPatientId(o.optString("patientId", ""));
         a.setPatientName(o.optString("patientName", ""));
@@ -1163,9 +1170,12 @@ public class SessionManager {
         a.setDoctorNotes(o.optString("doctorNotes", ""));
         a.setCancellationReason(o.optString("cancellationReason", ""));
         a.setStatus(o.optString("status", Appointment.STATUS_PENDING));
+        a.setQueuePosition(o.optInt("queuePosition", -1));
+        a.setEstimatedWaitMinutes(o.optInt("estimatedWaitMinutes", -1));
         a.setScheduledTimestamp(o.optLong("scheduledTimestamp", 0));
         a.setCreatedAt(o.optLong("createdAt", System.currentTimeMillis()));
         a.setUpdatedAt(o.optLong("updatedAt", System.currentTimeMillis()));
+        a.setTrackingHistory(parseTrackingHistory(o.optJSONArray("trackingHistory")));
         return a;
     }
 
@@ -1638,6 +1648,7 @@ public class SessionManager {
             JSONObject root = getJsonObject(KEY_PHARMACY_ORDERS_REGISTRY_JSON);
             JSONObject jo = new JSONObject();
             jo.put("orderId", o.getOrderId());
+            jo.put("hospitalId", nonNull(o.getHospitalId() != null ? o.getHospitalId() : getSelectedHospitalId()));
             jo.put("patientUid", nonNull(o.getPatientUid()));
             jo.put("patientArohiId", nonNull(o.getPatientArohiId()));
             jo.put("patientName", nonNull(o.getPatientName()));
@@ -1665,8 +1676,18 @@ public class SessionManager {
             jo.put("status", nonNull(o.getStatus()));
             jo.put("orderDate", nonNull(o.getOrderDate()));
             jo.put("createdAtTimestamp", o.getCreatedAtTimestamp());
+            jo.put("updatedAtTimestamp", o.getUpdatedAtTimestamp());
             jo.put("pharmacistNotes", nonNull(o.getPharmacistNotes()));
             jo.put("verifiedByStaffUid", nonNull(o.getVerifiedByStaffUid()));
+            jo.put("deliveryPartnerUid", nonNull(o.getDeliveryPartnerUid()));
+            jo.put("deliveryPartnerName", nonNull(o.getDeliveryPartnerName()));
+            jo.put("deliveryPartnerPhone", nonNull(o.getDeliveryPartnerPhone()));
+            jo.put("estimatedDeliveryTime", nonNull(o.getEstimatedDeliveryTime()));
+            if (o.getLiveLat() != null) jo.put("liveLat", o.getLiveLat());
+            if (o.getLiveLng() != null) jo.put("liveLng", o.getLiveLng());
+            jo.put("locationUpdatedAt", o.getLocationUpdatedAt());
+            jo.put("locationSharingActive", o.isLocationSharingActive());
+            jo.put("trackingHistory", serializeTrackingHistory(o.getTrackingHistory()));
 
             root.put(o.getOrderId(), jo);
             prefs.edit().putString(KEY_PHARMACY_ORDERS_REGISTRY_JSON, root.toString()).apply();
@@ -1715,6 +1736,7 @@ public class SessionManager {
             o.setStatus(newStatus);
             if (notes != null) o.setPharmacistNotes(notes);
             if (staffUid != null) o.setVerifiedByStaffUid(staffUid);
+            o.recordTrackingEvent(newStatus, staffUid, "Pharmacy Staff", "STAFF", notes);
             savePharmacyOrderLocal(o);
         }
     }
@@ -1722,6 +1744,8 @@ public class SessionManager {
     private PharmacyOrder parsePharmacyOrder(JSONObject jo) {
         PharmacyOrder o = new PharmacyOrder();
         o.setOrderId(jo.optString("orderId", ""));
+        String ordHosp = jo.optString("hospitalId", "");
+        if (!ordHosp.isEmpty()) o.setHospitalId(ordHosp);
         o.setPatientUid(jo.optString("patientUid", ""));
         o.setPatientArohiId(jo.optString("patientArohiId", ""));
         o.setPatientName(jo.optString("patientName", ""));
@@ -1753,9 +1777,60 @@ public class SessionManager {
         o.setStatus(jo.optString("status", PharmacyOrder.STATUS_RECEIVED));
         o.setOrderDate(jo.optString("orderDate", ""));
         o.setCreatedAtTimestamp(jo.optLong("createdAtTimestamp", System.currentTimeMillis()));
+        o.setUpdatedAtTimestamp(jo.optLong("updatedAtTimestamp", o.getCreatedAtTimestamp()));
         o.setPharmacistNotes(jo.optString("pharmacistNotes", ""));
         o.setVerifiedByStaffUid(jo.optString("verifiedByStaffUid", ""));
+        o.setDeliveryPartnerUid(jo.optString("deliveryPartnerUid", ""));
+        o.setDeliveryPartnerName(jo.optString("deliveryPartnerName", ""));
+        o.setDeliveryPartnerPhone(jo.optString("deliveryPartnerPhone", ""));
+        o.setEstimatedDeliveryTime(jo.optString("estimatedDeliveryTime", ""));
+        if (jo.has("liveLat") && !jo.isNull("liveLat")) o.setLiveLat(jo.optDouble("liveLat"));
+        if (jo.has("liveLng") && !jo.isNull("liveLng")) o.setLiveLng(jo.optDouble("liveLng"));
+        o.setLocationUpdatedAt(jo.optLong("locationUpdatedAt", 0));
+        o.setLocationSharingActive(jo.optBoolean("locationSharingActive", false));
+        o.setTrackingHistory(parseTrackingHistory(jo.optJSONArray("trackingHistory")));
         return o;
+    }
+
+    private JSONArray serializeTrackingHistory(List<TrackingStatusEvent> history) throws JSONException {
+        JSONArray arr = new JSONArray();
+        if (history != null) {
+            for (TrackingStatusEvent ev : history) {
+                JSONObject evObj = new JSONObject();
+                evObj.put("status", nonNull(ev.getStatus()));
+                evObj.put("timestamp", ev.getTimestamp());
+                evObj.put("updatedByUid", nonNull(ev.getUpdatedByUid()));
+                evObj.put("updatedByName", nonNull(ev.getUpdatedByName()));
+                evObj.put("updatedByRole", nonNull(ev.getUpdatedByRole()));
+                evObj.put("notes", nonNull(ev.getNotes()));
+                if (ev.getLatitude() != null) evObj.put("latitude", ev.getLatitude());
+                if (ev.getLongitude() != null) evObj.put("longitude", ev.getLongitude());
+                arr.put(evObj);
+            }
+        }
+        return arr;
+    }
+
+    private List<TrackingStatusEvent> parseTrackingHistory(JSONArray arr) {
+        List<TrackingStatusEvent> list = new ArrayList<>();
+        if (arr == null) return list;
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.optJSONObject(i);
+            if (obj != null) {
+                TrackingStatusEvent ev = new TrackingStatusEvent(
+                        obj.optString("status", ""),
+                        obj.optLong("timestamp", System.currentTimeMillis()),
+                        obj.optString("updatedByUid", ""),
+                        obj.optString("updatedByName", ""),
+                        obj.optString("updatedByRole", ""),
+                        obj.optString("notes", "")
+                );
+                if (obj.has("latitude") && !obj.isNull("latitude")) ev.setLatitude(obj.optDouble("latitude"));
+                if (obj.has("longitude") && !obj.isNull("longitude")) ev.setLongitude(obj.optDouble("longitude"));
+                list.add(ev);
+            }
+        }
+        return list;
     }
 
     // =========================================================================

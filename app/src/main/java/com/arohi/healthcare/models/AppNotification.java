@@ -23,6 +23,13 @@ public class AppNotification {
     public static final String TYPE_LAB_REPORT_READY = "LAB_REPORT_READY";
     public static final String TYPE_LAB_REPORT_REVIEWED = "LAB_REPORT_REVIEWED";
 
+    // Phase 14 Complete Tracking Notifications
+    public static final String TYPE_PHARMACY_TRACKING = "PHARMACY_TRACKING";
+    public static final String TYPE_APPOINTMENT_QUEUE = "APPOINTMENT_QUEUE";
+    public static final String TYPE_OPERATION_TRACKING = "OPERATION_TRACKING";
+    public static final String TYPE_PAYMENT_TRACKING = "PAYMENT_TRACKING";
+    public static final String TYPE_AMBULANCE_TRACKING = "AMBULANCE_TRACKING";
+
     private String notificationId;
     private String recipientUid;
     private String senderUid;
