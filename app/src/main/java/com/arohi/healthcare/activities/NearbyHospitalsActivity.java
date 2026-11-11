@@ -114,13 +114,21 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             checkAndRequestLocationPermission();
         });
 
+        // Open in official Google Maps App
+        binding.btnOpenGoogleMapsApp.setOnClickListener(v -> {
+            String query = binding.etSearchArea.getText() != null ? binding.etSearchArea.getText().toString() : "";
+            openInGoogleMapsApp(query);
+        });
+
+        binding.btnDemoOpenGoogleMaps.setOnClickListener(v -> {
+            String query = binding.etSearchArea.getText() != null ? binding.etSearchArea.getText().toString() : "";
+            openInGoogleMapsApp(query);
+        });
+
         // Location Permission Warning Card Actions
         binding.btnRetryLocationPermission.setOnClickListener(v -> {
             requestLocationPermissionWithRationale();
         });
-
-        // Demo Mode Setup Guide Dialog
-        binding.btnDemoSetupGuide.setOnClickListener(v -> showMapsConfigDialog());
 
         // Setup Recycler View for List View
         listAdapter = new NearbyHospitalAdapter(this);
@@ -591,6 +599,50 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         // Proceed to Authentication / Role selection flow
         Intent intent = new Intent(this, RoleSelectionActivity.class);
         startActivity(intent);
+    }
+
+    /**
+     * Directly switches from AROHI into the official Google Maps application on the user's phone.
+     * Searches nearby hospitals or navigates to the selected hospital without needing an API key.
+     */
+    public void openInGoogleMapsApp(String query) {
+        Uri uri;
+        double lat = (userLatitude != 0.0) ? userLatitude : DEFAULT_DHAKA_LAT;
+        double lng = (userLongitude != 0.0) ? userLongitude : DEFAULT_DHAKA_LNG;
+
+        if (selectedHospital != null && selectedHospital.getLatitude() != 0.0) {
+            // Open specific selected hospital directly in Google Maps
+            String label = Uri.encode(selectedHospital.getHospitalName());
+            uri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f(%s)",
+                    selectedHospital.getLatitude(), selectedHospital.getLongitude(),
+                    selectedHospital.getLatitude(), selectedHospital.getLongitude(), label));
+        } else if (query != null && !query.trim().isEmpty()) {
+            // Search user's specific query in Google Maps
+            uri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%s",
+                    lat, lng, Uri.encode(query + " hospital")));
+        } else {
+            // Search all hospitals near user in Google Maps
+            uri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%s",
+                    lat, lng, Uri.encode("hospitals near me")));
+        }
+
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            // Fallback to browser Google Maps
+            String webUrl;
+            if (selectedHospital != null && selectedHospital.getLatitude() != 0.0) {
+                webUrl = String.format(Locale.ENGLISH, "https://www.google.com/maps/search/?api=1&query=%f,%f",
+                        selectedHospital.getLatitude(), selectedHospital.getLongitude());
+            } else {
+                webUrl = String.format(Locale.ENGLISH, "https://www.google.com/maps/search/hospitals+near+me/@%f,%f,14z",
+                        lat, lng);
+            }
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(webUrl)));
+        }
     }
 
     private void showMapsConfigDialog() {

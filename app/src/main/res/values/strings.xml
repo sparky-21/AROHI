@@ -625,4 +625,7 @@
     <string name="search_area_hint">Search city, area, or hospital name…</string>
     <string name="no_nearby_found">No hospitals found matching your search. Try adjusting the query or filter.</string>
     <string name="locating_user">Acquiring current GPS location…</string>
+    <string name="action_open_google_maps_app">Open Google Maps</string>
+    <string name="sub_open_google_maps_app">View live hospital locations, traffic &amp; navigation in Google Maps</string>
+    <string name="btn_search_in_google_maps">Search in Google Maps</string>
 </resources>

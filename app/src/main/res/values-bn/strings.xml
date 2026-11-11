@@ -625,4 +625,7 @@
     <string name="search_area_hint">শহর, এলাকা বা হাসপাতালের নাম লিখুন…</string>
     <string name="no_nearby_found">আপনার অনুসন্ধানের সাথে মিল রেখে কোনো হাসপাতাল পাওয়া যায়নি। অন্য এলাকা লিখে চেষ্টা করুন।</string>
     <string name="locating_user">বর্তমান জিপিএস অবস্থান নির্ণয় করা হচ্ছে…</string>
+    <string name="action_open_google_maps_app">গুগল ম্যাপস অ্যাপ খুলুন</string>
+    <string name="sub_open_google_maps_app">সরাসরি গুগল ম্যাপসে হাসপাতাল, ট্রাফিক ও নেভিগেশন দেখুন</string>
+    <string name="btn_search_in_google_maps">গুগল ম্যাপসে খুঁজুন</string>
 </resources>
