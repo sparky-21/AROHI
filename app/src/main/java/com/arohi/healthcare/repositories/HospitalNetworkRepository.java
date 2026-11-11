@@ -36,13 +36,54 @@ public class HospitalNetworkRepository {
         return sessionManager;
     }
 
+    public static void ensureHospitalCoordinates(Hospital h) {
+        if (h == null) return;
+        if (h.getLatitude() != 0.0 && h.getLongitude() != 0.0) return;
+
+        String code = h.getHospitalCode() != null ? h.getHospitalCode().toUpperCase().trim() : "";
+        String name = h.getHospitalName() != null ? h.getHospitalName().toLowerCase() : "";
+        String city = h.getCity() != null ? h.getCity().toLowerCase() : "";
+
+        if (code.contains("SQUARE") || name.contains("square")) {
+            h.setLatitude(23.7531);
+            h.setLongitude(90.3816);
+        } else if (code.contains("UNITED") || name.contains("united")) {
+            h.setLatitude(23.7978);
+            h.setLongitude(90.4184);
+        } else if (code.contains("EVERCARE") || name.contains("evercare") || name.contains("apollo dhaka")) {
+            h.setLatitude(23.8103);
+            h.setLongitude(90.4312);
+        } else if (code.contains("APOLLO") || name.contains("apollo") || city.contains("chittagong") || city.contains("ctg")) {
+            h.setLatitude(22.3601);
+            h.setLongitude(91.8016);
+        } else if (code.contains("DMCH") || name.contains("dhaka medical")) {
+            h.setLatitude(23.7258);
+            h.setLongitude(90.3976);
+        } else if (city.contains("chittagong")) {
+            h.setLatitude(22.3587);
+            h.setLongitude(91.8214);
+        } else if (city.contains("sylhet")) {
+            h.setLatitude(24.8949);
+            h.setLongitude(91.8687);
+        } else if (city.contains("rajshahi")) {
+            h.setLatitude(24.3745);
+            h.setLongitude(88.6042);
+        } else {
+            // Default to Central Dhaka health corridor
+            h.setLatitude(23.7937);
+            h.setLongitude(90.4043);
+        }
+    }
+
     /**
      * Retrieves all hospitals registered in the AROHI Global Network.
      * Synchronizes from Firestore /hospitals if available, with robust local caching.
      */
     public void getHospitals(AuthCallback<List<Hospital>> callback) {
         if (firestore == null) {
-            callback.onSuccess(sessionManager.getRegisteredHospitals());
+            List<Hospital> cached = sessionManager.getRegisteredHospitals();
+            for (Hospital h : cached) ensureHospitalCoordinates(h);
+            callback.onSuccess(cached);
             return;
         }
 
@@ -57,6 +98,7 @@ public class HospitalNetworkRepository {
                                 if (h.getHospitalId() == null || h.getHospitalId().isEmpty()) {
                                     h.setHospitalId(doc.getId());
                                 }
+                                ensureHospitalCoordinates(h);
                                 list.add(h);
                                 sessionManager.saveHospital(h);
                             }
@@ -65,11 +107,14 @@ public class HospitalNetworkRepository {
                     if (list.isEmpty()) {
                         list = sessionManager.getRegisteredHospitals();
                     }
+                    for (Hospital h : list) ensureHospitalCoordinates(h);
                     callback.onSuccess(list);
                 })
                 .addOnFailureListener(e -> {
                     // Safe fallback to local registry
-                    callback.onSuccess(sessionManager.getRegisteredHospitals());
+                    List<Hospital> cached = sessionManager.getRegisteredHospitals();
+                    for (Hospital h : cached) ensureHospitalCoordinates(h);
+                    callback.onSuccess(cached);
                 });
     }
 

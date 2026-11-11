@@ -7,6 +7,14 @@ if (file("google-services.json").exists()) {
     apply plugin: 'com.google.gms.google-services'
 }
 
+// Load API keys securely from local.properties or environment (never committed to git)
+Properties localProperties = new Properties()
+File localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localProperties.load(new FileInputStream(localPropertiesFile))
+}
+String mapsApiKey = localProperties.getProperty('MAPS_API_KEY', System.getenv('MAPS_API_KEY') ?: '')
+
 android {
     namespace 'com.arohi.healthcare'
     compileSdk 34
@@ -18,7 +26,7 @@ android {
         versionCode 1
         versionName "1.0.0-phase1"
 
-        manifestPlaceholders = [MAPS_API_KEY: ""]
+        manifestPlaceholders = [MAPS_API_KEY: mapsApiKey]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

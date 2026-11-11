@@ -337,20 +337,29 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
     private void updateHospitalDistancesAndSort() {
         if (allHospitals.isEmpty()) return;
 
-        // If user coordinates acquired, sort strictly by distance
-        if (userLatitude != 0.0 && userLongitude != 0.0) {
-            Collections.sort(allHospitals, (h1, h2) -> {
-                double d1 = h1.calculateDistanceKm(userLatitude, userLongitude);
-                double d2 = h2.calculateDistanceKm(userLatitude, userLongitude);
-                if (d1 < 0) return 1;
-                if (d2 < 0) return -1;
-                return Double.compare(d1, d2);
-            });
+        for (Hospital h : allHospitals) {
+            HospitalNetworkRepository.ensureHospitalCoordinates(h);
         }
+
+        double refLat = (userLatitude != 0.0) ? userLatitude : DEFAULT_DHAKA_LAT;
+        double refLng = (userLongitude != 0.0) ? userLongitude : DEFAULT_DHAKA_LNG;
+
+        Collections.sort(allHospitals, (h1, h2) -> {
+            double d1 = h1.calculateDistanceKm(refLat, refLng);
+            double d2 = h2.calculateDistanceKm(refLat, refLng);
+            if (d1 < 0) return 1;
+            if (d2 < 0) return -1;
+            return Double.compare(d1, d2);
+        });
 
         displayedHospitals.clear();
         displayedHospitals.addAll(allHospitals);
         renderFilteredResults();
+
+        // If no hospital is currently selected, select the first one to show bottom details immediately
+        if (selectedHospital == null && !displayedHospitals.isEmpty()) {
+            onHospitalClick(displayedHospitals.get(0));
+        }
     }
 
     private void renderFilteredResults() {
@@ -402,9 +411,17 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
             } catch (SecurityException ignored) {}
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(userLatitude, userLongitude), 12.5f));
+        } else if (!displayedHospitals.isEmpty()) {
+            Hospital first = displayedHospitals.get(0);
+            HospitalNetworkRepository.ensureHospitalCoordinates(first);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(first.getLatitude(), first.getLongitude()), 12.5f));
         }
 
         renderMapMarkers();
+        if (selectedHospital == null && !displayedHospitals.isEmpty()) {
+            onHospitalClick(displayedHospitals.get(0));
+        }
     }
 
     private void renderMapMarkers() {
@@ -413,7 +430,11 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
         googleMap.clear();
         mapMarkers.clear();
 
+        double refLat = (userLatitude != 0.0) ? userLatitude : DEFAULT_DHAKA_LAT;
+        double refLng = (userLongitude != 0.0) ? userLongitude : DEFAULT_DHAKA_LNG;
+
         for (Hospital h : displayedHospitals) {
+            HospitalNetworkRepository.ensureHospitalCoordinates(h);
             if (h.getLatitude() == 0.0 && h.getLongitude() == 0.0) continue;
 
             LatLng pos = new LatLng(h.getLatitude(), h.getLongitude());
@@ -423,10 +444,8 @@ public class NearbyHospitalsActivity extends BaseActivity implements OnMapReadyC
                     : BitmapDescriptorFactory.HUE_RED;
 
             String snippet = h.isVerified() ? "AROHI Verified Hospital" : "Accredited Facility";
-            if (userLatitude != 0.0 && userLongitude != 0.0) {
-                double km = h.calculateDistanceKm(userLatitude, userLongitude);
-                if (km >= 0) snippet += String.format(Locale.getDefault(), " • %.1f km", km);
-            }
+            double km = h.calculateDistanceKm(refLat, refLng);
+            if (km >= 0) snippet += String.format(Locale.getDefault(), " • %.1f km", km);
 
             Marker marker = googleMap.addMarker(new MarkerOptions()
                     .position(pos)
