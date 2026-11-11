@@ -55,6 +55,24 @@
                 android:textStyle="bold"
                 app:backgroundTint="@color/surface_card"
                 app:cornerRadius="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenStaffGroup"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="14dp"
+                android:text="🩺 Staff Channel"
+                android:textAllCaps="false"
+                android:textColor="@color/accent_heading"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:backgroundTint="@color/surface_card"
+                app:cornerRadius="18dp" />
         </LinearLayout>
     </LinearLayout>
 

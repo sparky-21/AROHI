@@ -1,5 +1,6 @@
 package com.arohi.healthcare.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -73,6 +74,21 @@ public class AdminDashboardFragment extends Fragment {
                     .replace(R.id.fragmentContainer, new AdminAnalyticsFragment())
                     .addToBackStack("admin_analytics")
                     .commit();
+        });
+        binding.cardAuthorityCommunicationHub.setOnClickListener(v -> {
+            Intent intent = com.arohi.healthcare.activities.AuthorityCommunicationActivity.newIntent(
+                    requireContext(),
+                    sessionManager.getSelectedHospitalId(),
+                    sessionManager.getSelectedHospitalCode()
+            );
+            startActivity(intent);
+        });
+        binding.cardHospitalBillingDashboard.setOnClickListener(v -> {
+            Intent intent = com.arohi.healthcare.activities.HospitalBillingDashboardActivity.newIntent(
+                    requireContext(),
+                    sessionManager.getSelectedHospitalId()
+            );
+            startActivity(intent);
         });
         binding.btnPublishAnnouncement.setOnClickListener(v -> showPublishAnnouncementDialog());
         binding.tvViewAllStaffLink.setOnClickListener(v -> switchTab(R.id.nav_admin_staff));

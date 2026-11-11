@@ -115,6 +115,42 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- 14. Hospital Authority Communication Hub -->
+        <activity
+            android:name=".activities.AuthorityCommunicationActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 15. Staff Chat Activity (Groups & 1-to-1) -->
+        <activity
+            android:name=".activities.StaffChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 16. Billing Checkout Activity -->
+        <activity
+            android:name=".activities.BillingCheckoutActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 17. Digital Receipt Activity -->
+        <activity
+            android:name=".activities.DigitalReceiptActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 18. Hospital Authority Billing Dashboard Activity -->
+        <activity
+            android:name=".activities.HospitalBillingDashboardActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 19. Patient Billing History Activity -->
+        <activity
+            android:name=".activities.PatientBillingHistoryActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- 14. FileProvider for Exported PDF Prescriptions and Diagnostic Reports -->
         <provider
             android:name="androidx.core.content.FileProvider"

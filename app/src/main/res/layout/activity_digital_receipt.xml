@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_ivory"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- Top Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/surface_card"
+        android:elevation="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <ImageButton
+            android:id="@+id/btnReceiptBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_back"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/accent_heading" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Official Digital Receipt"
+            android:textColor="@color/accent_heading"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnShareReceipt"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Share Receipt"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/primary_moss_green" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Official Receipt Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="3dp"
+                app:strokeColor="@color/border_muted"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Success Checkmark and Title -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:background="@drawable/bg_badge_pill"
+                            android:backgroundTint="@color/pale_mint"
+                            android:gravity="center"
+                            android:text="✓"
+                            android:textColor="@color/primary_moss_green"
+                            android:textSize="26sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="PAYMENT SUCCESSFUL"
+                            android:textColor="@color/primary_moss_green"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptTotalPaid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="৳ 1,890.00"
+                            android:textColor="@color/accent_heading"
+                            android:textSize="26sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="16dp"
+                        android:background="@color/divider_color" />
+
+                    <!-- Hospital Header -->
+                    <TextView
+                        android:id="@+id/tvReceiptHospitalName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Square Hospital Dhaka"
+                        android:textColor="@color/accent_heading"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvReceiptHospitalAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="18/F, West Panthapath, Dhaka-1205"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11.5sp" />
+
+                    <!-- Receipt Metadata Grid -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/bg_white_pill"
+                        android:backgroundTint="@color/background_ivory"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Receipt No:"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptNumber"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="RCP-SQH-202611-8841"
+                                android:textColor="@color/accent_heading"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Bill No:"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptBillNumber"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="BILL-SQH-202611-1001"
+                                android:textColor="@color/accent_heading"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Transaction ID:"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptTxnId"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TXN_BKASH_1731338491"
+                                android:textColor="@color/primary_moss_green"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Payment Method:"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptPaymentMethod"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="bKash Online Payment"
+                                android:textColor="@color/accent_heading"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Payment Time:"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptTimestamp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nov 11, 2026 • 11:42 AM"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Patient Info -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="BILLED TO"
+                        android:textColor="@color/accent_heading"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvReceiptPatientInfo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Sadia Islam • AROHI-PAT-A1B2C3D4"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+
+                    <!-- Itemized Charges Text -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="SERVICE SUMMARY"
+                        android:textColor="@color/accent_heading"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvReceiptItemsSummary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:lineSpacingExtra="3dp"
+                        android:text="• Specialist OPD Consultation (x1) — ৳ 1,200.00\n• 12-Lead Electrocardiogram (x1) — ৳ 600.00"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <!-- Digital Verification Hash -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/bg_white_pill"
+                        android:backgroundTint="@color/pale_mint"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔒"
+                            android:textSize="13sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Verified Digital Signature"
+                                android:textColor="@color/primary_moss_green"
+                                android:textSize="10.5sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptVerificationCode"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="middle"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:text="AROHI-SIG-94A2FE48B1C637"
+                                android:textColor="@color/deep_forest_green"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Download PDF Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDownloadReceiptPdf"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="@color/primary_moss_green"
+                android:text="Download Digital PDF Receipt"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+
+            <!-- Request Refund Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReceiptRequestRefund"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:text="Request Refund"
+                android:textAllCaps="false"
+                android:textColor="@color/accent_heading"
+                android:textSize="13sp"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/border_muted" />
+
+            <!-- Done / Return Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReceiptDone"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="6dp"
+                android:text="Done • Return to Dashboard"
+                android:textAllCaps="false"
+                android:textColor="@color/primary_moss_green"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

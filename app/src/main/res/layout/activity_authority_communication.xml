@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_ivory"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- Top Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/surface_card"
+        android:elevation="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <ImageButton
+            android:id="@+id/btnAuthorityCommBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_back"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/accent_heading" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Communication Hub"
+                android:textColor="@color/accent_heading"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvHospitalTenancySubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hospital Authority • All Active Clinical Staff"
+                android:textColor="@color/primary_moss_green"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnRefreshConversations"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Refresh"
+            android:src="@drawable/ic_refresh"
+            app:tint="@color/primary_moss_green" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Security Policy Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_white_pill"
+                android:backgroundTint="@color/badge_pending_bg"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️ Institutional Hospital Isolation"
+                    android:textColor="@color/badge_pending_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSecurityBannerDetails"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:lineSpacingExtra="2dp"
+                    android:text="Staff membership is strictly managed by active hospital verification. Cross-hospital access is strictly prohibited and audited."
+                    android:textColor="@color/text_primary"
+                    android:textSize="11.5sp" />
+            </LinearLayout>
+
+            <!-- Institutional Groups Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="HOSPITAL CLINICAL GROUPS"
+                android:textColor="@color/accent_heading"
+                android:textSize="12.5sp"
+                android:textStyle="bold" />
+
+            <!-- Pinned: All Doctors Group -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAllDoctorsGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/border_muted"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_badge_pill"
+                        android:backgroundTint="@color/pale_mint"
+                        android:gravity="center"
+                        android:text="🩺"
+                        android:textSize="24sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvDoctorsGroupTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="All Doctors Group"
+                                android:textColor="@color/accent_heading"
+                                android:textSize="14.5sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvDoctorsMemberCountBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_badge_pill"
+                                android:paddingHorizontal="7dp"
+                                android:paddingVertical="2dp"
+                                android:text="8 ACTIVE"
+                                android:textColor="@color/primary_moss_green"
+                                android:textSize="9.5sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvDoctorsLastMessage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:text="Tap to open group conversation"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12.5sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/text_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Pinned: All Nurses Group -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAllNursesGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/border_muted"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_badge_pill"
+                        android:backgroundTint="@color/pale_mint"
+                        android:gravity="center"
+                        android:text="💉"
+                        android:textSize="24sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvNursesGroupTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="All Nurses Group"
+                                android:textColor="@color/accent_heading"
+                                android:textSize="14.5sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvNursesMemberCountBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_badge_pill"
+                                android:paddingHorizontal="7dp"
+                                android:paddingVertical="2dp"
+                                android:text="14 ACTIVE"
+                                android:textColor="@color/primary_moss_green"
+                                android:textSize="9.5sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvNursesLastMessage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:text="Tap to open group conversation"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12.5sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/text_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Direct Conversations Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="DIRECT STAFF CHATS"
+                    android:textColor="@color/accent_heading"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnNewStaffChat"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:padding="0dp"
+                    android:text="+ New Direct Chat"
+                    android:textAllCaps="false"
+                    android:textColor="@color/primary_moss_green"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Direct Conversations List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvDirectStaffConversations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- Empty State for Direct Conversations -->
+            <LinearLayout
+                android:id="@+id/layoutEmptyDirectChats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_card_subtle"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💬"
+                    android:textSize="32sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="No direct staff chats yet"
+                    android:textColor="@color/accent_heading"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Tap '+ New Direct Chat' to message any doctor or nurse."
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

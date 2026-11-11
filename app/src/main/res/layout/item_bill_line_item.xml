@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingVertical="5dp">
+
+    <TextView
+        android:id="@+id/tvItemDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Specialist OPD Consultation"
+        android:textColor="@color/text_primary"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvItemQty"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="x1"
+        android:textColor="@color/text_secondary"
+        android:textSize="12.5sp" />
+
+    <TextView
+        android:id="@+id/tvItemTotalPrice"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:text="৳ 1,200"
+        android:textColor="@color/accent_heading"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

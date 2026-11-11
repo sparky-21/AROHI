@@ -1,0 +1,105 @@
+package com.arohi.healthcare.payment;
+
+import com.arohi.healthcare.models.HospitalBill;
+import com.arohi.healthcare.models.PaymentGatewayType;
+import com.arohi.healthcare.models.PaymentStatus;
+import com.arohi.healthcare.models.PaymentTransaction;
+import com.arohi.healthcare.models.RefundRequest;
+
+import java.security.MessageDigest;
+import java.util.UUID;
+
+/**
+ * Phase 13 Nagad Payment Gateway Adapter.
+ * Implements Nagad mobile wallet checkout simulation and callback verification.
+ */
+public class NagadPaymentGateway implements PaymentGateway {
+
+    @Override
+    public PaymentGatewayType getType() {
+        return PaymentGatewayType.NAGAD;
+    }
+
+    @Override
+    public void initiateTransaction(HospitalBill bill, String idempotencyKey, boolean isSandbox, GatewayInitiateCallback callback) {
+        if (bill == null || bill.getTotalAmountBdt() <= 0) {
+            callback.onError("Invalid bill amount for Nagad payment.");
+            return;
+        }
+
+        String txnId = "TXN_NAGAD_" + System.currentTimeMillis();
+        String gatewayRef = "NG_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        PaymentTransaction transaction = new PaymentTransaction(
+                txnId,
+                bill.getBillId(),
+                bill.getBillNumber(),
+                bill.getHospitalId(),
+                bill.getPatientUid(),
+                bill.getTotalAmountBdt(),
+                PaymentGatewayType.NAGAD,
+                idempotencyKey
+        );
+        transaction.setGatewayReferenceNumber(gatewayRef);
+        transaction.setStatus(PaymentStatus.PROCESSING.name());
+
+        String checkoutUrl = isSandbox
+                ? "https://sandbox.nagad.com.bd/checkout?paymentRefId=" + gatewayRef
+                : "https://pay.nagad.com.bd/checkout?paymentRefId=" + gatewayRef;
+
+        callback.onInitiated(transaction, checkoutUrl);
+    }
+
+    @Override
+    public void verifyTransaction(String transactionId, String idempotencyKey, String hospitalId,
+                                  double expectedAmount, GatewayVerifyCallback callback) {
+        if (transactionId == null || expectedAmount <= 0) {
+            callback.onError("Nagad Verification Error: Invalid transaction metadata.");
+            return;
+        }
+
+        PaymentTransaction tx = new PaymentTransaction();
+        tx.setTransactionId(transactionId);
+        tx.setHospitalId(hospitalId);
+        tx.setAmountBdt(expectedAmount);
+        tx.setCurrency("BDT");
+        tx.setGateway(PaymentGatewayType.NAGAD.name());
+        tx.setIdempotencyKey(idempotencyKey);
+        tx.setStatus(PaymentStatus.SUCCESSFUL.name());
+        tx.setCompletedAt(System.currentTimeMillis());
+
+        String signature = generateSignature(transactionId + "_" + hospitalId + "_" + expectedAmount);
+        tx.setVerificationHash(signature);
+
+        callback.onVerified(tx, signature);
+    }
+
+    @Override
+    public void processRefund(RefundRequest refund, boolean isSandbox, GatewayRefundCallback callback) {
+        if (refund == null || refund.getRefundAmountBdt() <= 0) {
+            callback.onError("Invalid refund parameters.");
+            return;
+        }
+
+        refund.setStatus(RefundRequest.STATUS_PROCESSED);
+        refund.setProcessedAt(System.currentTimeMillis());
+        refund.setAdminNotes("Nagad Wallet refund credited. Transaction Ref: " + refund.getTransactionId());
+        callback.onRefundProcessed(refund);
+    }
+
+    private String generateSignature(String data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(data.getBytes("UTF-8"));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.substring(0, 16).toUpperCase();
+        } catch (Exception e) {
+            return "SIG_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
+}

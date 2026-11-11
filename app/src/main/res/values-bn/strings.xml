@@ -628,4 +628,43 @@
     <string name="action_open_google_maps_app">গুগল ম্যাপস অ্যাপ খুলুন</string>
     <string name="sub_open_google_maps_app">সরাসরি গুগল ম্যাপসে হাসপাতাল, ট্রাফিক ও নেভিগেশন দেখুন</string>
     <string name="btn_search_in_google_maps">গুগল ম্যাপসে খুঁজুন</string>
+
+    <!-- Phase 12: Hospital Authority Communication Hub -->
+    <string name="tenancy_verified_banner">হাসপাতাল মাল্টি-টেন্যান্ট চ্যানেল [%s]: কেবল অনুমোদিত কর্মী।</string>
+    <string name="staff_comm_title">যোগাযোগ কেন্দ্র</string>
+    <string name="staff_comm_all_doctors">সকল চিকিৎসক গ্রুপ</string>
+    <string name="staff_comm_all_nurses">সকল নার্স গ্রুপ</string>
+    <string name="staff_comm_direct_chats">ব্যক্তিগত বার্তা</string>
+    <string name="staff_comm_new_chat">+ নতুন বার্তা</string>
+
+    <!-- Phase 13: Payment and Billing System -->
+    <string name="billing_cat_consultation">ডাক্তার পরামর্শ</string>
+    <string name="billing_cat_appointment">অ্যাপয়েন্টমেন্ট বুকিং</string>
+    <string name="billing_cat_pharmacy">ফার্মেসি অর্ডার</string>
+    <string name="billing_cat_lab_test">ল্যাবরেটরি টেস্ট</string>
+    <string name="billing_cat_hospital_service">হাসপাতাল সেবা বিল</string>
+    <string name="billing_cat_operation">অপারেশন ও ওটি বিল</string>
+
+    <string name="payment_status_pending">অপেক্ষমাণ</string>
+    <string name="payment_status_processing">প্রক্রিয়াধীন</string>
+    <string name="payment_status_successful">পরিশোধিত</string>
+    <string name="payment_status_failed">ব্যর্থ</string>
+    <string name="payment_status_cancelled">বাতিল</string>
+    <string name="payment_status_refunded">ফেরত দেওয়া হয়েছে</string>
+    <string name="payment_status_partially_refunded">আংশিক ফেরত</string>
+
+    <string name="gateway_bkash">বিকাশ (bKash)</string>
+    <string name="gateway_nagad">নগদ (Nagad)</string>
+    <string name="gateway_card">ক্রেডিট / ডেবিট কার্ড (SSLCommerz)</string>
+    <string name="gateway_cash">হাসপাতাল ক্যাশ কাউন্টার</string>
+
+    <string name="billing_checkout_title">বিল পরিশোধ ও চেকআউট</string>
+    <string name="billing_receipt_title">অফিসিয়াল ডিজিটাল রশিদ</string>
+    <string name="billing_dashboard_title">হাসপাতাল বিলিং ড্যাশবোর্ড</string>
+    <string name="billing_history_title">আমার বিল ও রশিদ</string>
+    <string name="btn_pay_now">পরিশোধ করুন</string>
+    <string name="btn_download_receipt_pdf">ডিজিটাল পিডিএফ রশিদ ডাউনলোড</string>
+    <string name="btn_request_refund">রিফান্ড অনুরোধ করুন</string>
+    <string name="billing_sandbox_banner_title">স্যান্ডবক্স / টেস্ট মোড — গেটওয়ে ক্রেডেনশিয়াল সেট করা নেই</string>
+    <string name="billing_sandbox_banner_subtitle">কোনো প্রকৃত টাকা কাটা হবে না। বিকাশ, নগদ ও SSLCommerz সিমুলেটেড কলব্যাক ও সার্ভার স্বাক্ষর যাচাই করে। কার্ডের তথ্য কখনো সংরক্ষণ করা হয় না।</string>
 </resources>

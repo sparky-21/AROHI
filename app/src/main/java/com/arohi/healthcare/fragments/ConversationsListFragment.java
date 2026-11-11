@@ -67,6 +67,25 @@ public class ConversationsListFragment extends Fragment {
 
         binding.btnViewNotifications.setOnClickListener(v -> showNotificationsDialog());
 
+        if (account != null && (account.getUserRoleEnum() == UserRole.DOCTOR || account.getUserRoleEnum() == UserRole.NURSE)) {
+            binding.btnOpenStaffGroup.setVisibility(View.VISIBLE);
+            boolean isDoctor = account.getUserRoleEnum() == UserRole.DOCTOR;
+            binding.btnOpenStaffGroup.setText(isDoctor ? "🩺 All Doctors Channel" : "💉 All Nurses Channel");
+            binding.btnOpenStaffGroup.setOnClickListener(v -> {
+                String hospId = sessionManager.getSelectedHospitalId();
+                String hospCode = sessionManager.getSelectedHospitalCode();
+                String groupType = isDoctor ? com.arohi.healthcare.models.StaffConversation.TYPE_GROUP_DOCTORS
+                        : com.arohi.healthcare.models.StaffConversation.TYPE_GROUP_NURSES;
+                String groupTitle = isDoctor ? "All Doctors • " + (hospCode != null ? hospCode : "Hospital")
+                        : "All Nurses • " + (hospCode != null ? hospCode : "Hospital");
+                String convId = "grp_" + hospId + "_" + groupType.toLowerCase();
+
+                Intent intent = com.arohi.healthcare.activities.StaffChatActivity.newIntent(
+                        requireContext(), convId, hospId, hospCode, groupTitle, groupType);
+                startActivity(intent);
+            });
+        }
+
         loadConversations();
     }
 

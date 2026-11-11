@@ -628,4 +628,43 @@
     <string name="action_open_google_maps_app">Open Google Maps</string>
     <string name="sub_open_google_maps_app">View live hospital locations, traffic &amp; navigation in Google Maps</string>
     <string name="btn_search_in_google_maps">Search in Google Maps</string>
+
+    <!-- Phase 12: Hospital Authority Communication Hub -->
+    <string name="tenancy_verified_banner">Hospital Multi-Tenant Channel [%s]: Authorized Staff Only.</string>
+    <string name="staff_comm_title">Communication Hub</string>
+    <string name="staff_comm_all_doctors">All Doctors Group</string>
+    <string name="staff_comm_all_nurses">All Nurses Group</string>
+    <string name="staff_comm_direct_chats">Direct Staff Chats</string>
+    <string name="staff_comm_new_chat">+ New Direct Chat</string>
+
+    <!-- Phase 13: Payment and Billing System -->
+    <string name="billing_cat_consultation">Doctor Consultation</string>
+    <string name="billing_cat_appointment">Appointment Booking</string>
+    <string name="billing_cat_pharmacy">Pharmacy Order</string>
+    <string name="billing_cat_lab_test">Laboratory Test</string>
+    <string name="billing_cat_hospital_service">Hospital Service Bill</string>
+    <string name="billing_cat_operation">Surgical &amp; OT Bill</string>
+
+    <string name="payment_status_pending">Pending</string>
+    <string name="payment_status_processing">Processing</string>
+    <string name="payment_status_successful">Paid</string>
+    <string name="payment_status_failed">Failed</string>
+    <string name="payment_status_cancelled">Cancelled</string>
+    <string name="payment_status_refunded">Refunded</string>
+    <string name="payment_status_partially_refunded">Partially Refunded</string>
+
+    <string name="gateway_bkash">bKash</string>
+    <string name="gateway_nagad">Nagad</string>
+    <string name="gateway_card">Credit / Debit Card (SSLCommerz)</string>
+    <string name="gateway_cash">Hospital Cash Counter</string>
+
+    <string name="billing_checkout_title">Checkout &amp; Bill Payment</string>
+    <string name="billing_receipt_title">Official Digital Receipt</string>
+    <string name="billing_dashboard_title">Hospital Billing Dashboard</string>
+    <string name="billing_history_title">My Bills &amp; Receipts</string>
+    <string name="btn_pay_now">Pay Now</string>
+    <string name="btn_download_receipt_pdf">Download Digital PDF Receipt</string>
+    <string name="btn_request_refund">Request Refund</string>
+    <string name="billing_sandbox_banner_title">SANDBOX / TEST MODE — Gateway Credentials Not Configured</string>
+    <string name="billing_sandbox_banner_subtitle">No real money is charged. Simulated bKash, Nagad &amp; SSLCommerz callbacks verify idempotency and server signature validation. Raw card info is never stored.</string>
 </resources>

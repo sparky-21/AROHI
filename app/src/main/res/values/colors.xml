@@ -56,4 +56,11 @@
     <color name="arohi_card_stroke">#D5E0CE</color>
     <color name="arohi_text_primary">#26332A</color>
     <color name="arohi_text_secondary">#778276</color>
+
+    <!-- Phase 12 & 13 Semantic Palette Tokens -->
+    <color name="background_ivory">#F7F8F3</color>
+    <color name="border_muted">#D5E0CE</color>
+    <color name="badge_pending_bg">#FDF6EC</color>
+    <color name="badge_pending_text">#D99B45</color>
+    <color name="badge_rejected_text">#C94B4B</color>
 </resources>

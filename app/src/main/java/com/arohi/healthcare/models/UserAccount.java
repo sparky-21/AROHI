@@ -79,6 +79,10 @@ public class UserAccount {
         return VerificationStatus.VERIFIED.getKey().equalsIgnoreCase(verificationStatus);
     }
 
+    public boolean isVerified() {
+        return isVerifiedProfessionalOrPatient();
+    }
+
     public String getUid() {
         return uid;
     }

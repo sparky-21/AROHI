@@ -91,6 +91,126 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- Phase 12: Communication Hub Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAuthorityCommunicationHub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/primary_moss_green"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_badge_pill"
+                    android:backgroundTint="@color/pale_mint"
+                    android:gravity="center"
+                    android:text="💬"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hospital Communication Hub"
+                        android:textColor="@color/accent_heading"
+                        android:textSize="14.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="All Doctors Group • All Nurses Group • Direct Staff Chats"
+                        android:textColor="@color/primary_moss_green"
+                        android:textSize="11.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/primary_moss_green" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Phase 13: Hospital Billing & Revenue Dashboard Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardHospitalBillingDashboard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/primary_moss_green"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_badge_pill"
+                    android:backgroundTint="@color/pale_mint"
+                    android:gravity="center"
+                    android:text="💳"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hospital Billing &amp; Revenue"
+                        android:textColor="@color/accent_heading"
+                        android:textSize="14.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Financial Dashboard • bKash, Nagad, Card &amp; Cash • Refunds"
+                        android:textColor="@color/primary_moss_green"
+                        android:textSize="11.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/primary_moss_green" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Section: Operational Statistics (Row 1: Total Patients & Doctors/Nurses) -->
         <TextView
             android:layout_width="match_parent"

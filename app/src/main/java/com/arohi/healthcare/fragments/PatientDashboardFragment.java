@@ -1,5 +1,6 @@
 package com.arohi.healthcare.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -171,6 +172,12 @@ public class PatientDashboardFragment extends Fragment {
         binding.cardPatientMedReminders.setOnClickListener(v -> switchTab(R.id.nav_patient_calendar));
 
         binding.btnQuickEditProfile.setOnClickListener(v -> switchTab(R.id.nav_patient_profile));
+
+        // Phase 13 Patient Billing & Receipts
+        binding.cardPatientBillsAndPayments.setOnClickListener(v -> {
+            Intent intent = com.arohi.healthcare.activities.PatientBillingHistoryActivity.newIntent(requireContext());
+            startActivity(intent);
+        });
 
         // Phase 5 Quick Services
         binding.btnQuickPharmacy.setOnClickListener(v -> {

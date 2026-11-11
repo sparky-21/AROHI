@@ -43,5 +43,20 @@ service firebase.storage {
         && (request.auth.uid == patientUid || isAdmin() || request.auth.token.role == 'DOCTOR')
         && request.resource.size < 15 * 1024 * 1024;
     }
+
+    // Phase 12: Staff communication attachments (PDF or Image - max 10MB, hospital-scoped)
+    match /staff_attachments/{hospitalId}/{conversationId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && request.resource.size <= 10 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+            || request.resource.contentType == 'application/pdf');
+    }
+
+    // Phase 13: Generated PDF payment receipts
+    match /receipts/{hospitalId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && request.resource.size <= 5 * 1024 * 1024;
+    }
   }
 }

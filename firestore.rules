@@ -61,6 +61,19 @@ service cloud.firestore {
       );
     }
 
+    function isHospitalStaffMember(hospitalId) {
+      return isSignedIn() && userDocExists()
+        && getUserDoc().hospitalId == hospitalId
+        && (getUserDoc().role == 'DOCTOR' || getUserDoc().role == 'NURSE' || getUserDoc().role == 'ADMIN')
+        && getUserDoc().verificationStatus == 'VERIFIED';
+    }
+
+    function isHospitalAdmin(hospitalId) {
+      return isSuperAdmin() || (
+        isAdmin() && userDocExists() && getUserDoc().hospitalId == hospitalId
+      );
+    }
+
     function hasAcceptedConnection(connectionId) {
       return isSignedIn() && (
         (exists(/databases/$(database)/documents/connections/$(connectionId))
@@ -394,6 +407,107 @@ service cloud.firestore {
       allow create: if isSignedIn();
       // Super Admin manages approvals, codes, and activations
       allow update, delete: if isSuperAdmin();
+
+      // =========================================================================
+      // Phase 12: Hospital Authority Communication Hub (Strict Multi-Tenant)
+      // =========================================================================
+      match /conversations/{conversationId} {
+        allow read: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId)
+              || (isHospitalStaffMember(hospitalId)
+                  && (resource.data.conversationType == 'GROUP_DOCTORS' && getUserDoc().role == 'DOCTOR'
+                      || resource.data.conversationType == 'GROUP_NURSES' && getUserDoc().role == 'NURSE'
+                      || (resource.data.participantUids != null && request.auth.uid in resource.data.participantUids))));
+
+        allow create, update: if isSignedIn()
+          && request.resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId) || isHospitalStaffMember(hospitalId));
+
+        allow delete: if false;
+
+        match /messages/{messageId} {
+          allow read: if isSignedIn()
+            && resource.data.hospitalId == hospitalId
+            && (isHospitalAdmin(hospitalId) || isHospitalStaffMember(hospitalId));
+
+          allow create: if isSignedIn()
+            && request.resource.data.hospitalId == hospitalId
+            && request.resource.data.senderUid == request.auth.uid
+            && (isHospitalAdmin(hospitalId) || isHospitalStaffMember(hospitalId));
+
+          allow update: if isSignedIn()
+            && resource.data.hospitalId == hospitalId
+            && (isHospitalAdmin(hospitalId) || isHospitalStaffMember(hospitalId));
+
+          allow delete: if false;
+        }
+      }
+
+      // =========================================================================
+      // Phase 13: Payment & Billing Architecture (Hospital-Scoped)
+      // =========================================================================
+      match /bills/{billId} {
+        allow read: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId)
+              || resource.data.patientUid == request.auth.uid
+              || isHospitalStaffMember(hospitalId));
+
+        allow create: if isSignedIn()
+          && request.resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId) || isVerifiedDoctor());
+
+        // Clients cannot self-mark bills as SUCCESSFUL or REFUNDED without trusted verification / Admin
+        allow update: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && request.resource.data.hospitalId == hospitalId
+          && request.resource.data.totalAmountBdt == resource.data.totalAmountBdt
+          && (isHospitalAdmin(hospitalId)
+              || (resource.data.patientUid == request.auth.uid
+                  && (request.resource.data.status == 'PROCESSING' || request.resource.data.status == 'CANCELLED')));
+
+        allow delete: if isSuperAdmin();
+      }
+
+      match /receipts/{receiptId} {
+        allow read: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId)
+              || resource.data.patientUid == request.auth.uid);
+
+        allow create: if isSignedIn()
+          && request.resource.data.hospitalId == hospitalId
+          && isHospitalAdmin(hospitalId);
+
+        // Receipts are immutable financial records
+        allow update, delete: if false;
+      }
+
+      match /transactions/{transactionId} {
+        allow read: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId) || resource.data.patientUid == request.auth.uid);
+
+        allow create: if isSignedIn()
+          && request.resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId) || request.resource.data.patientUid == request.auth.uid);
+
+        allow update, delete: if false;
+      }
+
+      match /refundRequests/{refundId} {
+        allow read: if isSignedIn()
+          && resource.data.hospitalId == hospitalId
+          && (isHospitalAdmin(hospitalId) || resource.data.requestedByUid == request.auth.uid);
+
+        allow create: if isSignedIn()
+          && request.resource.data.hospitalId == hospitalId
+          && request.resource.data.requestedByUid == request.auth.uid;
+
+        allow update: if isHospitalAdmin(hospitalId);
+        allow delete: if false;
+      }
     }
 
     match /hospitalMemberships/{membershipId} {

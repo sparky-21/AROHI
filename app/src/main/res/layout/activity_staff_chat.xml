@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_ivory"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- Header Toolbar -->
+    <LinearLayout
+        android:id="@+id/toolbarChat"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/surface_card"
+        android:elevation="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <ImageButton
+            android:id="@+id/btnChatBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_back"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/accent_heading" />
+
+        <TextView
+            android:id="@+id/tvChatAvatar"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_badge_pill"
+            android:backgroundTint="@color/pale_mint"
+            android:gravity="center"
+            android:text="🩺"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvChatTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="All Doctors Group"
+                android:textColor="@color/accent_heading"
+                android:textSize="15.5sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvChatSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="8 Verified Members • Multi-Tenant Protected"
+                android:textColor="@color/primary_moss_green"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnChatInfo"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Group Info"
+            android:src="@drawable/ic_info"
+            app:tint="@color/accent_heading" />
+    </LinearLayout>
+
+    <!-- Tenancy Verification Alert Banner -->
+    <LinearLayout
+        android:id="@+id/bannerTenancyWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/badge_pending_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="7dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔒"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvTenancyBannerText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Hospital Multi-Tenant Channel: Authorized Staff Only."
+            android:textColor="@color/badge_pending_text"
+            android:textSize="10.5sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Messages Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvStaffMessages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/layoutEmptyChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💬"
+                android:textSize="40sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="No messages yet"
+                android:textColor="@color/accent_heading"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Start an official clinical communication thread."
+                android:textColor="@color/text_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Selected Attachment Bar -->
+    <LinearLayout
+        android:id="@+id/layoutAttachmentSelected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface_card"
+        android:elevation="2dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvSelectedAttachmentIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📄 "
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvSelectedFileName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:ellipsize="middle"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:text="clinical_file.pdf (1.2 MB)"
+            android:textColor="@color/primary_moss_green"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnRemoveAttachment"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Remove Attachment"
+            android:src="@drawable/ic_close"
+            app:tint="@color/badge_rejected_text" />
+    </LinearLayout>
+
+    <!-- Chat Input Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface_card"
+        android:elevation="6dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="8dp">
+
+        <ImageButton
+            android:id="@+id/btnAttachFile"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Attach File"
+            android:src="@drawable/ic_attachment"
+            app:tint="@color/primary_moss_green" />
+
+        <EditText
+            android:id="@+id/etMessageInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_white_pill"
+            android:backgroundTint="@color/background_ivory"
+            android:hint="Type institutional message..."
+            android:maxLines="4"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
+            android:textSize="13.5sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSendMessage"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:backgroundTint="@color/primary_moss_green"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:cornerRadius="22dp"
+            app:icon="@drawable/ic_send"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/white" />
+    </LinearLayout>
+
+</LinearLayout>
