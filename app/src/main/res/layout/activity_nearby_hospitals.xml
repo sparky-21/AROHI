@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top App Bar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarNearby"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary_moss_green"
+            app:navigationIcon="@drawable/ic_back_arrow"
+            app:navigationIconTint="@color/white"
+            app:subtitle="@string/nearby_hospitals_sub"
+            app:subtitleTextColor="@color/soft_sage"
+            app:title="@string/nearby_hospitals_title"
+            app:titleTextColor="@color/white">
+
+            <!-- Toggle View Button (Map / List) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleViewMode"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:backgroundTint="@color/pale_mint"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="@string/view_list_mode"
+                android:textColor="@color/deep_forest_green"
+                android:textSize="11.5sp"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_view_list"
+                app:iconSize="16dp"
+                app:iconTint="@color/deep_forest_green" />
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <!-- Demo Mode Notice Banner (Visible when API Key is unconfigured) -->
+        <LinearLayout
+            android:id="@+id/layoutDemoModeBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/pale_mint"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="7dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/demo_maps_banner_title"
+                android:src="@drawable/ic_location_pin"
+                app:tint="@color/deep_forest_green" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="@string/demo_maps_banner_message"
+                android:textColor="@color/deep_forest_green"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/btnDemoSetupGuide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_badge_pill"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="@string/demo_maps_info_action"
+                android:textColor="@color/primary_moss_green"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Search Bar & GPS Refresh Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_card"
+            android:elevation="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/search_area_hint"
+                app:boxBackgroundColor="@color/surface_background"
+                app:boxCornerRadiusBottomEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxStrokeColor="@color/primary_moss_green"
+                app:endIconMode="clear_text"
+                app:startIconDrawable="@drawable/ic_search"
+                app:startIconTint="@color/text_secondary">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearchArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:paddingVertical="10dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <ImageButton
+                android:id="@+id/btnRefreshLocation"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_icon_circle_mint"
+                android:contentDescription="@string/btn_retry_permission"
+                android:padding="10dp"
+                android:src="@drawable/ic_my_location"
+                app:tint="@color/deep_forest_green" />
+        </LinearLayout>
+
+        <!-- Location Permission Denied Warning Card (Shown when permission is denied) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardLocationPermissionWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/status_warning"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/permission_location_denied_title"
+                    android:textColor="@color/status_warning"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/permission_location_denied_message"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11.5sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRetryLocationPermission"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="@string/btn_grant_location"
+                        android:textColor="@color/primary_moss_green"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Status / Result Summary Line -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp">
+
+            <TextView
+                android:id="@+id/tvNearbyStatusSummary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Showing hospitals sorted by distance"
+                android:textColor="@color/text_muted"
+                android:textSize="11.5sp" />
+
+            <ProgressBar
+                android:id="@+id/progressBarLocating"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:indeterminateTint="@color/primary_moss_green"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Main Display Container (Holds Map Fragment and List View) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- Google Map Fragment View -->
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/mapNearbyFragment"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Alternative List View -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvNearbyHospitals"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/surface_background"
+                android:clipToPadding="false"
+                android:paddingBottom="180dp"
+                android:visibility="gone" />
+
+            <!-- Empty Search Results State -->
+            <LinearLayout
+                android:id="@+id/layoutEmptyResults"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/ic_location_pin"
+                    app:tint="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/no_nearby_found"
+                    android:textAlignment="center"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Bottom Selected Hospital Information Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSelectedHospitalInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/surface_card"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/border_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <!-- Header: Name, Distance & Verification Badge -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvCardHospitalName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="Square Hospital Dhaka"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvCardHospitalAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="18/F, West Panthapath, Dhaka-1205"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11.5sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvCardDistanceBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_badge_pill"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:singleLine="true"
+                    android:text="1.8 km away"
+                    android:textColor="@color/primary_moss_green"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Verification & Bed Info -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvCardVerificationBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_badge_pill"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingHorizontal="7dp"
+                    android:paddingVertical="2dp"
+                    android:singleLine="true"
+                    android:text="✓ AROHI VERIFIED"
+                    android:textColor="@color/status_verified"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCardBeds"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="400 Operational Beds"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Departments Preview -->
+            <TextView
+                android:id="@+id/tvCardDepartments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="Cardiology • Emergency Medicine • ICU • General Surgery"
+                android:textColor="@color/text_muted"
+                android:textSize="11sp" />
+
+            <!-- Action Buttons Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Get Directions -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCardDirections"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/primary_moss_green"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/action_get_directions"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    app:cornerRadius="20dp"
+                    app:icon="@drawable/ic_directions"
+                    app:iconGravity="textStart"
+                    app:iconSize="16dp"
+                    app:iconTint="@color/white" />
+
+                <!-- Call Emergency Hotline -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCardCallHotline"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/pale_mint"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/action_call_emergency"
+                    android:textColor="@color/deep_forest_green"
+                    android:textSize="12sp"
+                    app:cornerRadius="20dp" />
+
+                <!-- Select Hospital (Proceed to Auth) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCardSelectHospital"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/action_select_hospital"
+                    android:textColor="@color/primary_moss_green"
+                    android:textSize="12sp"
+                    app:cornerRadius="20dp"
+                    app:strokeColor="@color/primary_moss_green" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

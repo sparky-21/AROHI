@@ -32,6 +32,8 @@ public class Hospital {
     private List<String> supportedDepartments;
     private boolean verified;
     private String description;
+    private double latitude;
+    private double longitude;
     private long createdAt;
     private long updatedAt;
 
@@ -39,6 +41,8 @@ public class Hospital {
         this.supportedDepartments = new ArrayList<>();
         this.status = STATUS_PENDING;
         this.verified = false;
+        this.latitude = 0.0;
+        this.longitude = 0.0;
         long now = System.currentTimeMillis();
         this.createdAt = now;
         this.updatedAt = now;
@@ -48,6 +52,15 @@ public class Hospital {
                     String address, String city, String phone, String email,
                     String emergencyHotline, String status, int totalBeds,
                     List<String> supportedDepartments, boolean verified, String description) {
+        this(hospitalId, hospitalCode, hospitalName, address, city, phone, email,
+                emergencyHotline, status, totalBeds, supportedDepartments, verified, description, 0.0, 0.0);
+    }
+
+    public Hospital(String hospitalId, String hospitalCode, String hospitalName,
+                    String address, String city, String phone, String email,
+                    String emergencyHotline, String status, int totalBeds,
+                    List<String> supportedDepartments, boolean verified, String description,
+                    double latitude, double longitude) {
         this.hospitalId = hospitalId;
         this.hospitalCode = hospitalCode != null ? hospitalCode.toUpperCase().trim() : "";
         this.hospitalName = hospitalName;
@@ -61,6 +74,8 @@ public class Hospital {
         this.supportedDepartments = supportedDepartments != null ? supportedDepartments : new ArrayList<>();
         this.verified = verified;
         this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
         long now = System.currentTimeMillis();
         this.createdAt = now;
         this.updatedAt = now;
@@ -81,6 +96,8 @@ public class Hospital {
         map.put("supportedDepartments", supportedDepartments);
         map.put("verified", verified);
         map.put("description", description);
+        map.put("latitude", latitude);
+        map.put("longitude", longitude);
         map.put("createdAt", createdAt);
         map.put("updatedAt", updatedAt);
         return map;
@@ -108,6 +125,8 @@ public class Hospital {
             json.put("supportedDepartments", deptArray);
             json.put("verified", verified);
             json.put("description", description);
+            json.put("latitude", latitude);
+            json.put("longitude", longitude);
             json.put("createdAt", createdAt);
             json.put("updatedAt", updatedAt);
         } catch (JSONException e) {
@@ -139,7 +158,9 @@ public class Hospital {
                     json.optInt("totalBeds", 100),
                     depts,
                     json.optBoolean("verified", true),
-                    json.optString("description")
+                    json.optString("description"),
+                    json.optDouble("latitude", 0.0),
+                    json.optDouble("longitude", 0.0)
             );
             h.setCreatedAt(json.optLong("createdAt", System.currentTimeMillis()));
             h.setUpdatedAt(json.optLong("updatedAt", System.currentTimeMillis()));
@@ -147,6 +168,24 @@ public class Hospital {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Calculates the distance in kilometers from a reference location using the Haversine formula.
+     * Returns -1 if this hospital has unconfigured (0, 0) coordinates.
+     */
+    public double calculateDistanceKm(double userLat, double userLng) {
+        if (latitude == 0.0 && longitude == 0.0) {
+            return -1.0;
+        }
+        final double earthRadiusKm = 6371.0;
+        double dLat = Math.toRadians(latitude - userLat);
+        double dLng = Math.toRadians(longitude - userLng);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(latitude))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadiusKm * c;
     }
 
     public boolean isActive() {
@@ -256,6 +295,22 @@ public class Hospital {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public long getCreatedAt() {

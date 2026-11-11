@@ -595,4 +595,34 @@
     <string name="action_start_navigation">🧭 Start Navigation</string>
     <string name="action_exit_nav">✕ Exit</string>
     <string name="action_next_step">Next Step ➔</string>
+
+    <!-- Phase 11: Google Maps and Nearby Hospital Discovery -->
+    <string name="action_see_hospitals_around_you">See Hospitals Around You</string>
+    <string name="sub_see_hospitals_around_you">Find emergency care and verified hospitals nearby</string>
+    <string name="nearby_hospitals_title">Nearby Hospitals</string>
+    <string name="nearby_hospitals_sub">Locate healthcare facilities &amp; verified emergency services</string>
+    <string name="permission_location_rationale_title">Location Access Needed</string>
+    <string name="permission_location_rationale_message">AROHI needs your foreground location solely to calculate accurate distances to nearby hospitals and render live map markers. Background location is never accessed.</string>
+    <string name="permission_location_denied_title">Location Access Denied</string>
+    <string name="permission_location_denied_message">Location access is disabled. You can search hospitals manually by city, area, or name, or grant permission to find nearby hospitals automatically.</string>
+    <string name="btn_grant_location">Enable Location</string>
+    <string name="btn_manual_search">Search Manually</string>
+    <string name="btn_retry_permission">Retry Location</string>
+    <string name="action_get_directions">Directions</string>
+    <string name="action_call_emergency">Call Hotline</string>
+    <string name="action_select_hospital">Select Hospital</string>
+    <string name="label_distance_km">%.1f km away</string>
+    <string name="label_distance_unknown">Distance unavailable</string>
+    <string name="label_verified_arohi">AROHI Verified Hospital</string>
+    <string name="label_external_facility">Accredited Healthcare Facility</string>
+    <string name="view_map_mode">Map View</string>
+    <string name="view_list_mode">List View</string>
+    <string name="demo_maps_banner_title">Google Maps Demo Mode</string>
+    <string name="demo_maps_banner_message">Google Maps API key unconfigured. Displaying verified local healthcare directory and GPS coordinates.</string>
+    <string name="demo_maps_info_action">Setup Guide</string>
+    <string name="demo_maps_dialog_title">Google Maps API Configuration</string>
+    <string name="demo_maps_dialog_body">To enable interactive Google Maps SDK:\n1. Open Google Cloud Console.\n2. Enable \'Maps SDK for Android\'.\n3. Generate an API Key restricted to package \'com.arohi.healthcare\' and your SHA-1 certificate fingerprint.\n4. Configure MAPS_API_KEY in your build environment.</string>
+    <string name="search_area_hint">Search city, area, or hospital name…</string>
+    <string name="no_nearby_found">No hospitals found matching your search. Try adjusting the query or filter.</string>
+    <string name="locating_user">Acquiring current GPS location…</string>
 </resources>

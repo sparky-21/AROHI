@@ -60,6 +60,11 @@ public class HospitalDiscoveryActivity extends BaseActivity implements HospitalA
         binding.rvHospitals.setLayoutManager(new LinearLayoutManager(this));
         binding.rvHospitals.setAdapter(adapter);
 
+        binding.cardSeeHospitalsAroundYou.setOnClickListener(v -> {
+            Intent intent = new Intent(this, NearbyHospitalsActivity.class);
+            startActivity(intent);
+        });
+
         binding.btnDirectSignIn.setOnClickListener(v -> {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);

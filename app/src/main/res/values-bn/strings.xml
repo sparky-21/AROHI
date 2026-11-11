@@ -595,4 +595,34 @@
     <string name="action_start_navigation">🧭 নেভিগেশন শুরু</string>
     <string name="action_exit_nav">✕ প্রস্থান</string>
     <string name="action_next_step">পরবর্তী ধাপ ➔</string>
+
+    <!-- Phase 11: Google Maps and Nearby Hospital Discovery -->
+    <string name="action_see_hospitals_around_you">আপনার চারপাশের হাসপাতাল দেখুন</string>
+    <string name="sub_see_hospitals_around_you">কাছাকাছি জরুরি সেবা ও যাচাইকৃত হাসপাতাল খুঁজুন</string>
+    <string name="nearby_hospitals_title">নিকটস্থ হাসপাতালসমূহ</string>
+    <string name="nearby_hospitals_sub">স্বাস্থ্যসেবা কেন্দ্র ও যাচাইকৃত জরুরি সেবা খুঁজুন</string>
+    <string name="permission_location_rationale_title">অবস্থান অনুমতির প্রয়োজন</string>
+    <string name="permission_location_rationale_message">নিকটস্থ হাসপাতালের সঠিক দূরত্ব হিসাব ও ম্যাপে মার্কার দেখানোর জন্য আরোহী কেবল আপনার বর্তমান অবস্থান ব্যবহার করে। ব্যাকগ্রাউন্ড লোকেশন কখনই নেওয়া হয় না।</string>
+    <string name="permission_location_denied_title">অবস্থান অনুমতি দেওয়া হয়নি</string>
+    <string name="permission_location_denied_message">লোকেশন সেবা নিষ্ক্রিয় রয়েছে। আপনি শহর বা এলাকা লিখে ম্যানুয়ালি হাসপাতাল খুঁজতে পারেন অথবা অনুমতি পুনরায় দিতে পারেন।</string>
+    <string name="btn_grant_location">অবস্থান চালু করুন</string>
+    <string name="btn_manual_search">ম্যানুয়ালি খুঁজুন</string>
+    <string name="btn_retry_permission">অনুমতি পুনরায় চেষ্টা করুন</string>
+    <string name="action_get_directions">দিকনির্দেশনা</string>
+    <string name="action_call_emergency">হটলাইনে কল করুন</string>
+    <string name="action_select_hospital">হাসপাতাল নির্বাচন করুন</string>
+    <string name="label_distance_km">%.1f কিমি দূরে</string>
+    <string name="label_distance_unknown">দূরত্ব উপলব্ধ নেই</string>
+    <string name="label_verified_arohi">আরোহী যাচাইকৃত হাসপাতাল</string>
+    <string name="label_external_facility">অনুমোদিত স্বাস্থ্যসেবা কেন্দ্র</string>
+    <string name="view_map_mode">ম্যাপ ভিউ</string>
+    <string name="view_list_mode">তালিকা ভিউ</string>
+    <string name="demo_maps_banner_title">গুগল ম্যাপস ডেমো মোড</string>
+    <string name="demo_maps_banner_message">গুগল ম্যাপস এপিআই কি কনফিগার করা হয়নি। স্থানীয় যাচাইকৃত হাসপাতাল ও জিপিএস স্থানাঙ্ক প্রদর্শিত হচ্ছে।</string>
+    <string name="demo_maps_info_action">সেটআপ গাইড</string>
+    <string name="demo_maps_dialog_title">গুগল ম্যাপস এপিআই কনফিগারেশন</string>
+    <string name="demo_maps_dialog_body">সরাসরি গুগল ম্যাপস এসডিকে সক্রিয় করতে:\n১. গুগল ক্লাউড কনসোল খুলুন।\n২. \'Maps SDK for Android\' চালু করুন।\n৩. আপনার প্যাকেজ নাম \'com.arohi.healthcare\' ও SHA-1 ফিঙ্গারপ্রিন্ট দিয়ে API Key তৈরি করুন।\n৪. MAPS_API_KEY কনফিগার করুন।</string>
+    <string name="search_area_hint">শহর, এলাকা বা হাসপাতালের নাম লিখুন…</string>
+    <string name="no_nearby_found">আপনার অনুসন্ধানের সাথে মিল রেখে কোনো হাসপাতাল পাওয়া যায়নি। অন্য এলাকা লিখে চেষ্টা করুন।</string>
+    <string name="locating_user">বর্তমান জিপিএস অবস্থান নির্ণয় করা হচ্ছে…</string>
 </resources>

@@ -18,6 +18,68 @@
         app:subtitle="Accredited Multi-Hospital Platform"
         app:subtitleTextColor="@color/soft_sage" />
 
+    <!-- Prominent "See Hospitals Around You" (Phase 11 Google Maps Discovery) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSeeHospitalsAroundYou"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="@color/primary_moss_green"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="3dp"
+        app:rippleColor="@color/soft_sage">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_icon_circle_mint"
+                android:padding="8dp"
+                android:src="@drawable/ic_location_pin"
+                app:tint="@color/deep_forest_green" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_see_hospitals_around_you"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/sub_see_hospitals_around_you"
+                    android:textColor="@color/soft_sage"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_arrow_forward"
+                app:tint="@color/white" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <!-- Search Bar -->
     <LinearLayout
         android:layout_width="match_parent"

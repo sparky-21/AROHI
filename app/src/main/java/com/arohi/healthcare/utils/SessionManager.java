@@ -2048,6 +2048,22 @@ public class SessionManager {
             for (Hospital h : hospitals) {
                 saveHospital(h);
             }
+        } else {
+            // Update coordinates for any legacy cached hospital without lat/lng
+            List<Hospital> defaults = seedDefaultVerifiedHospitals();
+            for (Hospital cached : hospitals) {
+                if (cached.getLatitude() == 0.0 && cached.getLongitude() == 0.0) {
+                    for (Hospital d : defaults) {
+                        if (d.getHospitalId().equalsIgnoreCase(cached.getHospitalId()) ||
+                                d.getHospitalCode().equalsIgnoreCase(cached.getHospitalCode())) {
+                            cached.setLatitude(d.getLatitude());
+                            cached.setLongitude(d.getLongitude());
+                            saveHospital(cached);
+                            break;
+                        }
+                    }
+                }
+            }
         }
         return hospitals;
     }
@@ -2157,7 +2173,9 @@ public class SessionManager {
                 500,
                 arohiDepts,
                 true,
-                "Premier tertiary multi-specialty research and teaching healthcare facility within the AROHI Global Network."
+                "Premier tertiary multi-specialty research and teaching healthcare facility within the AROHI Global Network.",
+                23.7937,
+                90.4043
         ));
 
         // 2. Square Hospital Dhaka
@@ -2180,7 +2198,9 @@ public class SessionManager {
                 400,
                 squareDepts,
                 true,
-                "Leading JCI-accredited tertiary care hospital delivering world-class comprehensive clinical solutions."
+                "Leading JCI-accredited tertiary care hospital delivering world-class comprehensive clinical solutions.",
+                23.7531,
+                90.3816
         ));
 
         // 3. Apollo Imperial Hospital Chittagong
@@ -2203,7 +2223,9 @@ public class SessionManager {
                 375,
                 apolloDepts,
                 true,
-                "State-of-the-art multi-disciplinary hospital serving the greater Chittagong coastal division."
+                "State-of-the-art multi-disciplinary hospital serving the greater Chittagong coastal division.",
+                22.3601,
+                91.8016
         ));
 
         // 4. United Hospital Gulshan
@@ -2226,7 +2248,34 @@ public class SessionManager {
                 450,
                 unitedDepts,
                 true,
-                "Modern multi-specialty healthcare institution recognized for cardiology, renal transplants, and advanced diagnostics."
+                "Modern multi-specialty healthcare institution recognized for cardiology, renal transplants, and advanced diagnostics.",
+                23.7978,
+                90.4184
+        ));
+
+        // 5. Evercare Hospital Dhaka
+        List<String> evercareDepts = new ArrayList<>();
+        evercareDepts.add("Cardiology & Cardiothoracic");
+        evercareDepts.add("Oncology");
+        evercareDepts.add("Orthopedics & Joint Replacement");
+        evercareDepts.add("Emergency & Trauma");
+        evercareDepts.add("Pediatric ICU");
+        list.add(new Hospital(
+                "hosp_evercare_dhk",
+                "EVERCARE-01",
+                "Evercare Hospital Dhaka",
+                "Plot 81, Block E, Bashundhara R/A, Dhaka-1229",
+                "Dhaka",
+                "+880 2 8431661",
+                "info.dhaka@evercarebd.com",
+                "+880 1713-047461",
+                Hospital.STATUS_ACTIVE,
+                425,
+                evercareDepts,
+                true,
+                "Internationally accredited super-specialty tertiary care hospital with advanced clinical centers of excellence.",
+                23.8103,
+                90.4312
         ));
 
         return list;
